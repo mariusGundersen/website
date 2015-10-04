@@ -1,8 +1,6 @@
 ---
-id: 1
 title: "When can I actually use ES6?"
 short: "The next version of JavaScript is nearing completion. But when can we actually use it?"
-image: "es6.png"
 date: "2013-12-22T15:41:21.189Z"
 ---
 

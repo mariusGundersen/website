@@ -1,8 +1,6 @@
 ---
-id: 3
 title: "Other things generators are good for"
 short: "ES6 generators can be used for more than async await"
-image: "generators.png"
 date: "2014-08-13"
 ---
 

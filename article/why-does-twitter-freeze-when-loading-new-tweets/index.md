@@ -1,8 +1,6 @@
 ---
-id: 9
 title: "Why does Twitter freeze when loading new tweets?"
 short: "An investigation using DevTools"
-image: "twitter.png"
 date: "2015-02-16"
 ---
 

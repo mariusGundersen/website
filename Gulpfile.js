@@ -7,6 +7,7 @@ const frontMatter = require('gulp-front-matter');
 const markdown = require('gulp-markdown');
 const marked = require('marked');
 const merge = require('merge-stream');
+const moment = require('moment');
 const sort = require('gulp-sort');
 const through = require('through2');
 const wrap = require('gulp-wrap-layout');
@@ -25,7 +26,9 @@ gulp.task('build', function(){
   .pipe(gulp.dest('output'))
   .pipe(filter('**/index.html'))
   .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
-  .pipe(wrap({src: 'linkBlock.ejs'}))
+  .pipe(wrap({src: 'linkBlock.ejs'}, {
+    date: (date, format) => moment(date).format(format)
+  }))
   .pipe(concat('index.html'))
   .pipe(wrap({src: 'wrapper.ejs'}))
   .pipe(gulp.dest('output'));

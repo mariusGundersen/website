@@ -1,8 +1,6 @@
 ---
-id: 2
 title: "Dependency Chain"
 short: "Dependency chaining is a simple way to extend the functionality of a library using modules"
-image: "dependencyChain.png"
 date: "2014-02-23"
 ---
 

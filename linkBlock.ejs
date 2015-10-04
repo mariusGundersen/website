@@ -3,6 +3,6 @@
       <div>
         <h2><a href="/<%=: file.relative %>"><%= file.frontMatter.title %></a></h2>
         <%=: file.frontMatter.short %>
-        <span class="date"><%=: file.frontMatter.date %></span>
+        <span class="date"><%=: data.date(file.frontMatter.date, "MMMM Do YYYY") %></span>
       </div>
     </section>

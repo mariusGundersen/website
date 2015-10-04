@@ -18,10 +18,11 @@
     "gulp-markdown": "^1.0.0",
     "gulp-sort": "^1.1.1",
     "gulp-util": "^3.0.6",
-    "gulp-wrap-layout": "^0.2.0",
+    "gulp-wrap-layout": "^0.3.0",
     "highlight.js": "^8.8.0",
     "marked": "^0.3.5",
     "merge-stream": "^1.0.0",
+    "moment": "^2.10.6",
     "through2": "^2.0.0"
   },
   "scripts": {

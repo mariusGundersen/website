@@ -1,8 +1,6 @@
 ---
-id: 7
 title: "ES6 modules"
 short: ""
-image: ""
 date: "2014-06-15"
 ---
 
@@ -18,7 +16,7 @@ And here is another ES6 module that depends on the above module:
 ```js
 import markdownToHtml from "markdown.js";
 
-console.log(markdownToHtml("#test"));
+console.log(markdownToHtml("# test"));
 ```
 
 Looks good, right? Except the above code doesn't work! There is nothing wrong with the syntax in the two modules, but they won't work together. You see, the top module hasn't marked which of its exports in the default one. Yup, It only has one export, but you, the programmer, still need to tell the JavaScript engine that it only exports one thing.
@@ -37,7 +35,7 @@ With this tiny change the module can successfully be imported using the syntax `
 ```js
 import {markdownToHtml} from "markdown.js";
 
-console.log(markdownToHtml("#test"));
+console.log(markdownToHtml("# test"));
 ```
 The curly braces change the syntax to be named-import. It lets you import several things from a module by specifying the name of the thing you want to import. This is really useful for modules that export many things, for example a math library:
 ```js

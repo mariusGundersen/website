@@ -1,17 +1,16 @@
 ---
-id: 4
 title: "NES Remote"
-image: "images/project/nesremote.png"
+short: "A remote control for my TV made using an old NES controller."
 date: "2010-10-26"
 ---
 
 A few weeks ago the remote to our TV went mysteriously missing, and since then we've had to change channels by getting out of our sofa. Obviously this is not the way TV should be enjoyed in the 21 century, so we needed a new remote. Instead of buying one I figured I could make one. At first I attempted to make one for my Android phone, by [connecting IR LEDs to the audio jack](http://www.lirc.org/html/audio.html), but so far that has failed to work. So over the weekend I decided to convert an old [NES controller](http://shop.ebay.com/i.html?_nkw=nes+controller) into a remote control.
 
-[image_link nesremote1.jpg]
+![nesremote1.jpg](nesremote1.jpg)
 
 Step one was to make a PCB that would fit inside the controller and have all the buttons (8), plastic pins (3) and screws (6) align properly. On this PCB I also needed to fit an [ATmega168](http://www.avrfreaks.net/index.php?module=Freaks%20Devices&func=displayDev&objectid=78) and a [button cell](http://en.wikipedia.org/wiki/Button_cell), along with some resistors and capacitors. After printing, exposing, developing and etching the board, it was soldered together and ready for programming.
 
-[image_link nesremote2.jpg]
+![nesremote2.jpg](nesremote2.jpg)
 
 Step two was programming the AVR. Since the remote would run of a single button cell battery, it needed to use as little power as possible. ATmegas have the ability to sleep, which will turn off everything, including the system clock, and will only wake up when one of the buttons is pressed. In Power Down mode, the remote used 1.5uA, which means it will (theoretically) still work a decade from now on a single battery. When a button is pressed, however, the LED drains quite a lot of power, so it wont last anywhere near that long with active use.
 

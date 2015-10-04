@@ -1,8 +1,6 @@
 ---
-id: 8
 title: "Early impressions of Docker"
 short: "I've only used Docker for a few days, here are my impressions"
-image: "docker.png"
 date: "2015-01-17"
 ---
 
