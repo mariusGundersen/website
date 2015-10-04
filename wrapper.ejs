@@ -13,15 +13,9 @@
       <header>
         <h1><a href="/">Marius Gundersen</a></h1>
       </header>
-      <nav class="clearfix <%= file.frontMatter.id %>">
-        <a href="/projects">
-          <span>Projects</span>
-        </a>
-        <a href="/lab">
-          <span>Lab</span>
-        </a>
-        <a href="/articles">
-          <span>Articles</span>
+      <nav class="clearfix <%= file.frontMatter && file.frontMatter.type %>">
+        <a href="/">
+          <span>Work in progress</span>
         </a>
         <a href="/talks">
           <span>Talks</span>
@@ -37,7 +31,7 @@
             <a href="mailto:me@mariusgundersen.com">Email</a>
             <a href="//twitter.com/gundersenMarius">Twitter</a>
             <a href="//github.com/mariusGundersen/">GitHub</a>
-            <a href="//delicious.com/gundersen">Delicious</a>
+            <a href="https://stackoverflow.com/users/1585/marius">Stack Overflow</a>
           </div>
         </div>
 

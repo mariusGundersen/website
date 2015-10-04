@@ -16,6 +16,7 @@ body{
 	background: white;
 }
 header{
+  text-align: center;
 }
 h1{
 	font-family: Helvetica, Verdana, Arial, Sans-Serif;
@@ -39,7 +40,7 @@ nav{
 	font-family: Helvetica, Verdana, Arial, Sans-Serif;
 }
 nav a{
-	width: 25%;
+	width: 50%;
 	display: inline-block;
 	vertical-align: bottom;
 	border-bottom: 0px solid #333;
@@ -49,7 +50,7 @@ nav a{
 	text-decoration: none;
 	color: #333;
 	font-size: 1em;
-	text-align: right;
+	text-align: center;
 	text-transform: uppercase;
 }
 nav a span{
@@ -69,14 +70,10 @@ nav.talks:hover a:nth-child(4) span{
 	background: #EEE;
 }
 nav a:hover span,
-nav.projects a:nth-child(1) span,
-nav.projects a:nth-child(1):hover span,
-nav.lab a:nth-child(2) span,
-nav.lab a:nth-child(2):hover span,
-nav.articles a:nth-child(3) span,
-nav.articles a:nth-child(3):hover span,
-nav.talks a:nth-child(4) span,
-nav.talks a:nth-child(4):hover span{
+nav.wip a:nth-child(1) span,
+nav.wip a:nth-child(1):hover span,
+nav.talks a:nth-child(2) span,
+nav.talks a:nth-child(2):hover span{
 	background: #333;
 	color: white;
 }

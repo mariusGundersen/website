@@ -12,7 +12,7 @@ const sort = require('gulp-sort');
 const through = require('through2');
 const wrap = require('gulp-wrap-layout');
 
-gulp.task('build', ['content', 'talks', 'css'], _ => _);
+gulp.task('build', ['content', 'talks', 'css', '404'], _ => _);
 
 gulp.task('content', function(){
   return gulp.src('article/*')
@@ -32,6 +32,11 @@ gulp.task('content', function(){
     date: (date, format) => moment(date).format(format)
   }))
   .pipe(concat('index.html'))
+  .pipe(through.obj(function(file, _, done){
+    file.frontMatter.type = 'wip';
+    this.push(file);
+    done();
+  }))
   .pipe(wrap({src: 'wrapper.ejs'}))
   .pipe(gulp.dest('output'));
 });
@@ -53,14 +58,25 @@ gulp.task('talks', function(){
     date: (date, format) => moment(date).format(format)
   }))
   .pipe(concat('index.html'))
+  .pipe(through.obj(function(file, _, done){
+    file.frontMatter.type = 'talks';
+    this.push(file);
+    done();
+  }))
   .pipe(wrap({src: 'wrapper.ejs'}))
   .pipe(gulp.dest('output/talks'));
 });
 
-
 gulp.task('css', function(){
   return gulp.src('style/*')
   .pipe(gulp.dest('output/style'));
+});
+
+gulp.task('404', function(){
+  gulp.src('404.md')
+  .pipe(markdown())
+  .pipe(wrap({src: 'wrapper.ejs'}))
+  .pipe(gulp.dest('output'));
 });
 
 function buildTalk(name){
