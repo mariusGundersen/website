@@ -2,6 +2,7 @@
 title: "CentripetalBox"
 short: "The CentripetalBox is a 3D printed box with a special lock which only opens if the box is spun quickly."
 date: "2010-01-15"
+type: "project"
 ---
 
 <iframe width="480" height="270" src="//www.youtube.com/embed/mzUjd7IYpXU" frameborder="0" allowfullscreen></iframe>

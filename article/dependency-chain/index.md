@@ -2,6 +2,7 @@
 title: "Dependency Chain"
 short: "Dependency chaining is a simple way to extend the functionality of a library using modules"
 date: "2014-02-23"
+type: "article"
 ---
 
 Dependency chaining is a simple way to extend the functionality of a library using modules. The chain consists of a root module, containing the library to be extended, and several links, each of which extends the previous link in the chain with new functionality. Application modules which depends on the library are given the last link in the chain; the library with all the extensions applied to it.

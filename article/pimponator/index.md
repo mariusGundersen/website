@@ -2,6 +2,7 @@
 title: "Pimponator"
 short: "The Pimponator uses an AVR to control a 16 column by 5 row LED matrix. The micro controller has 64KiB of flash memory available for a 6000 frame animation."
 date: "2011-04-13"
+type: "project"
 ---
 
 <iframe width="480" height="270" src="//www.youtube.com/embed/eLDVVwEIbq4" frameborder="0" allowfullscreen></iframe>

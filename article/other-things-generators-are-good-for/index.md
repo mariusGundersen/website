@@ -2,6 +2,7 @@
 title: "Other things generators are good for"
 short: "ES6 generators can be used for more than async await"
 date: "2014-08-13"
+type: "article"
 ---
 
 The next version of JavaScript, ES6, will have what is called generators. If you haven't looked at generators yet, watch this video to get an idea of what they can do.

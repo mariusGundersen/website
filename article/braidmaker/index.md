@@ -2,6 +2,7 @@
 title: "BraidMaker"
 short: "A 3D printed mechanical braiding device, created in Blender and printed by Shapeways.com"
 date: "2010-08-06"
+type: "project"
 ---
 
 <iframe width="480" height="270" src="//www.youtube.com/embed/a1" frameborder="0" allowfullscreen></iframe>-L7Kb82iQ
