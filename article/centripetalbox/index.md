@@ -1,8 +1,8 @@
 ---
-  id: 2
-  title: "CentripetalBox"
-  image: "images/project/centripetalbox.png"
-  date: "2010-01-15"
+id: 2
+title: "CentripetalBox"
+image: "images/project/centripetalbox.png"
+date: "2010-01-15"
 ---
 
 http://www.youtube.com/watch?v=mzUjd7IYpXU

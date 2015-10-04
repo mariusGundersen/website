@@ -1,8 +1,8 @@
 ---
-  id: 4
-  title: "NES Remote"
-  image: "images/project/nesremote.png"
-  date: "2010-10-26"
+id: 4
+title: "NES Remote"
+image: "images/project/nesremote.png"
+date: "2010-10-26"
 ---
 
 A few weeks ago the remote to our TV went mysteriously missing, and since then we've had to change channels by getting out of our sofa. Obviously this is not the way TV should be enjoyed in the 21 century, so we needed a new remote. Instead of buying one I figured I could make one. At first I attempted to make one for my Android phone, by [connecting IR LEDs to the audio jack](http://www.lirc.org/html/audio.html), but so far that has failed to work. So over the weekend I decided to convert an old [NES controller](http://shop.ebay.com/i.html?_nkw=nes+controller) into a remote control.

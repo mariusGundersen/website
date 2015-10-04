@@ -1,9 +1,9 @@
 ---
-  id: 9
-  title: "Why does Twitter freeze when loading new tweets?"
-  short: "An investigation using DevTools"
-  image: "twitter.png"
-  date: "2015-02-16"
+id: 9
+title: "Why does Twitter freeze when loading new tweets?"
+short: "An investigation using DevTools"
+image: "twitter.png"
+date: "2015-02-16"
 ---
 
 I usually don't turn of my work computer when I leave the office for the day, so I can continue to work almost uninterupted the next day. So when I come back next morning Twitter is happy to let me know I have hundreds of unread tweets in my timeline. Unfortunately clicking the button to load them freezes my browser for many seconds, as you can see in the animation below, and this has been annoyed me for quite a while. So, why is Twitter freezing my browser, and why can't Twitter fix this bug?
@@ -12,7 +12,7 @@ I usually don't turn of my work computer when I leave the office for the day, so
 
 For this article I've chosen to use the [realtime view with the topic valentines](https://twitter.com/search?f=realtime&amp;q=Valentines&amp;src=tren), since it is a trending topic today. It will load a few hundred tweets in a few minutes, which makes it good for the experiments I have done in this article.
 
-##Investigating
+## Investigating
 
 Notice how long it takes from I click the blue ribbon until the content changes. While I'm waiting for the content the browser is completely frozen; I can't click on anything, I can't scroll and, in Firefox, all the other tabs are also frozen. Using the browsers developer tools I can see that it takes 1.33 seconds to render the new tweets. The barchart in the image below shows the frames rendered by the browser. The bars below the horizontal line means the browser can render at 30 frames per second, which will feel smooth to the user. There is another line that isn't shown here for 60fps, which is what you should be aiming for when developing web applications. 60fps means you have 16ms to do the work you want to. The fact that the devtools can't even be bothered to draw the line shows how slow the rendering of the new tweets is.
 
@@ -110,7 +110,7 @@ This function keeps an eye on tweets that have cards; images, videos or links wi
 
 From the Top Down view above we can see that it is the `isWithinBounds` method that is the slow part. This method looks at the height and position of the card and figures out if it is inside the viewport. To answer this question it needs the height of the card, and it uses the `clientHeight` property of the DOM element that represents the card to get the height. Unfortunately finding the height of a DOM element is not easy.
 
-##Explanation
+## Explanation
 
 For the browser to render HTML it first needs to figure out the position and size of the DOM elements. This process is called flowing the DOM, and it can be a very slow process. There are many great articles on the subject of [reflow](https://developers.google.com/speed/articles/reflow), the process of re-processing DOM elements, so I wont go into too much detail here. The short version is that an element inside another element can affect the outer element, the outer element can affect the inner element and sibling elements can affect each other. This means that the browser sometimes have to process the same element multiple times before it finds out how to position and size it. Having to process many elements (in the case of the several hundred tweets) many times is slow.
 
@@ -120,7 +120,7 @@ So to speed things up we should try not to reflow the DOM. The browser needs to 
 
 But as you can see from the image above twitter is forcing the browser to calculate the sizes and positions before the tweets are inserted into the DOM. These calculations are purple, while the rest of the JavaScript time is shown in yellow. The devtools even tells us the stack trace that caused the layout calculations and warns us that it will be slow. If the purple bars were gone then there would hardly be anything left, and the insertion of all the tweets into the timeline could be made very quickly.
 
-##Improvement
+## Improvement
 
 So, what is a way to improve on this? One simple way is to delay the call to `processWatchedCards` until after the browser has rendered the tweets. That would give the browser time to calculate the layout once and then have the results of all those calculations cached on the DOM elements. 
 

@@ -1,8 +1,8 @@
 ---
-  id: 3
-  title: "BraidMaker"
-  image: "images/project/braidmaker.png"
-  date: "2010-08-06"
+id: 3
+title: "BraidMaker"
+image: "images/project/braidmaker.png"
+date: "2010-08-06"
 ---
 
 http://www.youtube.com/watch?v=a1-L7Kb82iQ

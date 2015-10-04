@@ -1,9 +1,9 @@
 ---
-  id: 4
-  title: "Multiple dispatch with partial classes in C#"
-  short: "Using dynamic and partial classes we can get multiple dispatch in C#"
-  image: ""
-  date: "2014-10-13"
+id: 4
+title: "Multiple dispatch with partial classes in C#"
+short: "Using dynamic and partial classes we can get multiple dispatch in C#"
+image: ""
+date: "2014-10-13"
 ---
 
 Multiple dispatch is a way to ...

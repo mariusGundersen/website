@@ -1,9 +1,9 @@
 ---
-  id: 5
-  title: "Distributed Package Repository"
-  short: "A package repository built on top of Bittorrent and a blockchain"
-  image: ""
-  date: "2014-02-19"
+id: 5
+title: "Distributed Package Repository"
+short: "A package repository built on top of Bittorrent and a blockchain"
+image: ""
+date: "2014-02-19"
 ---
 
 Most software today is not written from scratch, but is instead a composition of several large pieces known as packages. These packages are built by many different people and are distributed using a package repository.  All package repositories (that I know of) are centralized. In this article I will describe a distributed package repository (DPR) where the package content and the metadata can be hosted on multiple servers without a single centralized authority.

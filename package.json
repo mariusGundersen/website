@@ -1,0 +1,27 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "private": true,
+  "dependencies": {
+    "express": "^4.13.3",
+    "express-static": "^1.0.3",
+  },
+  "devDependencies": {
+    "front-matter": "^1.0.0",
+    "gulp": "^3.9.0",
+    "gulp-foreach": "^0.1.0",
+    "gulp-front-matter": "^1.2.3",
+    "gulp-markdown": "^1.0.0",
+    "gulp-wrap-layout": "^0.2.0",
+    "highlight.js": "^8.8.0",
+    "marked": "^0.3.5",
+    "merge-stream": "^1.0.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT"
+}

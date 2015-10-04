@@ -1,9 +1,9 @@
 ---
-  id: 7
-  title: "ES6 modules"
-  short: ""
-  image: ""
-  date: "2014-06-15"
+id: 7
+title: "ES6 modules"
+short: ""
+image: ""
+date: "2014-06-15"
 ---
 
 Here is a very simple ES6 module:

@@ -1,8 +1,8 @@
 ---
-  id: 6
-  title: "Bitcoin Piggybank"
-  image: "images/project/piggy_thumb.jpg"
-  date: "2013-03-11"
+id: 6
+title: "Bitcoin Piggybank"
+image: "images/project/piggy_thumb.jpg"
+date: "2013-03-11"
 ---
 
 It's been a while since I last did any 3D printing, but with my younger brother's birthday coming up I decided it was time to create something again. This time I made a 3D printed Bitcoin piggybank. 

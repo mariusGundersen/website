@@ -1,9 +1,9 @@
 ---
-  id: 8
-  title: "Early impressions of Docker"
-  short: "I've only used Docker for a few days, here are my impressions"
-  image: "docker.png"
-  date: "2015-01-17"
+id: 8
+title: "Early impressions of Docker"
+short: "I've only used Docker for a few days, here are my impressions"
+image: "docker.png"
+date: "2015-01-17"
 ---
 
 Docker is a tool for deploying applications to servers easily, by creating standardized containers for the applications and running those containers in "virtual machines" that have a simple API for communicating with each other. This means that a container working on one machine will work on any other machine that runs Docker, without any further configuration. The goal seems to be to make it safe and simple to deploy to and set up production and test environments. BTW, I put virtual machine in "quotes" as I'm sure there are people who disagree that Docker is doing virtualization, and the quotes protects me from those people. As I'm sure you can tell, I only have a fairly basic understanding of Docker, since I've only used it for about a week.
