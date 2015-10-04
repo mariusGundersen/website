@@ -12,7 +12,13 @@ const sort = require('gulp-sort');
 const through = require('through2');
 const wrap = require('gulp-wrap-layout');
 
-gulp.task('build', ['content', 'talks', 'css', '404'], _ => _);
+gulp.task('build', [
+  'content',
+  'talks',
+  'css',
+  '404',
+  'favicon'
+]);
 
 gulp.task('content', function(){
   return gulp.src('article/*')
@@ -76,6 +82,11 @@ gulp.task('404', function(){
   gulp.src('404.md')
   .pipe(markdown())
   .pipe(wrap({src: 'wrapper.ejs'}))
+  .pipe(gulp.dest('output'));
+});
+
+gulp.task('favicon', function(){
+  gulp.src('favicon.png')
   .pipe(gulp.dest('output'));
 });
 
