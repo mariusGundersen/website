@@ -12,7 +12,9 @@ const sort = require('gulp-sort');
 const through = require('through2');
 const wrap = require('gulp-wrap-layout');
 
-gulp.task('build', function(){
+gulp.task('build', ['content', 'talks', 'css'], _ => _);
+
+gulp.task('content', function(){
   return gulp.src('article/*')
   .pipe(forEach(function(stream, file){
     const name = file.relative;
@@ -34,13 +36,42 @@ gulp.task('build', function(){
   .pipe(gulp.dest('output'));
 });
 
+gulp.task('talks', function(){
+  return gulp.src('talk/*')
+  .pipe(forEach(function(stream, file){
+    const name = file.relative;
+    console.log(name);
+    const talk = buildTalk(name);
+    const img = gulp.src('talk/'+name+'/img.png', {base: 'talk'});
+    
+    return merge(talk, img);
+  }))
+  .pipe(gulp.dest('output'))
+  .pipe(filter('**/index.html'))
+  .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
+  .pipe(wrap({src: 'talkBlock.ejs'}, {
+    date: (date, format) => moment(date).format(format)
+  }))
+  .pipe(concat('index.html'))
+  .pipe(wrap({src: 'wrapper.ejs'}))
+  .pipe(gulp.dest('output/talks'));
+});
+
 
 gulp.task('css', function(){
   return gulp.src('style/*')
   .pipe(gulp.dest('output/style'));
 });
 
-
+function buildTalk(name){
+  return gulp.src('talk/'+name+'/index.md', {base: 'talk'})
+  .pipe(setSlug(name))
+  .pipe(frontMatter({
+    property: 'frontMatter',
+    remove: true
+  }))
+  .pipe(markdown());
+}
 
 function buildArticle(name){
   return gulp.src('article/'+name+'/index.md', {base: 'article'})
