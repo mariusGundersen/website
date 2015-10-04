@@ -1,9 +1,14 @@
+const concat = require('gulp-concat');
 const gulp = require('gulp');
+const gutil = require('gulp-util');
+const filter = require('gulp-filter');
 const forEach = require('gulp-foreach');
 const frontMatter = require('gulp-front-matter');
 const markdown = require('gulp-markdown');
 const marked = require('marked');
 const merge = require('merge-stream');
+const sort = require('gulp-sort');
+const through = require('through2');
 const wrap = require('gulp-wrap-layout');
 
 gulp.task('build', function(){
@@ -13,9 +18,16 @@ gulp.task('build', function(){
     console.log(name);
     const article = buildArticle(name);
     const images = gulp.src('article/'+name+'/@(thumbnail|fullsize)/*', {base: 'article'});
+    const img = gulp.src('article/'+name+'/img.png', {base: 'article'});
     
-    return merge(article, images);
+    return merge(article, images, img);
   }))
+  .pipe(gulp.dest('output'))
+  .pipe(filter('**/index.html'))
+  .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
+  .pipe(wrap({src: 'linkBlock.ejs'}))
+  .pipe(concat('index.html'))
+  .pipe(wrap({src: 'wrapper.ejs'}))
   .pipe(gulp.dest('output'));
 });
 
@@ -29,6 +41,7 @@ gulp.task('css', function(){
 
 function buildArticle(name){
   return gulp.src('article/'+name+'/index.md', {base: 'article'})
+  .pipe(setSlug(name))
   .pipe(frontMatter({
     property: 'frontMatter',
     remove: true
@@ -41,7 +54,14 @@ function buildArticle(name){
     gfm: true
   }))
   .pipe(wrap({src: 'template.ejs'}))
+  .pipe(wrap({src: 'wrapper.ejs'}));
 }
+
+const setSlug = name => through.obj({objectMode: true}, function(file, _, done){
+  file.slug = name;
+  this.push(file);
+  done();
+});
 
 
 function createRenderer(){
