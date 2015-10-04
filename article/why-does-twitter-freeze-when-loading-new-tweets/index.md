@@ -5,6 +5,8 @@ date: "2015-02-16"
 type: "article"
 ---
 
+## Why does Twitter freeze when loading new tweets?
+
 I usually don't turn of my work computer when I leave the office for the day, so I can continue to work almost uninterupted the next day. So when I come back next morning Twitter is happy to let me know I have hundreds of unread tweets in my timeline. Unfortunately clicking the button to load them freezes my browser for many seconds, as you can see in the animation below, and this has been annoyed me for quite a while. So, why is Twitter freezing my browser, and why can't Twitter fix this bug?
 
 ![twitter is slow gif](slow-twitter.gif)

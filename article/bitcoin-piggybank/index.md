@@ -5,6 +5,8 @@ date: "2013-03-11"
 type: "project"
 ---
 
+## Bitcoin Piggybank
+
 It's been a while since I last did any 3D printing, but with my younger brother's birthday coming up I decided it was time to create something again. This time I made a 3D printed Bitcoin piggybank. 
 
 Bitcoin is an online currency based on public key cryptography and opensource software. If you aren't familiar with Bitcoin I suggest you watch the short video over at [WeUseCoins.com](http://www.weusecoins.com/). If you want some technical information, you should watch [this presentation](http://vimeo.com/27177893) by [Brian Warner](http://people.mozilla.com/~bwarner/bitcoin/).

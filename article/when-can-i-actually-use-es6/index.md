@@ -5,6 +5,8 @@ date: "2013-12-22T15:41:21.189Z"
 type: "article"
 ---
 
+## When can I actually use ES6?
+
 **TL;DR** ES6 modules can be compiled to ES5 code in the browser. As long as a browser implements modules, it can compile the content of the module into a version of JavaScript it understands. So to use any feature of ES6 (or ES7, ES8, etc) a browser only needs to implement modules.
 
 ### Current situation

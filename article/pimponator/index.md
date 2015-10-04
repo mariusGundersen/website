@@ -5,6 +5,8 @@ date: "2011-04-13"
 type: "project"
 ---
 
+## Pimponator
+
 <iframe width="480" height="270" src="//www.youtube.com/embed/eLDVVwEIbq4" frameborder="0" allowfullscreen></iframe>
 
 At the beginning of last semester i started designing a pimpin' [Imponator](http://omegav.no/byggekurs); a Pimponator. This imponator, like all imponators, would use flashing LEDs to impress other students, but I would be able to reprogram it from my cellphone using Bluetooth. The front of the Pimponator would have a 16 by 5 LED matrix, where the brightness of the LEDs could be controlled individually. The design was quickly finished, and I soon had a soldered device to play with. The only problem was that it didn't work. And so it ended up at the bottom of my electronics drawer, along with all the other projects I never finish, and it remained there for almost six months.

@@ -5,6 +5,8 @@ date: "2015-01-17"
 type: "article"
 ---
 
+## Early impressions of Docker
+
 Docker is a tool for deploying applications to servers easily, by creating standardized containers for the applications and running those containers in "virtual machines" that have a simple API for communicating with each other. This means that a container working on one machine will work on any other machine that runs Docker, without any further configuration. The goal seems to be to make it safe and simple to deploy to and set up production and test environments. BTW, I put virtual machine in "quotes" as I'm sure there are people who disagree that Docker is doing virtualization, and the quotes protects me from those people. As I'm sure you can tell, I only have a fairly basic understanding of Docker, since I've only used it for about a week.
 
 I installed Docker last weekend after my hosting provider pointed out my server was sending spam, and kindly asked me to format the server or go somewhere else. After backing up all of the apache virtual hosts and tomcat webservices, I formated the server and installed the latest version of Ubuntu server, since it is the best Linux server. At this point I had a choice between installing all the old software that was on my old server, or trying something new that I had never done before. The second option seemed like the best option, and I installed Docker.
