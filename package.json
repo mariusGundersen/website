@@ -6,7 +6,8 @@
   "private": true,
   "dependencies": {
     "express": "^4.13.3",
-    "express-static": "^1.0.3"
+    "express-static": "^1.0.3",
+    "compression": "^1.6.0"
   },
   "devDependencies": {
     "front-matter": "^1.0.0",
