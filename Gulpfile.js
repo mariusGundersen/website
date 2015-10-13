@@ -10,7 +10,7 @@ const merge = require('merge-stream');
 const minify = require('gulp-minify-css');
 const moment = require('moment');
 const sort = require('gulp-sort');
-const sourcempas = requrie('gulp-sourcemaps');
+const sourcempas = require('gulp-sourcemaps');
 const through = require('through2');
 const wrap = require('gulp-wrap-layout');
 
