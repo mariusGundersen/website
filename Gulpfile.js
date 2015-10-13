@@ -7,8 +7,10 @@ const frontMatter = require('gulp-front-matter');
 const markdown = require('gulp-markdown');
 const marked = require('marked');
 const merge = require('merge-stream');
+const minify = require('gulp-minify-css');
 const moment = require('moment');
 const sort = require('gulp-sort');
+const sourcempas = requrie('gulp-sourcemaps');
 const through = require('through2');
 const wrap = require('gulp-wrap-layout');
 
@@ -75,6 +77,9 @@ gulp.task('talks', function(){
 
 gulp.task('css', function(){
   return gulp.src('style/*')
+  .pipe(sourcemaps.init())
+  .pipe(minify())
+  .pipe(sourcemaps.write('.'))
   .pipe(gulp.dest('output/style'));
 });
 
