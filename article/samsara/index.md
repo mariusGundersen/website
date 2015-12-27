@@ -47,4 +47,4 @@ Samsara is not only usable on a mobile phone, it's mobile first. It is great bei
 
 I made Samsara because I needed it, and so I'm using it to maintain my production website. It works well enough for me, but is still a bit rough around the edges. I am continuing to develop Samsara by fixing issues and adding new features. The goal is to have a small and simple tool to maintain personal websites, not to create a competitor to Kubernetes. Samsara therefore must be simple to set up (It's currently a single docker run command) and use for everyone.
 
-The source code is available on [https://github.com/mariusGundersen/Samsara](GitHub) and it's automatically built on the Docker Hub as [https://hub.docker.com/r/mariusgundersen/samsara/](`mariusgundersen/samsara`).
+The source code is available on [Github](https://github.com/mariusGundersen/Samsara) and it's automatically built on the Docker Hub as [`mariusgundersen/samsara`](https://hub.docker.com/r/mariusgundersen/samsara/).
