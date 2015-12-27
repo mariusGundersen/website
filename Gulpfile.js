@@ -14,6 +14,10 @@ const sourcemaps = require('gulp-sourcemaps');
 const through = require('through2');
 const wrap = require('gulp-wrap-layout');
 
+gulp.task('watch', ['build'], function(){
+  gulp.watch('article/*', ['content']);
+});
+
 gulp.task('build', [
   'content',
   'talks',
