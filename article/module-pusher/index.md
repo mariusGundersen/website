@@ -21,13 +21,14 @@ What would the SPA be like without bundling? On the first visit it will load ver
 
 The reason it takes a long time is not due to the size of the modules, but the round trip time to the server. Each request and response takes one RTT, and the total time it takes to load the application is the RTT multiplied with the number of levels in the dependency graph (assuming we can load as many modules in parallel as we want, which we can't, but lets not complicate it anymore than we have to). So to reduce the startup time of our SPA we need to reduce the number of round trips to the server.
 
-![Diagram of RTT](rtt.svg)
+![Loading modules naively](rtt-normal.png)
+![Loading modules with bundling](rtt-bundle.png)
 
 Bundling solves this by sending all of the transitive dependencies together in one file when the root module is requested. This works out great if you have a single root node, which you do in a SPA, but if your application has multiple root nodes, then bundling can end up adding overhead.
 
 An application has multiple root nodes if it has multiple views with some shared dependencies. A view can be an html page, a route in the SPA, or a pane in a tabbed layout. It's really in the eyes of the user what a view is. As programmers our goal is to load the application and it's current view as quickly as possible, and this can be achived by lazy loading the other views as they are needed. In a complex application the user may not see every view possible (they may be restricted by the permissions of their role for example), and so loading all of the modules in a single bundle would result in overhead for most users. How large this overhead is depends of course on the complexity of the application, and it might not be a problem for a simple application.
 
-So instead of bundling all of the modules needed in the entire application, we need some way to bundle only the modules needed for the current view. But since each view has some unique modules and some shared modules, this becomes difficult. For an application with only two views, there are some that are only used in the first view, some that are only used in the second view, and some that are used in both. This can be represented by a Venn diagram.
+So instead of bundling all of the modules needed in the entire application, we need some way to bundle only the modules needed for the current view. But since each view has some unique modules and some shared modules, this becomes difficult. For an application with only two views, there are some that are only used in the first view (A), some that are only used in the second view (B), and some that are used in both. This can be represented by a Venn diagram.
 
 ![Venn diagrams](venn.svg)
 
@@ -55,7 +56,6 @@ The above file is written with ES2015 modules, which are designed to be statical
 So now when the client requests any module the server can follow the dependency graph and find all of the transitive dependencies of that module, and push them to the client together with the requested module. This way, when the module loader on the client discovers that it needs a dependency, it will find that module in its cache, and we have bypassed the RTT to the server.
 
 ![Loading modules naively](rtt-normal.png)
-![Loading modules with bundling](rtt-bundle.png)
 ![Loading modules with pushing](rtt-push.png)
 
 HTTP/2 is quite well supported in browsers and servers today, and it's easy to test this using the [http2 npm package](https://www.npmjs.com/package/http2).
@@ -91,5 +91,7 @@ The Service Worker specification has only been around for a few years, and it wa
 You can see my [Service Worker source code on GitHub](https://github.com/mariusGundersen/module-pusher/blob/master/public/src/service-worker.js).
 
 ### Conclusion
+
+![The server receives a request for page2, looks at the bloom-filter (in hex) and figures out which dependencies are missing](server-push.png)
 
 With the trend towards many small packages and modules, towards react (or react-like) pure components, the number of modules in multi-view applications will increase. Manually bundling these modules in groups that prevent duplication while at the same time reducing the overhead of loading modules before they are needed, especially in an application that is under continous development by a large team of developers, becomes very difficult. With ECMAScript 2015 it's possible to run static analysis on modules and create a full dependency graph, and this dependency graph can be used at run time to more efficiently transfer the modules from the server to the client. I believe that this is a more scalable solution than bundling modules. It's possible to implement today, but it's not easy, mostly due to missing APIs in the Service Worker specification. I hope these APIs are added in the near future.
