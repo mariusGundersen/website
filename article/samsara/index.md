@@ -1,5 +1,5 @@
 ---
-title: "Maintining Docker conteainers with Samsara"
+title: "Maintining Docker containers with Samsara"
 short: "A docker orchestrator for small private production systems"
 date: "2015-12-27"
 type: "article"
