@@ -10,7 +10,7 @@ body{
 }
 #wrapper{
 	/*min-width: 320px;*/
-	width: 680px;
+	max-width: 900px;
 	margin: 0 auto;
 	padding: 0 10px;
 	background: white;
@@ -111,11 +111,12 @@ section.linkBlock .date{
 	display: block;
 }
 section.articleBlock pre{
-  display: block; 
+  display: block;
   padding: 0.5em;
   color: #333;
   background: #EEE;
-  border-left: 5px solid #333;
+	border-left: 5px solid #333;
+	overflow: auto;
 }
 
 
@@ -206,7 +207,7 @@ footer>div{
 
 .clearfix:after{
 	display: block;
-	width: 0px; 
+	width: 0px;
 	height: 0px;
 	visibility: hidden;
 	content: ".";

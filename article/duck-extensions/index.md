@@ -16,13 +16,16 @@ Let's start of with some async stuff. Since version 5.0 C# has had support for a
 ```csharp
 await "Hello world";
 
-// error CS1061: 'string' does not contain a definition for 'GetAwaiter' and no accessible extension method 'GetAwaiter' accepting a first argument of type 'string' could be found (are you missing a using directive or an assembly reference?)
+// error CS1061: 'string' does not contain a definition for 'GetAwaiter' and no
+// accessible extension method 'GetAwaiter' accepting a first argument of type
+// 'string' could be found (are you missing a using directive or an assembly reference?)
 ```
 
 So let's do what C# says, and make an 'accessible extension method `GetAwaiter` accepting a first argument of type `string`', and then see what happens.
 
 ```csharp
 // Example 1: await strings
+
 public static TaskAwaiter<string> GetAwaiter(this string text)
 => Task.FromResult(text).GetAwaiter();
 
@@ -35,6 +38,7 @@ Cool, but let's take it one step further and make this method generic, so we can
 
 ```csharp
 // Example 2: await anything
+
 public static TaskAwaiter<T> GetAwaiter<T>(this T nonAwaitable)
 => Task.FromResult(nonAwaitable).GetAwaiter();
 
