@@ -5,7 +5,7 @@ date: "2019-06-30"
 type: "article"
 ---
 
-## Type-dictionary trick in C#
+## Type-dictionary trick in C# 
 
 This article explores a trick in C# for looking up values based on types, much like a `Dictionary<Type, T>` only it's almost 10x faster! You probably don't need this trick and even if you need it, it will only work in a few very specific scenarios. But it's a neat trick that might be fun to read about. I don't know if this pattern has a name, and I'm not very good at naming things, so maybe I'll just refer to it as the private static generic inner class trick. If you know of a better name, please let me know.
 
@@ -150,7 +150,7 @@ Job=Core  Runtime=Core
 
 ```
 
-While the Dictionary code takes about 32ms to complete the Inner class version runs in 3.8ms, or more than 8x as fast! It varies a bit, and this is a very simple scenario where the dictionary contains only a single item, so I suspect the Inner method will be even more performant, compared to the Dictionary method, in the real world.
+While the Dictionary code takes about 32ns to complete the Inner class version runs in 3.8ns, or more than 8x as fast! It varies a bit, and this is a very simple scenario where the dictionary contains only a single item, so I suspect the Inner method will be even more performant, compared to the Dictionary method, in the real world.
 
 ### Where does this trick come from?
 
