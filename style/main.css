@@ -113,9 +113,8 @@ section.linkBlock .date{
 section.articleBlock pre{
   display: block;
   padding: 0.5em;
-  color: #333;
-  background: #EEE;
-	border-left: 5px solid #333;
+  color: #c5c8c6;
+  background: #1d1f21;
 	overflow: auto;
 }
 

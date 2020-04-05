@@ -133,7 +133,7 @@ public class Program
 
 This is the result I get on my machine:
 
-```
+```none
 BenchmarkDotNet=v0.11.5, OS=Windows 10.0.18362
 Intel Core i7-3517U CPU 1.90GHz (Ivy Bridge), 1 CPU, 4 logical and 2 physical cores
 .NET Core SDK=2.2.300

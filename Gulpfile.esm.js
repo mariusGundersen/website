@@ -14,12 +14,13 @@ import through from 'through2';
 import wrap from 'gulp-wrap-layout';
 
 const content = () => src('article/*')
+  .pipe(filter(f => f.isDirectory()))
   .pipe(forEach(function (stream, file) {
     const name = file.relative;
     console.log(name);
     const article = buildArticle(name);
-    const images = src('article/' + name + '/@(thumbnail|fullsize)/*', { base: 'article', allowEmpty: true });
-    const img = src('article/' + name + '/img.png', { base: 'article', allowEmpty: true });
+    const images = src('article/' + name + '/@(thumbnail|fullsize)/*', { base: 'article' });
+    const img = src('article/' + name + '/img.png', { base: 'article' });
     return merge(article, images, img);
   }))
   .pipe(dest('output'))
