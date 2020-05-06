@@ -1,7 +1,7 @@
 import concat from 'gulp-concat';
 import { src, dest, series, watch } from 'gulp';
 import filter from 'gulp-filter';
-import forEach from 'gulp-foreach';
+import flatMap from 'gulp-flatmap';
 import frontMatter from 'gulp-front-matter';
 import markdown from 'gulp-markdown';
 import marked from 'marked';
@@ -10,12 +10,24 @@ import minify from 'gulp-minify-css';
 import moment from 'moment';
 import sort from 'gulp-sort';
 import sourcemaps from 'gulp-sourcemaps';
-import through from 'through2';
+import tap from 'gulp-tap';
 import wrap from 'gulp-wrap-layout';
+
+const ejsConfig = {
+  date: (date, format) => moment(date).format(format)
+};
+
+const markdownConfig = {
+  highlight(code) {
+    return require('highlight.js').highlightAuto(code).value;
+  },
+  renderer: createRenderer(),
+  gfm: true
+};
 
 const content = () => src('article/*')
   .pipe(filter(f => f.isDirectory()))
-  .pipe(forEach(function (stream, file) {
+  .pipe(flatMap(function (stream, file) {
     const name = file.relative;
     console.log(name);
     const article = buildArticle(name);
@@ -26,20 +38,14 @@ const content = () => src('article/*')
   .pipe(dest('output'))
   .pipe(filter('**/index.html'))
   .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
-  .pipe(wrap({ src: 'linkBlock.ejs' }, {
-    date: (date, format) => moment(date).format(format)
-  }))
+  .pipe(wrap({ src: 'linkBlock.ejs' }, ejsConfig))
   .pipe(concat('index.html'))
-  .pipe(through.obj(function (file, _, done) {
-    file.frontMatter.type = 'wip';
-    this.push(file);
-    done();
-  }))
+  .pipe(setType('wip'))
   .pipe(wrap({ src: 'wrapper.ejs' }))
   .pipe(dest('output'))
 
 const talks = () => src('talk/*')
-  .pipe(forEach(function (stream, file) {
+  .pipe(flatMap(function (stream, file) {
     const name = file.relative;
     console.log(name);
     const talk = buildTalk(name);
@@ -49,15 +55,9 @@ const talks = () => src('talk/*')
   .pipe(dest('output'))
   .pipe(filter('**/index.html'))
   .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
-  .pipe(wrap({ src: 'talkBlock.ejs' }, {
-    date: (date, format) => moment(date).format(format)
-  }))
+  .pipe(wrap({ src: 'talkBlock.ejs' }, ejsConfig))
   .pipe(concat('index.html'))
-  .pipe(through.obj(function (file, _, done) {
-    file.frontMatter.type = 'talks';
-    this.push(file);
-    done();
-  }))
+  .pipe(setType('talks'))
   .pipe(wrap({ src: 'wrapper.ejs' }))
   .pipe(dest('output/talks'));
 
@@ -75,7 +75,7 @@ const notFound = () => src('404.md')
 const favicon = () => src('favicon.png')
   .pipe(dest('output'));
 
-const buildTalk = (name) => src('talk/' + name + '/index.md', { base: 'talk' })
+const buildTalk = (name) => src(`talk/${name}/index.md`, { base: 'talk' })
   .pipe(setSlug(name))
   .pipe(frontMatter({
     property: 'frontMatter',
@@ -83,28 +83,18 @@ const buildTalk = (name) => src('talk/' + name + '/index.md', { base: 'talk' })
   }))
   .pipe(markdown())
 
-const buildArticle = (name) => src('article/' + name + '/index.md', { base: 'article', allowEmpty: true })
+const buildArticle = (name) => src(`article/${name}/index.md`, { base: 'article', allowEmpty: true })
   .pipe(setSlug(name))
   .pipe(frontMatter({
     property: 'frontMatter',
     remove: true
   }))
-  .pipe(markdown({
-    highlight(code) {
-      return require('highlight.js').highlightAuto(code).value;
-    },
-    renderer: createRenderer(),
-    gfm: true
-  }))
+  .pipe(markdown(markdownConfig))
   .pipe(wrap({ src: 'template.ejs' }))
   .pipe(wrap({ src: 'wrapper.ejs' }))
 
-const setSlug = name => through.obj({ objectMode: true }, function (file, _, done) {
-  file.slug = name;
-  this.push(file);
-  done();
-});
-
+const setSlug = name => tap(f => f.slug = name);
+const setType = type => tap(f => f.frontMatter.type = type);
 
 function createRenderer() {
   const renderer = new marked.Renderer();
