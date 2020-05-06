@@ -10,8 +10,7 @@
     "express": "^4.17.1",
     "express-static": "^1.2.6",
     "gulp-flatmap": "^1.0.2",
-    "gulp-tap": "^2.0.0",
-    "map-stream": "0.0.7"
+    "gulp-tap": "^2.0.0"
   },
   "devDependencies": {
     "front-matter": "^3.1.0",
@@ -22,8 +21,6 @@
     "gulp-markdown": "^5.0.1",
     "gulp-minify-css": "^1.2.1",
     "gulp-sort": "^2.0.0",
-    "gulp-sourcemaps": "^2.6.5",
-    "gulp-util": "^3.0.6",
     "highlight.js": "^10.0.2",
     "marked": "^1.0.0",
     "merge-stream": "^2.0.0"

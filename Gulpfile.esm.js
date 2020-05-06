@@ -1,115 +1,78 @@
 import concat from 'gulp-concat';
-import { src, dest, series, watch } from 'gulp';
+import { src, dest, series, parallel, watch } from 'gulp';
 import filter from 'gulp-filter';
-import map from 'map-stream';
 import flatMap from 'gulp-flatmap';
 import frontMatter from 'gulp-front-matter';
-import markdown from 'gulp-markdown';
-import marked from 'marked';
 import merge from 'merge-stream';
 import minify from 'gulp-minify-css';
 import sort from 'gulp-sort';
-import sourcemaps from 'gulp-sourcemaps';
-import tap from 'gulp-tap';
 import layout from './layout';
 import linkBlock from './layout/linkBlock';
 import articleBlock from './layout/articleBlock';
 import talkBlock from './layout/talkBlock';
 
+import { byDate, setSlug, setType, srcPipe, template, markdown } from './utils.js';
 
-const markdownConfig = {
-  highlight(code) {
-    return require('highlight.js').highlightAuto(code).value;
-  },
-  renderer: createRenderer(),
-  gfm: true
-};
+const articles = () => srcPipe('article/*', {},
+  flatMap(pageWithImages('article')),
+  dest('output'),
+  filter('**/index.html'),
+  sort(byDate),
+  template(linkBlock),
+  concat('index.html'),
+  setType('wip'),
+  template(layout),
+  dest('output')
+);
 
-const content = () => src('article/*')
-  .pipe(filter(f => f.isDirectory()))
-  .pipe(flatMap(function (stream, file) {
-    const name = file.relative;
-    console.log(name);
-    const article = buildArticle(name);
-    const images = src(`article/${name}/@(thumbnail|fullsize)/*`, { base: 'article' });
-    const img = src(`article/${name}/img.png`, { base: 'article' });
-    return merge(article, images, img);
-  }))
-  .pipe(dest('output'))
-  .pipe(filter('**/index.html'))
-  .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
-  .pipe(template(linkBlock))
-  .pipe(concat('index.html'))
-  .pipe(setType('wip'))
-  .pipe(template(layout))
-  .pipe(dest('output'))
+const talks = () => srcPipe('talk/*', {},
+  flatMap(pageWithImages('talk')),
+  dest('output'),
+  filter('**/index.html'),
+  sort(byDate),
+  template(talkBlock),
+  concat('index.html'),
+  setType('talks'),
+  template(layout),
+  dest('output/talks')
+);
 
-const talks = () => src('talk/*')
-  .pipe(flatMap(function (stream, file) {
-    const name = file.relative;
-    console.log(name);
-    const talk = buildTalk(name);
-    const img = src('talk/' + name + '/img.png', { base: 'talk' });
-    return merge(talk, img);
-  }))
-  .pipe(dest('output'))
-  .pipe(filter('**/index.html'))
-  .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
-  .pipe(template(talkBlock))
-  .pipe(concat('index.html'))
-  .pipe(setType('talks'))
-  .pipe(template(layout))
-  .pipe(dest('output/talks'));
+const css = () => srcPipe('style/*', { sourcemaps: true },
+  minify(),
+  dest('output/style', { sourcemaps: true })
+);
 
-const css = () => src('style/*')
-  .pipe(sourcemaps.init())
-  .pipe(minify())
-  .pipe(sourcemaps.write('.'))
-  .pipe(dest('output/style'));
+const notFound = () => srcPipe('404.md', {},
+  markdown(),
+  template(layout),
+  dest('output')
+);
 
-const notFound = () => src('404.md')
-  .pipe(markdown())
-  .pipe(template(layout))
-  .pipe(dest('output'));
+const favicon = () => srcPipe('favicon.png', {},
+  dest('output')
+);
 
-const favicon = () => src('favicon.png')
-  .pipe(dest('output'));
+const pageWithImages = base => (_stream, file, name = file.relative) => merge(
+  markdownPage(base, name),
+  src(`${base}/${name}/@(thumbnail|fullsize)/*`, { base }),
+  src(`${base}/${name}/img.png`, { base })
+);
 
-const buildTalk = (name) => src(`talk/${name}/index.md`, { base: 'talk' })
-  .pipe(setSlug(name))
-  .pipe(frontMatter({
-    property: 'frontMatter',
-    remove: true
-  }))
-  .pipe(markdown())
+const markdownPage = (base, name) => srcPipe(`${base}/${name}/index.md`, { base },
+  setSlug(name),
+  frontMatter(),
+  markdown(),
+  template(articleBlock),
+  template(layout)
+);
 
-const buildArticle = (name) => src(`article/${name}/index.md`, { base: 'article', allowEmpty: true })
-  .pipe(setSlug(name))
-  .pipe(frontMatter({
-    property: 'frontMatter',
-    remove: true
-  }))
-  .pipe(markdown(markdownConfig))
-  .pipe(template(articleBlock))
-  .pipe(template(layout))
+const build = parallel(articles, talks, css, notFound, favicon);
 
-const setSlug = name => tap(f => f.slug = name);
-const setType = type => tap(f => f.frontMatter.type = type);
-const template = layout => tap(file => file.contents = Buffer.from(layout(file.contents.toString('utf-8'), file)))
-
-function createRenderer() {
-  const renderer = new marked.Renderer();
-
-  renderer.image = (href, title, text) => '<a class="imageLink" href="fullsize/' + href + '"><img src="thumbnail/' + href + '" /></a>';
-
-  return renderer;
-}
-
-const build = series(content, talks, css, notFound, favicon);
-
-const watchContent = series(build, function () {
-  watch('article/*', content);
+const buildAndWatch = series(build, () => {
+  watch('article/**', articles);
+  watch('style/*', css)
 });
 
-export { build, watchContent as watch };
+export { build, buildAndWatch as watch };
+
 export default build;
