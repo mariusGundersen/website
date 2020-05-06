@@ -1,21 +1,21 @@
 import concat from 'gulp-concat';
 import { src, dest, series, watch } from 'gulp';
 import filter from 'gulp-filter';
+import map from 'map-stream';
 import flatMap from 'gulp-flatmap';
 import frontMatter from 'gulp-front-matter';
 import markdown from 'gulp-markdown';
 import marked from 'marked';
 import merge from 'merge-stream';
 import minify from 'gulp-minify-css';
-import moment from 'moment';
 import sort from 'gulp-sort';
 import sourcemaps from 'gulp-sourcemaps';
 import tap from 'gulp-tap';
-import wrap from 'gulp-wrap-layout';
+import layout from './layout';
+import linkBlock from './layout/linkBlock';
+import articleBlock from './layout/articleBlock';
+import talkBlock from './layout/talkBlock';
 
-const ejsConfig = {
-  date: (date, format) => moment(date).format(format)
-};
 
 const markdownConfig = {
   highlight(code) {
@@ -31,17 +31,17 @@ const content = () => src('article/*')
     const name = file.relative;
     console.log(name);
     const article = buildArticle(name);
-    const images = src('article/' + name + '/@(thumbnail|fullsize)/*', { base: 'article' });
-    const img = src('article/' + name + '/img.png', { base: 'article' });
+    const images = src(`article/${name}/@(thumbnail|fullsize)/*`, { base: 'article' });
+    const img = src(`article/${name}/img.png`, { base: 'article' });
     return merge(article, images, img);
   }))
   .pipe(dest('output'))
   .pipe(filter('**/index.html'))
   .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
-  .pipe(wrap({ src: 'linkBlock.ejs' }, ejsConfig))
+  .pipe(template(linkBlock))
   .pipe(concat('index.html'))
   .pipe(setType('wip'))
-  .pipe(wrap({ src: 'wrapper.ejs' }))
+  .pipe(template(layout))
   .pipe(dest('output'))
 
 const talks = () => src('talk/*')
@@ -55,10 +55,10 @@ const talks = () => src('talk/*')
   .pipe(dest('output'))
   .pipe(filter('**/index.html'))
   .pipe(sort((a, b) => a.frontMatter.date < b.frontMatter.date ? 1 : -1))
-  .pipe(wrap({ src: 'talkBlock.ejs' }, ejsConfig))
+  .pipe(template(talkBlock))
   .pipe(concat('index.html'))
   .pipe(setType('talks'))
-  .pipe(wrap({ src: 'wrapper.ejs' }))
+  .pipe(template(layout))
   .pipe(dest('output/talks'));
 
 const css = () => src('style/*')
@@ -69,7 +69,7 @@ const css = () => src('style/*')
 
 const notFound = () => src('404.md')
   .pipe(markdown())
-  .pipe(wrap({ src: 'wrapper.ejs' }))
+  .pipe(template(layout))
   .pipe(dest('output'));
 
 const favicon = () => src('favicon.png')
@@ -90,11 +90,12 @@ const buildArticle = (name) => src(`article/${name}/index.md`, { base: 'article'
     remove: true
   }))
   .pipe(markdown(markdownConfig))
-  .pipe(wrap({ src: 'template.ejs' }))
-  .pipe(wrap({ src: 'wrapper.ejs' }))
+  .pipe(template(articleBlock))
+  .pipe(template(layout))
 
 const setSlug = name => tap(f => f.slug = name);
 const setType = type => tap(f => f.frontMatter.type = type);
+const template = layout => tap(file => file.contents = Buffer.from(layout(file.contents.toString('utf-8'), file)))
 
 function createRenderer() {
   const renderer = new marked.Renderer();
