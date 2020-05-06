@@ -13,9 +13,11 @@ import talkBlock from './layout/talkBlock';
 
 import { byDate, setSlug, setType, srcPipe, template, markdown } from './utils.js';
 
-const articles = () => srcPipe('article/*', {},
-  flatMap(pageWithImages('article')),
-  dest('output'),
+const cwd = './src';
+
+export const articles = () => srcPipe('article/*', { cwd },
+  flatMap(pageWithImages('src/article')),
+  dest('./output/'),
   filter('**/index.html'),
   sort(byDate),
   template(linkBlock),
@@ -25,8 +27,8 @@ const articles = () => srcPipe('article/*', {},
   dest('output')
 );
 
-const talks = () => srcPipe('talk/*', {},
-  flatMap(pageWithImages('talk')),
+export const talks = () => srcPipe('talk/*', { cwd },
+  flatMap(pageWithImages('src/talk')),
   dest('output'),
   filter('**/index.html'),
   sort(byDate),
@@ -34,21 +36,21 @@ const talks = () => srcPipe('talk/*', {},
   concat('index.html'),
   setType('talks'),
   template(layout),
-  dest('output/talks')
+  dest('output/talks/')
 );
 
-const css = () => srcPipe('style/*', { sourcemaps: true },
+export const css = () => srcPipe('style/*', { sourcemaps: true, cwd },
   minify(),
   dest('output/style', { sourcemaps: true })
 );
 
-const notFound = () => srcPipe('404.md', {},
+export const notFound = () => srcPipe('404.md', { cwd },
   markdown(),
   template(layout),
   dest('output')
 );
 
-const favicon = () => srcPipe('favicon.png', {},
+export const favicon = () => srcPipe('favicon.png', { cwd },
   dest('output')
 );
 
@@ -66,13 +68,11 @@ const markdownPage = (base, name) => srcPipe(`${base}/${name}/index.md`, { base 
   template(layout)
 );
 
-const build = parallel(articles, talks, css, notFound, favicon);
+export const build = parallel(articles, talks, css, notFound, favicon);
 
-const buildAndWatch = series(build, () => {
+export const dev = series(build, () => {
   watch('article/**', articles);
   watch('style/*', css)
 });
-
-export { build, buildAndWatch as watch };
 
 export default build;

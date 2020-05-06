@@ -27,7 +27,7 @@
   },
   "scripts": {
     "gulp": "gulp",
-    "watch": "gulp watch"
+    "watch": "gulp dev"
   },
   "author": "",
   "license": "MIT"
