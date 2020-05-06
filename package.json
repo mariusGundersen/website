@@ -24,10 +24,9 @@
     "gulp-sort": "^2.0.0",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-util": "^3.0.6",
-    "highlight.js": "^9.18.1",
-    "marked": "^0.8.2",
-    "merge-stream": "^2.0.0",
-    "moment": "^2.24.0"
+    "highlight.js": "^10.0.2",
+    "marked": "^1.0.0",
+    "merge-stream": "^2.0.0"
   },
   "scripts": {
     "gulp": "gulp",

@@ -1,4 +1,4 @@
-import { html, date } from "./utils";
+import { html, formatDate } from "./utils";
 
 export default (contents, file) => html`
     <section class="linkBlock clearfix">
@@ -10,7 +10,7 @@ export default (contents, file) => html`
           <a href="${file.frontMatter.slides}" target="_blank" class="link-button">Slides</a>
           ${file.frontMatter.video ? html`<a href="${file.frontMatter.video}" target="_blank" class="link-button">Video</a>` : ''}
         </div>
-        <span class="date">${date(file.frontMatter.date, "MMMM Do YYYY")}</span>
+        <span class="date">${formatDate(file.frontMatter.date)}</span>
       </div>
     </section>
 `;

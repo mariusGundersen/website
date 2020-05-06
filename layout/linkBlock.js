@@ -1,4 +1,4 @@
-import { html, date } from "./utils";
+import { html, formatDate } from "./utils";
 
 export default (contents, file) => html`
     <section class="linkBlock clearfix">
@@ -6,7 +6,7 @@ export default (contents, file) => html`
       <div>
         <h2><a href="${file.frontMatter.url ? file.frontMatter.url : '/' + file.slug}">${file.frontMatter.title}</a></h2>
         ${ file.frontMatter.short}
-        <span class="date">${ date(file.frontMatter.date, "MMMM Do YYYY")}</span>
+        <span class="date">${ formatDate(file.frontMatter.date)}</span>
       </div>
     </section>
 
