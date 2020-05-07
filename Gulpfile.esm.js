@@ -11,7 +11,9 @@ import linkBlock from './layout/linkBlock';
 import articleBlock from './layout/articleBlock';
 import talkBlock from './layout/talkBlock';
 
-import { byDate, setSlug, setType, srcPipe, template, markdown } from './utils.js';
+import { byDate, setSlug, setType, srcPipe, template, markdown, mapAsync, mapContentsAsync, setExtension } from './utils.js';
+import renderWithReact from './mdx';
+import tap from 'gulp-tap';
 
 const cwd = './src';
 
@@ -55,24 +57,32 @@ export const favicon = () => srcPipe('favicon.png', { cwd },
 );
 
 const pageWithImages = base => (_stream, file, name = file.relative) => merge(
-  markdownPage(base, name),
+  merge(
+    markdownPage(base, name),
+    mdxPage(base, name),
+  ).pipe(template(articleBlock)),
   src(`${base}/${name}/@(thumbnail|fullsize)/*`, { base }),
   src(`${base}/${name}/img.png`, { base })
 );
 
-const markdownPage = (base, name) => srcPipe(`${base}/${name}/index.md`, { base },
+const markdownPage = (base, name) => srcPipe(`${base}/${name}/index.md`, { base, allowEmpty: true },
   setSlug(name),
   frontMatter(),
-  markdown(),
-  template(articleBlock),
-  template(layout)
+  markdown()
+);
+
+const mdxPage = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
+  setSlug(name),
+  frontMatter(),
+  mapContentsAsync((contents, file) => renderWithReact(contents, file.path)),
+  setExtension('html')
 );
 
 export const build = parallel(articles, talks, css, notFound, favicon);
 
 export const dev = series(build, () => {
-  watch('article/**', articles);
-  watch('style/*', css)
+  watch('src/article/**', articles);
+  watch('src/style/*', css)
 });
 
 export default build;

@@ -1,6 +1,8 @@
 import { html } from "./utils";
+import layout from './index.js';
 
-export default (contents, file) => html`
+export default (contents, file) => layout(
+  html`
       <section class="articleBlock">
       ${contents}
       </section>
@@ -14,4 +16,6 @@ export default (contents, file) => html`
           and send me a pull-request.
         </em>
       </div>
-`;
+  `,
+  file
+);
