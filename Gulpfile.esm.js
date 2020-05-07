@@ -6,13 +6,15 @@ import frontMatter from 'gulp-front-matter';
 import merge from 'merge-stream';
 import minify from 'gulp-minify-css';
 import sort from 'gulp-sort';
+import rehypeHighlight from 'rehype-highlight';
+
 import layout from './layout';
 import linkBlock from './layout/linkBlock';
 import articleBlock from './layout/articleBlock';
 import talkBlock from './layout/talkBlock';
 
 import { byDate, setSlug, setType, srcPipe, template, markdown, mapAsync, mapContentsAsync, setExtension } from './utils.js';
-import renderWithReact from './mdx';
+import mdx from './mdx';
 import tap from 'gulp-tap';
 
 const cwd = './src';
@@ -74,7 +76,11 @@ const markdownPage = (base, name) => srcPipe(`${base}/${name}/index.md`, { base,
 const mdxPage = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
   setSlug(name),
   frontMatter(),
-  mapContentsAsync((contents, file) => renderWithReact(contents, file.path)),
+  mapContentsAsync(mdx({
+    mdxOptions: {
+      rehypePlugins: [rehypeHighlight]
+    }
+  })),
   setExtension('html')
 );
 
