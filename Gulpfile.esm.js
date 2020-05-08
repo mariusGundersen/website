@@ -16,6 +16,7 @@ import talkBlock from './layout/talkBlock';
 import { byDate, setSlug, setType, srcPipe, template, markdown, mapAsync, mapContentsAsync, setExtension } from './utils.js';
 import mdx from './mdx';
 import tap from 'gulp-tap';
+import rollupJS from './rollup';
 
 const cwd = './src';
 
@@ -59,10 +60,9 @@ export const favicon = () => srcPipe('favicon.png', { cwd },
 );
 
 const pageWithImages = base => (_stream, file, name = file.relative) => merge(
-  merge(
-    markdownPage(base, name),
-    mdxPage(base, name),
-  ).pipe(template(articleBlock)),
+  markdownPage(base, name),
+  mdxPage(base, name),
+  mdxApp(base, name),
   src(`${base}/${name}/@(thumbnail|fullsize)/*`, { base }),
   src(`${base}/${name}/img.png`, { base })
 );
@@ -70,7 +70,8 @@ const pageWithImages = base => (_stream, file, name = file.relative) => merge(
 const markdownPage = (base, name) => srcPipe(`${base}/${name}/index.md`, { base, allowEmpty: true },
   setSlug(name),
   frontMatter(),
-  markdown()
+  markdown(),
+  template(articleBlock)
 );
 
 const mdxPage = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
@@ -81,8 +82,15 @@ const mdxPage = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, all
       rehypePlugins: [rehypeHighlight]
     }
   })),
-  setExtension('html')
+  setExtension('html'),
+  template(articleBlock)
 );
+
+const mdxApp = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
+  flatMap(rollupJS({}, `${base}/${name}/app.js`)),
+  tap(f => f.base = base),
+  tap(f => console.log('tap', f.path))
+)
 
 export const build = parallel(articles, talks, css, notFound, favicon);
 
