@@ -7,6 +7,7 @@ import merge from 'merge-stream';
 import minify from 'gulp-minify-css';
 import sort from 'gulp-sort';
 import rehypeHighlight from 'rehype-highlight';
+import uglify from 'gulp-uglify';
 
 import layout from './layout';
 import linkBlock from './layout/linkBlock';
@@ -87,16 +88,23 @@ const mdxPage = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, all
 );
 
 const mdxApp = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
-  flatMap(rollupJS({}, `${base}/${name}/app.js`)),
+  flatMap(rollupJS({
+    rollupOptions: {
+
+    },
+    mdxOptions: {
+      rehypePlugins: [rehypeHighlight]
+    }
+  }, `${base}/${name}/app.js`)),
   tap(f => f.base = base),
-  tap(f => console.log('tap', f.path))
+  uglify()
 )
 
 export const build = parallel(articles, talks, css, notFound, favicon);
 
-export const dev = series(build, () => {
-  watch('src/article/**', articles);
-  watch('src/style/*', css)
-});
+export const dev = () => {
+  watch('src/article/**', { ignoreInitial: false }, articles);
+  watch('src/style/*', { ignoreInitial: false }, css)
+};
 
 export default build;

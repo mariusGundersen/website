@@ -7,8 +7,3 @@ video: null
 site: "http://lanyrd.com/2012/blackberry-devcon-europe/"
 type: "talk"
 ---
-
-
-<div style={{ padding: '20px', backgroundColor: 'tomato' }}>
-  <h3>This is JSX</h3>
-</div>
