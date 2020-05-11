@@ -1,26 +1,22 @@
-import rollup from '@rollup/stream';
-import source from 'vinyl-source-stream';
-import buffer from 'vinyl-buffer';
-import sourcemaps from 'gulp-sourcemaps';
+import { rollup } from 'rollup';
+import { relative } from 'path';
 import babel from '@rollup/plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
 import cjs from '@rollup/plugin-commonjs';
 import mdx from 'rollup-plugin-mdx';
 import replace from '@rollup/plugin-replace';
 import frontMatter from 'front-matter';
+import untab from 'untab';
 
 const rootFile = (name) => ({
   name: 'source',
   resolveId: id => id !== name ? null : name,
-  load: id => id !== name ? null : `
+  load: id => id !== name ? null : untab`
     import React from 'react';
     import ReactDOM from 'react-dom';
     import MDXComponent from './index.mdx';
-    console.log('hello');
     const elm = document.querySelector('section.articleBlock');
-    console.log(elm);
     ReactDOM.render(React.createElement(MDXComponent), elm);
-    console.log('rendered');
   `
 });
 
@@ -30,27 +26,26 @@ const deFrontMatter = () => ({
 
     const content = frontMatter(code);
 
-    return content.body;
+    return {
+      code: content.body,
+      map: null
+    };
   }
 })
 
 let cache;
 
-const rollupJS = (options = {}, outputName) => {
-  return (stream, file) => {
-    return rollup({
-      ...options.rollupOptions,
-      input: outputName,
-      output: {
-        format: 'cjs'
-      },
+const rollupJS = ({ mdxOptions = {} } = {}) => {
+  return async file => {
+    const bundle = await rollup({
+      input: file.path,
       cache,
       plugins: [
-        rootFile(outputName),
+        rootFile(file.path),
         resolve(),
         deFrontMatter(),
         mdx({
-          ...options.mdxOptions
+          ...mdxOptions
         }),
         replace({
           'process.env.NODE_ENV': "'production'"
@@ -65,16 +60,25 @@ const rollupJS = (options = {}, outputName) => {
           }
         }),
         babel({
-          exclude: /node_modules/
+          exclude: /node_modules/,
+          sourceMaps: true
         })
       ]
-    })
-      .on('bundle', result => cache = result)
-      // point to the entry file.
-      .pipe(source(outputName))
-      // we need to buffer the output, since many gulp plugins don't support streams.
-      .pipe(buffer())
-    //.pipe(sourcemaps.init({ loadMaps: true }));
+    });
+
+    const { output } = await bundle.generate({
+      format: 'iife',
+      sourcemap: true,
+      sourcemapFile: 'index.map.js',
+      sourcemapPathTransform: p => relative(file.dirname, p)
+    });
+
+    const result = output[0];
+
+    file.contents = Buffer.from(result.code);
+    file.sourceMap = result.map;
+
+    return file;
   };
 };
 

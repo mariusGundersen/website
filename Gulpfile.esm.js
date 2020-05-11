@@ -11,7 +11,8 @@ import uglify from 'gulp-uglify';
 
 import layout from './layout';
 import linkBlock from './layout/linkBlock';
-import articleBlock from './layout/articleBlock';
+import mdArticle from './layout/mdArticle';
+import mdxArticle from './layout/mdxArticle';
 import talkBlock from './layout/talkBlock';
 
 import { byDate, setSlug, setType, srcPipe, template, markdown, mapAsync, mapContentsAsync, setExtension } from './utils.js';
@@ -21,9 +22,13 @@ import rollupJS from './rollup';
 
 const cwd = './src';
 
+const mdxOptions = {
+  rehypePlugins: [rehypeHighlight]
+};
+
 export const articles = () => srcPipe('article/*', { cwd },
   flatMap(pageWithImages('src/article')),
-  dest('./output/'),
+  dest('./output/', { sourcemaps: '.' }),
   filter('**/index.html'),
   sort(byDate),
   template(linkBlock),
@@ -72,31 +77,24 @@ const markdownPage = (base, name) => srcPipe(`${base}/${name}/index.md`, { base,
   setSlug(name),
   frontMatter(),
   markdown(),
-  template(articleBlock)
+  template(mdArticle)
 );
 
 const mdxPage = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
   setSlug(name),
   frontMatter(),
   mapContentsAsync(mdx({
-    mdxOptions: {
-      rehypePlugins: [rehypeHighlight]
-    }
+    mdxOptions
   })),
   setExtension('html'),
-  template(articleBlock)
+  template(mdxArticle)
 );
 
 const mdxApp = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
-  flatMap(rollupJS({
-    rollupOptions: {
-
-    },
-    mdxOptions: {
-      rehypePlugins: [rehypeHighlight]
-    }
-  }, `${base}/${name}/app.js`)),
-  tap(f => f.base = base),
+  setExtension('js'),
+  mapAsync(rollupJS({
+    mdxOptions
+  })),
   uglify()
 )
 

@@ -5,7 +5,7 @@ export default props => {
 
   useEffect(() => {
     const intval = setInterval(() => {
-      setColor('wheat');
+      setColor(c => c == 'wheat' ? 'red' : 'wheat');
     }, 1000);
 
     return () => clearInterval(intval);
