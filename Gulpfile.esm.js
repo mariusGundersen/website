@@ -15,10 +15,10 @@ import mdArticle from './layout/mdArticle';
 import mdxArticle from './layout/mdxArticle';
 import talkBlock from './layout/talkBlock';
 
-import { byDate, setSlug, setType, srcPipe, template, markdown, mapAsync, mapContentsAsync, setExtension } from './utils.js';
+import { byDate, setSlug, setType, srcPipe, template, markdown, setExtension } from './utils.js';
 import mdx from './mdx';
 import tap from 'gulp-tap';
-import rollupJS from './rollup';
+import rollupMdx from './rollup';
 
 const cwd = './src';
 
@@ -28,7 +28,7 @@ const mdxOptions = {
 
 export const articles = () => srcPipe('article/*', { cwd },
   flatMap(pageWithImages('src/article')),
-  dest('./output/', { sourcemaps: '.' }),
+  dest('output', { sourcemaps: '.' }),
   filter('**/index.html'),
   sort(byDate),
   template(linkBlock),
@@ -83,18 +83,17 @@ const markdownPage = (base, name) => srcPipe(`${base}/${name}/index.md`, { base,
 const mdxPage = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
   setSlug(name),
   frontMatter(),
-  mapContentsAsync(mdx({
+  mdx({
     mdxOptions
-  })),
-  setExtension('html'),
+  }),
   template(mdxArticle)
 );
 
 const mdxApp = (base, name) => srcPipe(`${base}/${name}/index.mdx`, { base, allowEmpty: true },
-  setExtension('js'),
-  mapAsync(rollupJS({
+  frontMatter(),
+  rollupMdx({
     mdxOptions
-  })),
+  }),
   uglify()
 )
 

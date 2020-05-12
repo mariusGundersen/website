@@ -86,8 +86,6 @@ p{
 }
 
 section.articleBlock a{
-	text-decoration: none;
-	background: #eee;
 	color: #333;
 }
 section.articleBlock a:hover{
@@ -95,10 +93,23 @@ section.articleBlock a:hover{
 	background: #333;
 	color: white;
 }
+
+section.articleBlock p>code{
+	padding: 0 3pt;
+	background: #eee;
+	color: #333;
+	border-radius: 3pt;
+}
+
+section.articleBlock p>code:hover{
+	text-decoration: none;
+	background: #ccc;
+	color: #633;
+}
 section.articleBlock a img,
 section.articleBlock object,
 section.articleBlock iframe{
-	vertical-align: middle;
+	text-decoration: none;
 	border: 5px solid #333;
 	display: block;
 	margin: 0 auto;
