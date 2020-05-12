@@ -23,7 +23,11 @@ const markdownConfig = {
 
 export const mapAsync = func => new Transform({
   transform(chunk, _encoding, cb) {
-    func(chunk).then(r => cb(null, r), e => cb(e));
+    Promise.resolve(chunk)
+      .then(func)
+      .then(
+        r => cb(null, r),
+        e => cb(e));
   },
   objectMode: true
 });

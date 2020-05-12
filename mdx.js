@@ -3,7 +3,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import mdx from '@mdx-js/mdx';
 import { MDXProvider } from '@mdx-js/react';
-import * as module from 'module';
+import { createRequire } from 'module';
 import * as fs from 'fs';
 import { mapContentsAsync } from './utils';
 
@@ -19,42 +19,45 @@ const defaultBabelOptions = {
   ]
 };
 
-export default ({ mdxOptions = {}, babelOptions = defaultBabelOptions, components = {} } = {}) => mapContentsAsync(async (mdxCode, file) => {
-  const jsx = await mdx(mdxCode, mdxOptions);
-  const { code } = await babel.transformAsync("import { mdx } from '@mdx-js/react';\n" + jsx, babelOptions);
+export default (options = {}) => mapContentsAsync(async (mdxCode, file) => {
+  file.extname = '.html';
+  return await mdxToHtml(mdxCode, file.path, options);
+});
 
-  const require = createRequire(file.path, mdxOptions, babelOptions);
-  const rootElement = createRootElement(code, require);
+async function mdxToHtml(mdxCode, path, { mdxOptions = {}, babelOptions = defaultBabelOptions, components = {} }) {
+  const jsxCode = await mdx(mdxCode, mdxOptions);
+  const { code } = await babel.transformAsync("import { mdx } from '@mdx-js/react';\n" + jsxCode, babelOptions);
+
+  const require = createTranspilingRequire(path, mdxOptions, babelOptions);
+  const layoutComponent = getDefaultExportFromModule(code, require);
 
   const elementWithProvider = React.createElement(
     MDXProvider,
     { components },
-    React.createElement(rootElement)
-  );
+    React.createElement(layoutComponent));
 
-  file.extname = '.html';
   return renderToStaticMarkup(elementWithProvider);
-});
+}
 
-function createRootElement(code, require) {
+function getDefaultExportFromModule(code, require) {
   const exports = {};
   new Function('require', 'exports', code)(require, exports);
   return exports['default'];
 }
 
-function createRequire(path, mdxOptions, babelOptions) {
-  const require = module.createRequire(path);
+function createTranspilingRequire(path, mdxOptions, babelOptions) {
+  const require = createRequire(path);
 
   require.extensions['.mdx'] = (module, filename) => {
     const mdxCode = fs.readFileSync(filename, 'utf8');
-    const jsx = mdx.sync(mdxCode, { mdxOptions });
-    const { code } = babel.transformSync("import { mdx } from '@mdx-js/react';\n" + jsx, babelOptions);
+    const jsxCode = mdx.sync(mdxCode, { mdxOptions });
+    const { code } = babel.transformSync("import { mdx } from '@mdx-js/react';\n" + jsxCode, babelOptions);
     module._compile(code, filename);
   };
 
   require.extensions['.jsx'] = (module, filename) => {
-    const jsx = fs.readFileSync(filename, 'utf8');
-    const { code } = babel.transformSync(jsx, babelOptions);
+    const jsxCode = fs.readFileSync(filename, 'utf8');
+    const { code } = babel.transformSync(jsxCode, babelOptions);
     module._compile(code, filename);
   };
 
