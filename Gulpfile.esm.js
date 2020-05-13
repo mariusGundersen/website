@@ -6,6 +6,7 @@ import frontMatter from 'gulp-front-matter';
 import merge from 'merge-stream';
 import minify from 'gulp-minify-css';
 import sort from 'gulp-sort';
+import rehypeWaves from 'rehype-waves';
 import rehypeHighlight from 'rehype-highlight';
 import uglify from 'gulp-uglify';
 
@@ -23,7 +24,10 @@ import rollupMdx from './rollup';
 const cwd = './src';
 
 const mdxOptions = {
-  rehypePlugins: [rehypeHighlight]
+  rehypePlugins: [
+    rehypeWaves,
+    rehypeHighlight
+  ]
 };
 
 export const articles = () => srcPipe('article/*', { cwd },

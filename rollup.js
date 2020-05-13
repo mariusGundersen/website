@@ -1,12 +1,17 @@
 import { rollup } from 'rollup';
 import { relative } from 'path';
-import babel from '@rollup/plugin-babel';
-import resolve from '@rollup/plugin-node-resolve';
-import cjs from '@rollup/plugin-commonjs';
-import mdx from 'rollup-plugin-mdx';
-import replace from '@rollup/plugin-replace';
+import babelPlugin from '@rollup/plugin-babel';
+import resolvePlugin from '@rollup/plugin-node-resolve';
+import cjsPlugin from '@rollup/plugin-commonjs';
+import mdxPlugin from 'rollup-plugin-mdx';
+import replacePlugin from '@rollup/plugin-replace';
+import jsonPlugin from '@rollup/plugin-json';
+import nodePlugin from 'rollup-plugin-node-builtins';
 import untab from 'untab';
 import { mapContentsAsync } from './utils';
+
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 
 const defaultBabelOptions = {
   presets: [
@@ -54,28 +59,27 @@ const rollupMdx = ({ mdxOptions = {}, babelOptions = defaultBabelOptions } = {})
     plugins: [
       mdxModule,
       jsModule,
-      resolve(),
-      mdx({
+      resolvePlugin(),
+      mdxPlugin({
         ...mdxOptions,
         babelOptions
       }),
-      replace({
+      replacePlugin({
         'process.env.NODE_ENV': "'production'"
       }),
-      cjs({
+      cjsPlugin({
         namedExports: {
-          'react': [
-            'forwardRef',
-            'useState',
-            'useEffect'
-          ]
+          'react': Object.keys(React).filter(x => x != 'default'),
+          'react-dom': Object.keys(ReactDOM).filter(x => x != 'default')
         }
       }),
-      babel({
+      babelPlugin({
         ...babelOptions,
         exclude: /node_modules/,
         sourceMaps: true
-      })
+      }),
+      jsonPlugin(),
+      nodePlugin()
     ]
   });
 
