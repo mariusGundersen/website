@@ -31,8 +31,10 @@ const bootstrap = (mdxFile = './index.mdx', element = 'section.articleBlock') =>
   import React from 'react';
   import ReactDOM from 'react-dom';
   import MDXComponent from '${mdxFile}';
-  const elm = document.querySelector('${element}');
-  ReactDOM.hydrate(React.createElement(MDXComponent), elm);
+  document.addEventListener('DOMContentLoaded', e => {
+    const elm = document.querySelector('${element}');
+    ReactDOM.hydrate(React.createElement(MDXComponent), elm);
+  });
 `;
 
 const module = (name, content) => ({

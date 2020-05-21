@@ -8,6 +8,7 @@ import minify from 'gulp-minify-css';
 import sort from 'gulp-sort';
 import rehypeWaves from 'rehype-waves';
 import rehypeHighlight from 'rehype-highlight';
+import rehypePrism from '@mapbox/rehype-prism';
 import uglify from 'gulp-uglify';
 
 import layout from './layout';
@@ -26,7 +27,7 @@ const cwd = './src';
 const mdxOptions = {
   rehypePlugins: [
     rehypeWaves,
-    rehypeHighlight
+    rehypePrism
   ]
 };
 
