@@ -1,6 +1,6 @@
 import * as babel from '@babel/core';
 import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
+import { renderToString } from 'react-dom/server';
 import mdx from '@mdx-js/mdx';
 import { MDXProvider } from '@mdx-js/react';
 import { createRequire } from 'module';
@@ -38,7 +38,7 @@ async function mdxToHtml(mdxCode, path, { mdxOptions = {}, babelOptions = defaul
     { components },
     React.createElement(layoutComponent));
 
-  return renderToStaticMarkup(elementWithProvider);
+  return renderToString(elementWithProvider);
 }
 
 function getDefaultExportFromModule(code, require) {
@@ -56,7 +56,7 @@ function createTranspilingRequire(path, mdxOptions, babelOptions) {
 
   require.extensions['.mdx'] = (module, filename) => {
     const mdxCode = fs.readFileSync(filename, 'utf8');
-    const jsxCode = mdx.sync(mdxCode, { mdxOptions });
+    const jsxCode = mdx.sync(mdxCode, mdxOptions);
     const { code } = babel.transformSync("import { mdx } from '@mdx-js/react';\n" + jsxCode, babelOptions);
     module._compile(code, filename);
   };

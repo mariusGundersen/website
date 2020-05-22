@@ -45,11 +45,11 @@ export default {
         },
 
         "important bold": {
-          "font-weight": "bold"
+          fontWeight: "bold"
         },
 
         "italic": {
-          "font- style": "italic"
+          fontStyle: "italic"
         },
 
         "constant": {
@@ -116,7 +116,7 @@ export default {
       },
       unfocused: {
         // only the opacity of unfocused code can be changed
-        opacity: 0.1
+        opacity: 0.4
       }
     }
   }
