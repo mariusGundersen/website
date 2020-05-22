@@ -1,16 +1,24 @@
+body {
+  /* theme-ui adds these, so I need to override them... */
+	--theme-ui-colors-background: white;
+	--theme-ui-colors-text: #333;
+}
+
 .waves-wave {
-  width: 960px;
+  width: calc(100vw - 20px); /* subtract estimated scrollbar width */
   margin-top: 40px;
-  margin-left: calc(50% - 480px);
+  margin-left: calc(50% - 50vw);
   margin-bottom: 40px;
   position: relative;
   display: flex;
+  background: white;
 }
 
 .waves-scroller-container {
   flex: 1;
   padding-left: 10px;
   padding-top: 0;
+  max-width: 900px;
 }
 
 .waves-scroller-step {
@@ -45,7 +53,7 @@
   border: 1px solid;
 }
 
-@media screen and (max-width: 960px) {
+@media screen and (max-width: 1200px) {
   .waves-wave {
     width: 100%;
     margin-top: 40px;
@@ -61,7 +69,7 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    height: 50vh;
+    height: 40vh;
   }
 
   .waves-sticker {
@@ -87,6 +95,6 @@
   }
   
   .waves-scroller-progress {
-    left: -12px;
+    left: -8px;
   }
 }

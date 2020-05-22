@@ -85,6 +85,8 @@ const rollupMdx = ({ mdxOptions = {}, babelOptions = defaultBabelOptions } = {})
     ]
   });
 
+  cache = bundle.cache;
+
   const { output } = await bundle.generate({
     format: 'iife',
     sourcemap: true,

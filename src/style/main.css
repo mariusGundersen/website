@@ -6,11 +6,11 @@ body{
 	font-family: Georgia,"Times New Roman",serif;
 	font-size: 1.2em;
 	color: #333;
-	 -webkit-text-size-adjust:none;
+	-webkit-text-size-adjust:none;
 }
 #wrapper{
 	/*min-width: 320px;*/
-	max-width: 960px;
+	max-width: 900px;
 	margin: 0 auto;
 	padding: 0 10px;
 	background: white;
