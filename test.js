@@ -8,20 +8,27 @@ const defaultBabelOptions = {
       modules: 'cjs'
     }],
     ['@babel/preset-react', {
-
+      useBuiltIns: true
     }]
   ]
 };
 
-const result = mdx.sync(`
-# hello
-`, { skipExport: true });
+const input = `
+# Test
 
-console.log(result);
+<h2 style={{color: 'red'}}>
+  Test
+</h2>
+`;
 
 
-console.log('------------------')
-const output = babel.transformSync(result, defaultBabelOptions);
+const result = mdx.sync(input, { skipExport: false });
+
+//console.log(result);
+
+
+//console.log('------------------')
+const output = babel.transformSync("import { mdx } from '@mdx-js/react';\n" + result, defaultBabelOptions);
 
 console.log(output.code);
 
