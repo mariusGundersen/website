@@ -1,0 +1,92 @@
+
+  <html>
+
+  <head>
+    <title>Marius Gundersen</title>
+    <link rel="icon" type="image/png" href="/favicon.png"></link>
+    <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
+    <link rel="stylesheet" href="/style/main.css?v=1591305315245"></link>
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591305315245"></link>
+  </head>
+
+  <body>
+    <div id="wrapper">
+
+      <header>
+        <h1><a href="/">Marius Gundersen</a></h1>
+      </header>
+      <nav class="clearfix article">
+        <a href="/">
+          <span>Work in progress</span>
+        </a>
+        <a href="/talks">
+          <span>Talks</span>
+
+        </a>
+      </nav>
+
+      
+      <section class="articleBlock">
+      <h2 id="ekkiog-turing-complete-nand-simulator">Ekkiog: Turing Complete NAND-Simulator</h2>
+<p>Today is the end of my summer holiday, and so I&#39;ve decided to publish the status of my 2016 summer hobby project. This year I&#39;ve been working on a webapp called Ekkiog, which is a NAND gate simulator for smartphones, using WebGL to concurrently simulate 65536 gates at 60 fps. If you are on a smartphone, click the link below to test it out. You can find the source code at <a href="https://github.com/mariusGundersen/ekkiog">GitHub</a>.</p>
+<h3 id="click-here-for-demo"><a href="https://ekkiog.mariusgundersen.net">Click here for demo</a></h3>
+<p><a class="imageLink" href="fullsize/screenshot_landscape.png"><img src="thumbnail/screenshot_landscape.png" /></a></p>
+<p>Ekkiog is based on three ideas I&#39;ve had for some time, and at this state it contains two of them. I&#39;ll get back to the third one at the end of the article.</p>
+<p>The first idea is to produce for entertainment while on the go. For a long time I&#39;ve wanted a way to program while on the move, away from a propper PC, just for fun. Most games are destructive, but I more enjoy constructing things, so for entertainment on a long flight, train journey or on the bus I wanted a game where I could produce something. Ekkiog is Turing complete, so it can be used to make anything, just like a programming language. But it couldn&#39;t just be a text based programming language, since they are not very well suited for touch screens. Ekkiog is a visual language, where you build the program from lines and boxes connected together in a 2D space. The continuing goal is for it to be intuitive and user friendly to use on a touch screen device.</p>
+<p>The second idea is to make something big from something small, by creating your own abstraction layers. I heard about an MIT course a few years ago where students would build their way from a transistor to a GameBoy. The idea was that you would start with something really primitive (a transistor) and then build something a bit more complex from that (a binary gate), use those to build something even more complex (an integrated circuit) and keep going (micro controller, operating system, video game) building upon what you had already made. I wanted to do the same thing, letting the player go from something very basic and learning by combining what they had made themselves.</p>
+<p>The third idea I got from the <a href="http://js1k.com">JS1k competition</a>, where Alex Patton made the <a href="http://js1k.com/2013-spring/demo/1508">NOT Logic</a> demo, inspired by Minecraft&#39;s Redstone. This was the perfect fit for the two other ideas, since it was visual and used very primitive components to build something more complex. I initially copied the logic, making it a bit more user friendly and visually nicer, but quickly ran into performance issues. Simulating several NOT gates in software isn&#39;t fast!</p>
+<h3 id="ekkiog">Ekkiog</h3>
+<p>So what I&#39;ve made over the past few weeks is a game/simulator where you can place <a href="https://en.wikipedia.org/wiki/NAND_gate">NAND gates</a> and wire them together. It will only work on touch devices, and since it uses <a href="https://en.wikipedia.org/wiki/NAND_logic">NAND logic</a>, you can build any other binary gate, and from there build more complex gates, like <a href="https://en.wikipedia.org/wiki/Flip-flop_%28electronics%29">Flip-flops</a> or <a href="https://en.wikipedia.org/wiki/Adder_%28electronics%29">Adders</a>. It&#39;s currently not terribly user friendly or intuitive, but it has reached a point where it is at least usable. Pick one of the three primitives (wire, gate or underpass) from the radial menu in the bottom right corner. Tap the screen to place them, and long press a gate to remove it. Pan and zoom like you would any other touch based app. The game should work on modern smartphones, but I&#39;ve only really tested it on Firefox and Chrome for Android, so no guarantees.</p>
+<h3 id="webgl">WebGL</h3>
+<p>Modern browsers have direct access to the GPU, and the GPU on modern devices is really incredible. WebGL lets you control the GPU using some very low level APIs, which means you can build some really performant code. The part of the GPU that I primarily used for Ekkiog is the fragment shader. This, very simplified, is a small C-like program that is run once for every pixel on your screen, 60 times a second. This should give you an idea of how powerful the GPU is, when it can run this program millions of times per second. The GPU is really good at running the same program with different inputs both in parallel and repeatedly, which is what makes it so fast.</p>
+<p><a class="imageLink" href="fullsize/fragmentShader.png"><img src="thumbnail/fragmentShader.png" /></a></p>
+<p>I got the idea of using WebGL from <a href="https://github.com/toji">Brandon Jones</a> and specifically his <a href="http://media.tojicode.com/webgl-samples/tilemap.html">Tilemap Demo</a>. Ekkiog is also a tile engine, so it made sense to use the principles from his demo. But the less obvious use of the GPU is to run the simulation of the binary logic. Each gate in the simulation takes two inputs, which can be either <code>true</code> or <code>false</code>, and produces either a <code>true</code> or <code>false</code> output. I wanted to make a fragment shader that could take two inputs and produce an output, just like a NAND gate. To understand the fragment (and vertex) shader you can&#39;t think of it in terms of imperative programming. Think of it instead as FRP, or like a spreadsheet. The code in the cell decides on the result in that cell, and it can only control that cell. It&#39;s the same for the fragment shader; it controls the color of its pixel, and cannot control anything else.</p>
+<p>So my simulation fragment shader would then decide on the color (<code>true</code> is white and <code>false</code> is black) for one pixel based on the color of two other pixels. Since each pixel was one NAND gate, I could scale the texture I wanted the fragment shader to run on to decide how many NAND gates I wanted to simulate. I&#39;m now running it on a 256x256 pixel texture, which ends up being 65,536 pixels (or NAND gates). I think it will still run quite well on a 1024x1024 texture, which would be a million NAND gates!</p>
+<h3 id="the-future">The future</h3>
+<p>Over the past three weeks I&#39;ve gotten the simulation, the rendering and the editing to work fairly well. The one thing that isn&#39;t possible (yet) that I originally wanted was to build abstractions. This is up next in my mental backlog of things to implement. The idea is to be able to select a few gates and the wires that connect them and group them into a component. Then there would be a way to add components (just like you can add NAND gates today) to the board, and group those components together. There is quite a bit of UX that is needed for this, but it should be fairly easy to implement from a technical point.</p>
+<p>Before this though I want to add some buttons/switches (for input) and LEDs (for output). I want to make the simulation speed adjustable and I have some ideas for how to make editing easier and more powerful. The graphics are no longer horrible, but I&#39;ve reached the limit of how well I can make pixel art, so unless I find someone to help me, I don&#39;t think the graphics will be improved. The <a href="https://github.com/mariusGundersen/ekkiog">code is on GitHub</a>, if you want to help or just have a look.</p>
+<p>I&#39;ve learned quite a bit over the summer from this project, not just about WebGL but also about <a href="http://webpack.github.io/">WebPack</a>, <a href="http://babeljs.io/">ECMAScript 2015/Babel</a> and matrix math.</p>
+
+      </section>
+
+      <div>
+        <em>
+          Did you find a mistake or have a suggestion for an improvement?
+          <a href="https://github.com/mariusGundersen/website/issues/new" target="_blank">Let me know</a>
+          or
+          <a href="https://github.com/mariusGundersen/website/blob/master/article/ekkiog/index.md" target="_blank">fork it</a>
+          and send me a pull-request.
+        </em>
+      </div>
+  
+
+      <footer>
+        <div>
+          <div id="contactMe">
+            <a href="mailto:me@mariusgundersen.com">Email</a>
+            <a href="//twitter.com/gundersenMarius">Twitter</a>
+            <a href="//github.com/mariusGundersen/">GitHub</a>
+            <a href="https://stackoverflow.com/users/1585/marius">Stack Overflow</a>
+          </div>
+        </div>
+
+        <!-- Piwik -->
+        <script type="text/javascript">
+          var pkBaseURL = "//analytics.mariusgundersen.net/";
+          document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+        </script>
+        <script type="text/javascript">
+          try {
+            var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 1);
+            piwikTracker.trackPageView();
+            piwikTracker.enableLinkTracking();
+          } catch (err) { }
+        </script><noscript>
+          <p><img src="http://analytics.mariusgundersen.net/piwik.php?idsite=1" style="border:0" alt="" /></p>
+        </noscript>
+        <!-- End Piwik Tracking Code -->
+      </footer>
+    </div>
+  </body>
+
+  </html>

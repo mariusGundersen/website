@@ -1,0 +1,83 @@
+
+  <html>
+
+  <head>
+    <title>Marius Gundersen</title>
+    <link rel="icon" type="image/png" href="/favicon.png"></link>
+    <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
+    <link rel="stylesheet" href="/style/main.css?v=1591305326798"></link>
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591305326798"></link>
+  </head>
+
+  <body>
+    <div id="wrapper">
+
+      <header>
+        <h1><a href="/">Marius Gundersen</a></h1>
+      </header>
+      <nav class="clearfix project">
+        <a href="/">
+          <span>Work in progress</span>
+        </a>
+        <a href="/talks">
+          <span>Talks</span>
+
+        </a>
+      </nav>
+
+      
+      <section class="articleBlock">
+      <h2 id="pimponator">Pimponator</h2>
+<iframe width="480" height="270" src="//www.youtube.com/embed/eLDVVwEIbq4" frameborder="0" allowfullscreen></iframe>
+
+<p>At the beginning of last semester i started designing a pimpin&#39; <a href="http://omegav.no/byggekurs">Imponator</a>; a Pimponator. This imponator, like all imponators, would use flashing LEDs to impress other students, but I would be able to reprogram it from my cellphone using Bluetooth. The front of the Pimponator would have a 16 by 5 LED matrix, where the brightness of the LEDs could be controlled individually. The design was quickly finished, and I soon had a soldered device to play with. The only problem was that it didn&#39;t work. And so it ended up at the bottom of my electronics drawer, along with all the other projects I never finish, and it remained there for almost six months.</p>
+<p><a class="imageLink" href="fullsize/pimponator1.jpg"><img src="thumbnail/pimponator1.jpg" /></a></p>
+<p>A few weeks ago I decided to make it work, no matter how much time it would take. The device had worked in a few tests, just not consistently, so I knew I would eventually get it to work. After a few days of scoping, debugging and soldering I finally got rid of the bugs, and had the Pimponator communicating with my Android phone. It took another few days to put the firmware and Android app together so it would work as intended.</p>
+<p>The Pimponator Android application makes it easy to put together an animation for the device. Several scrolling text phrases can be combined to make an animation, which is compiled into hexcode on the phone before it is transferred using Bluetooth to the device. The device stores the animation in flash memory, so even if the battery is replaced, the animation is still there.</p>
+<p><a class="imageLink" href="fullsize/pimponator2.jpg"><img src="thumbnail/pimponator2.jpg" /></a></p>
+<p>The Pimponator uses an AVR Atmega 128 micro controller, running at 7.372800Mhz, to control the 16 column by 5 row LED matrix. The micro controller has 64KiB of flash available for the animation, which means it can store almost 6000 frames. To transfer animations to the Pimponator an <a href="http://www.rovingnetworks.com/rn-41.php">RN41 Bluetooth module</a>, which shows up as a virtual COM port, is used. The Android phone is running an app which opens a serial connection the the AVR when it is time to transfer the animation.</p>
+<p>The Android app can store several animations, each made up of one or more sequences of frames. Currently the app only supports scrolling text, but because it is plugin based, it is very easy to write another app which produces a different sequence.</p>
+
+      </section>
+
+      <div>
+        <em>
+          Did you find a mistake or have a suggestion for an improvement?
+          <a href="https://github.com/mariusGundersen/website/issues/new" target="_blank">Let me know</a>
+          or
+          <a href="https://github.com/mariusGundersen/website/blob/master/article/pimponator/index.md" target="_blank">fork it</a>
+          and send me a pull-request.
+        </em>
+      </div>
+  
+
+      <footer>
+        <div>
+          <div id="contactMe">
+            <a href="mailto:me@mariusgundersen.com">Email</a>
+            <a href="//twitter.com/gundersenMarius">Twitter</a>
+            <a href="//github.com/mariusGundersen/">GitHub</a>
+            <a href="https://stackoverflow.com/users/1585/marius">Stack Overflow</a>
+          </div>
+        </div>
+
+        <!-- Piwik -->
+        <script type="text/javascript">
+          var pkBaseURL = "//analytics.mariusgundersen.net/";
+          document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+        </script>
+        <script type="text/javascript">
+          try {
+            var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 1);
+            piwikTracker.trackPageView();
+            piwikTracker.enableLinkTracking();
+          } catch (err) { }
+        </script><noscript>
+          <p><img src="http://analytics.mariusgundersen.net/piwik.php?idsite=1" style="border:0" alt="" /></p>
+        </noscript>
+        <!-- End Piwik Tracking Code -->
+      </footer>
+    </div>
+  </body>
+
+  </html>
