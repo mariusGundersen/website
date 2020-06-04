@@ -7,5 +7,3 @@ video: null
 site: "http://lanyrd.com/2012/blackberry-devcon-europe/"
 type: "talk"
 ---
-
-
