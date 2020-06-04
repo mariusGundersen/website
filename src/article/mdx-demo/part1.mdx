@@ -14,15 +14,56 @@ export function build() {
 
 This is the simplest gulpfile that I wanted. The `build` function looks for all `index.mdx` files in my project and using the `mdxToHtml()` function converts them to html files before writing them to the out directory. 
 
+
+```js
+import * as gulp from 'gulp';
+
+// test/index.mdx
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
+
+
+export function build() {
+  return gulp.src('**/index.mdx')
+    .pipe(mdxToHtml())
+    .pipe(gulp.dest('out'));
+}
+
+// out/test/index.html
+// <h1>Test</h1>
+// 
+// <h2 style="color: red">
+//   Test
+// </h2>
+
+```
+
+In other words, I wanted to convert some mixed markdown and react content into html. I would of course need to wrap this content with the rest of the html page content, but lets not worry about that for now.
+
 Gulp uses streams of files and you can pipe them through steps. There are many many plugins for gulp that makes it easy to build complex pipelines of steps, but I couldn't find any gulp plugin for mdx. Therefore I decided to write my own. There was a short code example under [do it yourself](https://mdxjs.com/getting-started#do-it-yourself) on the mdx website, so I needed some way to make this work with gulp.
 
 ```js
 import * as gulp from 'gulp';
 
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
+
 const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
   file.extname = '.html';
-  return '...html here...';
+  return mdxCode;
 });
+
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
 
 export function build() {
   return gulp.src('**/index.mdx')
@@ -37,12 +78,19 @@ I created a small utility function called `mapAsync` that made it possible to us
 import * as gulp from 'gulp';
 import mdx from '@mdx-js/mdx';
 
+
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
+
 const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
   file.extname = '.html';
   
   const jsxCode = await mdx(mdxCode, options.mdx);
   
-  return '...html here...';
+  return jsxCode;
 });
 
 export function build() {
@@ -56,12 +104,63 @@ The first step in my process is to convert the mdx code to jsx code. Mdx is a co
 
 I'm assuming I have some mdx options available, and I forward them to the mdx compiler. There might be some options I need to tweak later on. 
 
-After this step I have the `jsxCode` variable which contains a string of jsx code.
+
+```js
+import * as gulp from 'gulp';
+import mdx from '@mdx-js/mdx';
+
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
+
+const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
+  file.extname = '.html';
+  
+  const jsxCode = await mdx(mdxCode, options.mdx);
+  
+  return jsxCode;
+});
+
+// /* @jsx mdx */
+// 
+// const layoutProps = {};
+// const MDXLayout = "wrapper"
+// export default function MDXContent({
+//   components,
+//   ...props
+// }) {
+//   return <MDXLayout {...layoutProps} {...props} components={components} mdxType="MDXLayout">
+//     <h1>{`Test`}</h1>
+//     <h2 style={{
+//       color: 'red'
+//     }}>
+//   Test
+//     </h2>
+//     </MDXLayout>;
+// }
+// MDXContent.isMDXComponent = true;
+
+export function build() {
+  return gulp.src('**/index.mdx')
+    .pipe(mdxToHtml())
+    .pipe(gulp.dest('out'));
+}
+```
+
+The result is the jsx code in the bottom comment. I have removed some details from the actual output which isn't important here. The important bits is the first comment, containing `/* @jsx mdx */` and the `export default function MDXContent(...`. The comment is a [jsx pragma](https://www.gatsbyjs.org/blog/2019-08-02-what-is-jsx-pragma/) and explains how jsx code should be converted to js code. We will have a look at that next. The `MDXContent` that is exported is the react component that will render our content. You can see how the markdown has been converted to jsx inside it.
 
 ```js
 import * as gulp from 'gulp';
 import mdx from '@mdx-js/mdx';
 import * as babel from '@babel/core';
+
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
 
 const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
   file.extname = '.html';
@@ -72,8 +171,28 @@ const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
     "import { mdx } from '@mdx-js/react';\n" + jsxCode, 
     options.babel);
   
-  return '...html here...';
+  return code;
 });
+
+// import { mdx } from '@mdx-js/react';
+// /* @jsx mdx */
+// 
+// const layoutProps = {};
+// const MDXLayout = "wrapper"
+// export default function MDXContent({
+//   components,
+//   ...props
+// }) {
+//   return <MDXLayout {...layoutProps} {...props} components={components} mdxType="MDXLayout">
+//     <h1>{`Test`}</h1>
+//     <h2 style={{
+//       color: 'red'
+//     }}>
+//   Test
+//     </h2>
+//     </MDXLayout>;
+// }
+// MDXContent.isMDXComponent = true;
 
 export function build() {
   return gulp.src('**/index.mdx')
@@ -82,16 +201,81 @@ export function build() {
 }
 ```
 
-Jsx needs to be converted to js before it can be run, so the next step is to use [babel](https://babeljs.io/) to transpile the code. I need to import `mdx` from `@mdx-js/react` here so that the jsx syntax can be converted to js correctly. 
+Jsx needs to be converted to js before it can be run, so the next step is to use [babel](https://babeljs.io/) to transpile the code. I need to import `mdx` from `@mdx-js/react` at the beginning since the jsx pragma says to use mdx. 
 
 Again I forward some options to babel. These options would contain the presets and plugins that babel should use. There two presets I've used are [`@babel/preset-env`](https://babeljs.io/docs/en/babel-preset-env), for converting es6 modules to commonjs, and [`@babel/preset-react`](https://babeljs.io/docs/en/babel-preset-react), for converting jsx to js.
 
-The result of this step is js code that node can run.
 
 ```js
 import * as gulp from 'gulp';
 import mdx from '@mdx-js/mdx';
 import * as babel from '@babel/core';
+
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
+
+const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
+  file.extname = '.html';
+  
+  const jsxCode = await mdx(mdxCode, options.mdx);
+  
+  const { code } = await babel.transformAsync(
+    "import { mdx } from '@mdx-js/react';\n" + jsxCode, 
+    options.babel);
+  
+  return code;
+});
+
+// // "use strict";
+// 
+// exports["default"] = MDXContent;
+// 
+// var _react = require("@mdx-js/react");
+// 
+// /* @jsx mdx */
+// 
+// var layoutProps = {};
+// var MDXLayout = "wrapper";
+// 
+// function MDXContent(_ref) {
+//   var components = _ref.components,
+//       props = _objectWithoutProperties(_ref, ["components"]);
+// 
+//   return (0, _react.mdx)(MDXLayout, Object.assign({}, layoutProps, props, {
+//     components: components,
+//     mdxType: "MDXLayout"
+//   }), (0, _react.mdx)("h1", null, "Test"), (0, _react.mdx)("h2", {
+//     style: {
+//       color: 'red'
+//     }
+//   }, "Test"));
+// }
+// MDXContent.isMDXComponent = true;
+
+export function build() {
+  return gulp.src('**/index.mdx')
+    .pipe(mdxToHtml())
+    .pipe(gulp.dest('out'));
+}
+```
+
+The result of this step is js code that node can run. You can see how the `import { mdx } from '@mdx-js/react'` has been replaced with `var _react = require("@mdx-js/react")` and how the `export default function MDXContent` has been replaced with `exports["default"] = MDXContent`, which is the commonjs way of exporting from the module. 
+
+All of the jsx syntax, like `<h1>Test</h1>`, has been replaced with `(0, _react.mdx)("h1", null, "Test")`, which is just normal, though a bit weird looking, js code. It used the rule from the pragma and uses the `_react.mdx` function to create the elements. In a normal react application this would be `_react.createElement`. There was also some more messy generated code here that I have skipped to make this easier to read.
+
+```js
+import * as gulp from 'gulp';
+import mdx from '@mdx-js/mdx';
+import * as babel from '@babel/core';
+
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
 
 const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
   file.extname = '.html';
@@ -104,7 +288,7 @@ const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
     
   const component = getDefaultExport(code, require);
   
-  return '...html here...';
+  return code;
 });
 
 function getDefaultExport(code, require) {
@@ -120,7 +304,7 @@ export function build() {
 }
 ```
 
-Now that I have some js code it's time to run it. A simple way to run a string of js code is to create a [`new Function()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function). Since it has been converted to commonjs I know that it will use `require` to import other modules and `exports` to expose things, so I pass in them as parameters. This way the code can require any dependency it might have, like the `@mdx-js/react` module that I prefixed the code with in the previous step.
+Now that I have some js code it's time to run it. A simple way to run a string of js code is to create a [`new Function()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/Function). Since it has been converted to commonjs and uses the `require` function to import other modules and the `exports` object to expose things, so I pass in them as parameters. 
 
 Since I have converted mdx to jsx and jsx to js, the result of all of this is that I get back a simple react component.
 
@@ -131,6 +315,12 @@ import * as babel from '@babel/core';
 import React from 'react';
 import { MDXProvider } from '@mdx-js/react';
 
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
+
 const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
   file.extname = '.html';
   
@@ -147,7 +337,7 @@ const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
     { },
     React.createElement(component));
   
-  return '...html here...';
+  return code;
 });
 
 function getDefaultExport(code, require) {
@@ -163,7 +353,7 @@ export function build() {
 }
 ```
 
-This step is kind of minor, it just wraps the component with the `MDXProvider`, which is needed for some internal details of how mdx works. I don't know all of what it does, I just copied this code from the example on the website and it seems important. 
+This step is kind of minor, it just wraps the component with the `MDXProvider`, which is needed for some internal details of how mdx works. I don't know all of what it does, I just copied this code from the example on the website and it seems important to have it for things to wor. 
 
 ```js
 import * as gulp from 'gulp';
@@ -173,48 +363,11 @@ import React from 'react';
 import { MDXProvider } from '@mdx-js/react';
 import { renderToString } from 'react-dom/server';
 
-const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
-  file.extname = '.html';
-  
-  const jsxCode = await mdx(mdxCode, options.mdx);
-  
-  const { code } = await babel.transformAsync(
-    "import { mdx } from '@mdx-js/react';\n" + jsxCode, 
-    options.babel);
-    
-  const component = getDefaultExport(code, require);
-
-  const elementWithProvider = React.createElement(
-    MDXProvider,
-    { },
-    React.createElement(component));
-  
-  return renderToString(elementWithProvider);
-});
-
-function getDefaultExport(code, require) {
-  const exports = {};
-  new Function('require', 'exports', code)(require, exports);
-  return exports['default'];
-}
-
-export function build() {
-  return gulp.src('**/index.mdx')
-    .pipe(mdxToHtml())
-    .pipe(gulp.dest('out'));
-}
-```
-
-Finally I use the [`renderToString`](https://reactjs.org/docs/react-dom-server.html#renderToString) method from the `react-dom/server` package to generate the html. 
-
-
-```js 1:38
-import * as gulp from 'gulp';
-import mdx from '@mdx-js/mdx';
-import * as babel from '@babel/core';
-import React from 'react';
-import { MDXProvider } from '@mdx-js/react';
-import { renderToString } from 'react-dom/server';
+// # Test
+// 
+// <h2 style={{color: 'red'}}>
+//   Test
+// </h2>
 
 const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
   file.extname = '.html';
@@ -235,6 +388,12 @@ const mdxToHtml = options => mapAsync(async (mdxCode, file) => {
   return renderToString(elementWithProvider);
 });
 
+// <h1>Test</h1>
+// 
+// <h2 style="color: red">
+//   Test
+// </h2>
+
 function getDefaultExport(code, require) {
   const exports = {};
   new Function('require', 'exports', code)(require, exports);
@@ -248,33 +407,9 @@ export function build() {
 }
 ```
 
-This is roughly the code that I found on the mdx website, but tweaked and converted a bit and made to work with gulp. I gave it a try with this mdx file
+Finally I use the [`renderToString`](https://reactjs.org/docs/react-dom-server.html#renderToString) method from the `react-dom/server` package to generate the html. The final result is roughly the code that I found on the mdx website, but tweaked and converted a bit and made to work with gulp. 
 
-<div>
-
-```md
-# Does this work?
-
-<h2 style={{background: 'red'}}>Test</h2>
-```
-
-</div>
-
-and I got the following html contents:
-
-<div>
-
-```html
-<h1>Does this work?</h1>
-
-<h2 style="background: red">Test</h2>
-```
-
-</div>
-
-Great, it works!
-
-I then tried to import the `<Test />` component from the file `Test.jsx`, to see if I could make and import more advanced react components, like this
+The mdx code I've used so far for testing is quite simple, so I quickly started testing more advanced features of mdx. For example, I should be able to import other jsx components, just like I would do in a normal react application. I created a `Test.jsx` file with a simple jsx component and then tried to import it into `index.mdx` like this:
 
 <div>
 
@@ -297,6 +432,8 @@ Error: Cannot find module './Test.jsx'
 ```
 
 </div>
+
+It appears that it doesn't know where to look for the `Test.jsx` file, that it doesn't know it's right next to the `index.mdx` file, in the same folder.
 
 ```js
 import * as gulp from 'gulp';
@@ -340,7 +477,7 @@ export function build() {
 }
 ```
 
-To fix this I need to create a new `require` function that knows where to look when using relative paths. The way to do this in node.js is with the `createRequire` method which takes the path that it should search relative to. I gave this require method to the `getDefaultExport` method, and when I tested again I got a different error, which is progress:
+The problem is of course that the require function that I passed to the `new Function(...)` looks relative to the gulpfile, not relative to the `index.mdx` file. To fix this I need to create a new `require` function that knows where to look when using relative paths. The way to do this in node.js is with the `createRequire` method which takes the path that it should search relative to. I gave this require method to the `getDefaultExport` method, and when I tested again I got a different error, which is progress:
 
 <div>
 
@@ -353,7 +490,7 @@ SyntaxError: Invalid or unexpected token
 
 </div>
 
-It seems to fail because it's not able to understand the jsx syntax. The mdx code in the `index.mdx` file is transpiled, but whatever it imports isn't transpiled. So to fix this I needed to add some more features to the created `require` function. 
+It seems to fail because it's not able to understand the jsx syntax. The mdx code in the `index.mdx` file is transpiled by babel, but whatever it imports isn't transpiled. It would be great if node could transpile the jsx file that is imported using `require`. I know there is an `@babel/register` npm package that does this, so it should be possible.
 
 
 ```js
