@@ -7,8 +7,8 @@
     <title>Marius Gundersen</title>
     <link rel="icon" type="image/png" href="/favicon.png"></link>
     <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
-    <link rel="stylesheet" href="/style/main.css?v=1591338841489"></link>
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591338841489"></link>
+    <link rel="stylesheet" href="/style/main.css?v=1591396731138"></link>
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591396731138"></link>
   </head>
 
   <body>
@@ -63,21 +63,19 @@
           </div>
         </div>
 
-        <!-- Piwik -->
         <script type="text/javascript">
-          var pkBaseURL = "//analytics.mariusgundersen.net/";
-          document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+          var _paq = window._paq || [];
+          /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+          _paq.push(['trackPageView']);
+          _paq.push(['enableLinkTracking']);
+          (function() {
+            var u="//analytics.mariusgundersen.net/";
+            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+          })();
         </script>
-        <script type="text/javascript">
-          try {
-            var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 1);
-            piwikTracker.trackPageView();
-            piwikTracker.enableLinkTracking();
-          } catch (err) { }
-        </script><noscript>
-          <p><img src="http://analytics.mariusgundersen.net/piwik.php?idsite=1" style="border:0" alt="" /></p>
-        </noscript>
-        <!-- End Piwik Tracking Code -->
       </footer>
     </div>
   </body>
