@@ -1,9 +1,11 @@
 import { html } from "./utils";
 
 export default (contents, file) => html`
-  <html>
+  <html lang="en">
 
   <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marius Gundersen</title>
     <link rel="icon" type="image/png" href="/favicon.png"></link>
     <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
