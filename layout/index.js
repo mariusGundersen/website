@@ -1,16 +1,17 @@
 import { html } from "./utils";
 
 export default (contents, file) => html`
+  <!DOCTYPE html>
   <html lang="en">
 
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marius Gundersen</title>
-    <link rel="icon" type="image/png" href="/favicon.png"></link>
-    <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
-    <link rel="stylesheet" href="/style/main.css?v=${(new Date).valueOf()}"></link>
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=${(new Date).valueOf()}"></link>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=700px, initial-scale=0.5" />
+    <link rel="stylesheet" href="/style/main.css?v=${(new Date).valueOf()}" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=${(new Date).valueOf()}" />
   </head>
 
   <body>

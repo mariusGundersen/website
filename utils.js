@@ -1,8 +1,7 @@
-import { Transform } from 'stream';
-import marked from 'marked';
-import tap from 'gulp-tap';
 import gulpMarkdown from 'gulp-markdown';
-import { src } from 'gulp';
+import tap from 'gulp-tap';
+import marked from 'marked';
+import { Transform } from 'stream';
 import { html } from './layout/utils';
 
 function createRenderer() {
@@ -45,4 +44,3 @@ export const setSlug = name => tap(f => f.slug = name);
 export const setType = type => tap(f => f.frontMatter.type = type);
 export const setExtension = ext => tap(f => f.extname = `.${ext}`);
 export const template = layout => tap(file => file.contents = Buffer.from(layout(file.contents.toString('utf-8'), file)))
-export const srcPipe = (path, srcOptions, ...steps) => steps.reduce((value, step) => value.pipe(step), src(path, srcOptions));

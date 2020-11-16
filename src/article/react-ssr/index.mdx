@@ -1,0 +1,98 @@
+---
+title: "Be careful with React SSR"
+short: "Server Side Rendered React can cause some very strange bugs"
+date: "2020-11-15"
+type: "article"
+---
+
+import ClientSideOnly from "./ClientSideOnly.jsx";
+import Anchors from "./Anchors.jsx";
+import Table from "./Table.jsx";
+
+# Be careful with React SSR
+
+Over the last few months I've been working on the frontend of two projects where we use Server side rendered (SSR) react weth rehydration on the clientside. During that time I've created some very strange bugs by testing the react components only on the clientside using Storybook. I want to share here the three types of issues that I've created, how they come about and why they cause the problems they cause. I'm not claiming that these bugs are caused by React or Storybook being badly written, it was my code and therefore me that caused them. They are not limited to React either, you can probably get the same issues in other projects too, but I will share how they happened to me, which was in react projects.
+
+The main lesson to take away here is that if you do SSR then you should test the SSR too, not trust that what works on the client side will work on the server side. Storybook is great for rapid development, but after developing the component it should be verified in the environment that is as close to production as possible.
+
+## Anchors inside anchors
+
+The first time i stumbled across an issue with SSR I thought "there is a bug in React". This was of course wrong, I was the one to blame for the issue. I'm the kind of developer who doesn't blindly follow best-practices; I like to understand _why_ something is a best-practice. So when I hear advice like "don't put &lt;a&gt; inside another &lt;a&gt;" I do exactly what it tells me not to do, to see what happens.
+
+So, what does happen if we put an anchor tag inside another anchor tag? For example
+
+```html
+<a href="#1"> A link <a href="#2">inside</a> a link </a>
+```
+
+Which renders as
+
+<ClientSideOnly>
+  <a href="#1">
+    A link <a href="#2">inside</a> a link
+  </a>
+</ClientSideOnly>
+
+Hmm, that looks perfectly ok, doesn't it? Clicking on `inside` will take you to a different place than clicking on the other text. This seems to work, but why would I do this?
+
+### The design
+
+The reason I wanted to have anchor tags inside anchor tags was this design
+
+Here the whole card should be clickable, the image, the title and the short text, so I decided to make the card an anchor tag. But each card would also have a list of tags, and when a tag is clicked the user should be taken to the tag page. So it was natural for the tags to be anchors as well. The very simple markup for the card is then
+
+```jsx
+export default function Card(props) {
+  return (
+    <a href={props.url} className="card">
+      <img src={props.img} />
+      <h2>{props.title}</h2>
+      <p>{props.intro}</p>
+      <span>
+        {props.tags.map((tag, index) => (
+          <a key={index} href={tag.url}>
+            {tag.name}
+          </a>
+        ))}
+      </span>
+    </a>
+  );
+}
+```
+
+## old stuff
+
+Here is what it looks like with client side rendering only
+
+<Anchors />
+
+And this is what it looks like with server side rendering
+
+<Anchors initial />
+
+<Table />
+
+<style>
+  {`
+    .demo {
+      padding: 1em 0;
+      border-top: 1px solid black;
+      border-bottom: 1px solid black;
+    }
+    section section.demo a {
+      color: revert;
+    }
+    section section.demo a:hover {
+      text-decoration: revert;
+      background: revert;
+      color: revert;
+    }
+    .card {
+      display: block;
+      border: 1px solid black;
+      border-radius: .5em;
+      padding: .5em;
+      margin-bottom: 1em;
+    }
+  `}
+</style>
