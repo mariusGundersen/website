@@ -1,14 +1,15 @@
 
+  <!DOCTYPE html>
   <html lang="en">
 
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marius Gundersen</title>
-    <link rel="icon" type="image/png" href="/favicon.png"></link>
-    <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
-    <link rel="stylesheet" href="/style/main.css?v=1591396721843"></link>
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591396721843"></link>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=700px, initial-scale=0.5" />
+    <link rel="stylesheet" href="/style/main.css?v=1609936963466" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1609936963466" />
   </head>
 
   <body>
@@ -47,7 +48,8 @@
 <pre><code>$ docker run -d --name=proxy --privileged=<span class="hljs-keyword">true</span> -p <span class="hljs-number">80</span>:<span class="hljs-number">80</span> -p <span class="hljs-number">443</span>:<span class="hljs-number">443</span> \
 -e DEFAULT_VHOST=example.com -e DEFAULT_SSL=<span class="hljs-keyword">TRUE</span> \
 -v <span class="hljs-regexp">/path/</span>to<span class="hljs-regexp">/certs/</span>folder:/certs \
--v <span class="hljs-regexp">/var/</span>run<span class="hljs-regexp">/docker.sock:/</span>var<span class="hljs-regexp">/run/</span>docker.sock  mingzeke/nginx-proxy</code></pre><p>Having to remember this to start a container is impossible (after the container has been running without issue for several years), especially if your system consists of many different containers that all need different options to start correctly. Like everything else in the world this can be solved with shell script, but it is the kind of thing that Docker should solve. One way this could be solved is to have an interactive startup, where running <code>docker run container-name</code> prompts the user for all the options that the container needs for starting, with sane defaults. These defaults could probably be specified in the Dockerfile, along with the name and tag of the image. I realize that this is only useful for idiots like me who don&#39;t work with Docker every day, so there obviously needs to be a non-interactive mode for cool people.</p>
+-v <span class="hljs-regexp">/var/</span>run<span class="hljs-regexp">/docker.sock:/</span>var<span class="hljs-regexp">/run/</span>docker.sock  mingzeke/nginx-proxy</code></pre>
+<p>Having to remember this to start a container is impossible (after the container has been running without issue for several years), especially if your system consists of many different containers that all need different options to start correctly. Like everything else in the world this can be solved with shell script, but it is the kind of thing that Docker should solve. One way this could be solved is to have an interactive startup, where running <code>docker run container-name</code> prompts the user for all the options that the container needs for starting, with sane defaults. These defaults could probably be specified in the Dockerfile, along with the name and tag of the image. I realize that this is only useful for idiots like me who don&#39;t work with Docker every day, so there obviously needs to be a non-interactive mode for cool people.</p>
 <h3 id="restarting-a-container-with-the-same-arguments">Restarting a container with the same arguments</h3>
 <p>Restarting a container because you have made changes to it, for example in your own development environment, is too complicated. First you need to build, using <code>docker build -t name .</code>, then <code>Docker stop name</code>, then <code>Docker rm name</code> and finally you need to run the long <code>docker run</code> command again. These should all be combined into one simple command that can be used for testing an application in docker. Sure, you can use shell scripts here too, but it would be great if Docker provided a better write-compile-run-test experience.</p>
 <h3 id="sharing-containers">Sharing containers</h3>

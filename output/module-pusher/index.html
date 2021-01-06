@@ -1,14 +1,15 @@
 
+  <!DOCTYPE html>
   <html lang="en">
 
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marius Gundersen</title>
-    <link rel="icon" type="image/png" href="/favicon.png"></link>
-    <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
-    <link rel="stylesheet" href="/style/main.css?v=1591396730869"></link>
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591396730869"></link>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=700px, initial-scale=0.5" />
+    <link rel="stylesheet" href="/style/main.css?v=1609936981013" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1609936981013" />
   </head>
 
   <body>
@@ -53,9 +54,9 @@
 <h3 id="server-pushing-of-es2015-modules">Server pushing of ES2015 modules</h3>
 <p>With HTTP/2 we get a new powerful feature called push. This lets the server send a file to the client before the client asks for it. For example, if the client requests the following js file, the server can decide to push <code>jquery.js</code> too, since it&#39;s likely that the client will request that file right afterwards.</p>
 <pre><code class="language-js"><span class="hljs-comment">//getJson.js</span>
-<span class="hljs-keyword">import</span> $ <span class="hljs-keyword">from</span> <span class="hljs-string">'jquery.js'</span>;
+<span class="hljs-keyword">import</span> $ <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;jquery.js&#x27;</span>;
 
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> url =&gt; $.<span class="hljs-keyword">get</span><span class="hljs-title">Json</span>(<span class="hljs-params">url</span>);</code></pre>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> url =&gt; $.getJson(url);</code></pre>
 <p>The above file is written with ES2015 modules, which are designed to be statically analysable. This lets us find all the dependencies of a file (module) without running the code in the file. We can repeat the process for the dependencies, and this way we can build the full dependency graph for the entire application. Lets also assume that all the packages in npm (or bower or whatever package manager we use for this application) are also written as ES2015 modules, and we can now follow the dependency graph into any number of packages available on npm.</p>
 <p>So now when the client requests any module the server can follow the dependency graph and find all of the transitive dependencies of that module, and push them to the client together with the requested module. This way, when the module loader on the client discovers that it needs a dependency, it will find that module in its cache, and we have bypassed the RTT to the server.</p>
 <p><a class="imageLink" href="fullsize/rtt-normal.png"><img src="thumbnail/rtt-normal.png" /></a>

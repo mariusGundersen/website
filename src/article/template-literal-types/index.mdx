@@ -69,7 +69,7 @@ requestAnimationFrame(function render(time) {
 });
 ```
 
-This is about as simple of a WebGL program you can have, but don't worry if it looks intimidating, we don't really need to understand how it works. The important bits are the ones I have commented. There is one attribute and one uniform, and they show up twice, once in the shader and once in the js code below. For the WebGL code to work the attributes and uniforms used in the shaders have to be set in the js code, and they have to be given the correct type of value. If the value isn't set, the name is spelled wrong or the wrong js type is given, then the code will either not behave correctly or not work at all. So, it would be useful to have TypeScript check for us if we have set the right attributes and uniforms for us, by comparing the TypeScript code with the shader program. But that means we have to teach TypeScript to understand a C program string.
+This is about as simple of a WebGL program you can have, but don't worry if it looks intimidating, we don't really need to understand how it works. The important bits are the ones I have commented. There is one attribute (`position`) and one uniform (`time`), and they show up twice, once in the shader and once in the js code below. For the WebGL code to work the attributes and uniforms used in the shaders have to be given a value in the js code, and they have to be given the correct type of value. If the value isn't set, the name is spelled wrong or the wrong js type is given, then the code will either not behave correctly or not work at all. So, it would be useful to have TypeScript check for us if we have set the right attributes and uniforms for us, by comparing the TypeScript code with the shader program. But that means we have to teach TypeScript to understand a C program string.
 
 ## Template Literal Types
 
@@ -85,7 +85,9 @@ const success: Uniform = "uniform vec2 something";
 const failure: Uniform = "not a uniform";
 ```
 
-Let's start of with a simple example of a template literal type. In this example we have a type called `Uniform` and it is defined using the template literal syntax. We can use this type on a variable, and that makes it only possible to assign values to that variable that matches the string pattern. In the above example that means it has to start with the string `uniform` and then contain some more stuff with at least one space. This matches the pattern of the uniforms that we have in the shader code above.
+In this code we have a type called `Uniform` and it is defined using the template literal syntax. We can use this type on a variable, and that makes it only possible to assign values to that variable that matches the string pattern. In the above example that means it has to start with the string `uniform` and then contain some more stuff with at least one space. This matches the pattern of the uniforms that we have in the shader code above.
+
+You can find more information about template literal types in the [TypeScript documentation](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html).
 
 ```ts
 type UniformType =
@@ -156,15 +158,11 @@ declare function test<T extends string>(text: T): GetUniform<T>;
 const result: ["vec2", "something"] = test("uniform vec2 something");
 ```
 
-Ok, now we have introduced conditional types as well. Things are starting to get weird. The `GetUniform` type is a conditional type that checks if its generic parameter `T` matches the pattern of a `Uniform`. If it does, it is able to infer what the two missing generic parameters `Type` and `Name` are. The really weird thing here is that we say that if it matches the pattern, then it will be a tuple that contain the type and name, and if it doesn't match, then it will be `unknown`.
+Ok, now we have introduced conditional types as well. Things are starting to get weird. The `GetUniform` type is a conditional type that checks if its generic parameter `T` matches the pattern of a `Uniform`. If it does, it is able to infer what the two missing generic parameters `Type` and `Name` are. The really weird thing here is that we say that if it matches the pattern, then it will be a tuple that contain the type and name, and if it doesn't match, then it will be `unknown`. You can read more about conditional types and inference in the [TypeScript documentation](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html).
 
 I have left out the implementation of the function `test` here. It will use some deep webgl functionality to be able to return what we declare it will return. Sometimes when working with TypeScript you have to ignore what happens inside a function and just say what it will return, and this is one of those cases. This is when the conditional types are useful, as we can say what it will return depending on the parameters without having to say how it will work.
 
 ```ts
-type Obj<K extends string, V> = {
-  [k in K]: V;
-};
-
 type UniformType =
   | "float"
   | "vec2"
@@ -180,7 +178,7 @@ type Uniform<
 > = `uniform ${Type} ${Name}`;
 
 type GetUniform<T extends string> = T extends Uniform<infer Type, infer Name>
-  ? Obj<Name, Type>
+  ? Record<Name, Type>
   : unknown;
 
 declare function test<T extends string>(text: T): GetUniform<T>;
@@ -191,13 +189,9 @@ const result: { something: "vec2" } = test("uniform vec2 something");
 result.something = "vec2";
 ```
 
-Getting a tuple isn't that useful, it's much more useful to get an object that we can use. The type `Obj` is a bit of magic (there will be more of it, just wait...) but it means that our `result` variable is now an object with the name of the uniform as a property! The type is currently limited to the string value `vec2` though, since that is what we got from the line of C code. So we need to somehow map from one of those values in `UniformType` to the correct TypeScript type.
+Getting a tuple isn't that useful, it's much more useful to get an object that we can use. The type `Record` is a built-in type in TypeScript, and it is the type for an object with keys and values. The way it is used here produces an object with a single key, which is the Name, and a value that is the string Type. Therefore `result` is now an object, which we can assign a value to! The value we can assign to it is currently limited to the string value `vec2` though, since that is what we got from the line of C code. What we really want to assign here is either a number or an array of numbers, since that is what the shader program expects to get. So we need to somehow map from the types in `UniformType` to the correct TypeScript type.
 
 ```ts
-type Obj<K extends string, V> = {
-  [k in K]: V;
-};
-
 type UniformType =
   | "float"
   | "vec2"
@@ -217,7 +211,7 @@ type Uniform<
 > = `uniform ${Type} ${Name}`;
 
 type GetUniform<T extends string> = T extends Uniform<infer Type, infer Name>
-  ? Obj<Name, GetRealType<Type>>
+  ? Record<Name, GetRealType<Type>>
   : unknown;
 
 declare function test<T extends string>(text: T): GetUniform<T>;
@@ -237,10 +231,6 @@ result.something = 12;
 One more conditional type. Here we check if the the `Type` is 'float', and if it is, the real type should be `number`, but if it is one of the other options (vec2, vec3, ..., mat4) then should be an array of numbers. The last line shows that we can now set an array of numbers to our uniform `something`, because it was of type `vec2`. We might have done something a bit more clever to limit the lengh of the arrays assignable, so that a `vec2` becomes a `[number, number]`, while a `mat4` becomes an array with 16 numbers, but let's leave it like it is for now. The type of `result` is inferred from the return value of `test()`, so we don't need to specify it. TypeScript will know what the type is based purely on the string we passed to `test()` and it will warn us if we do something wrong, like in the last line, where we assign a number to something that should be an array of numbers.
 
 ```ts
-type Obj<K extends string, V> = {
-  [k in K]: V;
-};
-
 type UniformType =
   | "float"
   | "vec2"
@@ -260,7 +250,7 @@ type Uniform<
 > = `uniform ${Type} ${Name}`;
 
 type GetUniform<T extends string> = T extends Uniform<infer Type, infer Name>
-  ? Obj<Name, GetRealType<Type>>
+  ? Record<Name, GetRealType<Type>>
   : unknown;
 
 type GetAllUniforms<
@@ -283,10 +273,6 @@ result.color = 12;
 The limitation we have had until now is that we only support a single line of code. That's not very useful, so let's have a look at working with a multi-statement codesnippet. Here there is a new conditional type called `GetAllUniforms`. It looks for semicolons in strings and infers what comes before and after the semicolon. It then takes the `Statement` and passes it to `GetUniform`, and then it passes the rest of the string to itself recursively. This way it is able to handle multiple statements and merge it all together as as single object using the `&` operator. There is a limitation here that our code has to be on one line, which we want to change.
 
 ```ts
-type Obj<K extends string, V> = {
-  [k in K]: V;
-};
-
 type Trim<T extends string> = T extends `\n${infer Rest}`
   ? Trim<Rest>
   : T extends ` ${infer Rest}`
@@ -312,7 +298,7 @@ type Uniform<
 > = `uniform ${Type} ${Name}`;
 
 type GetUniform<T extends string> = T extends Uniform<infer Type, infer Name>
-  ? Obj<Name, GetRealType<Type>>
+  ? Record<Name, GetRealType<Type>>
   : unknown;
 
 type GetAllUniforms<
@@ -342,10 +328,6 @@ result.color = 12;
 I've introduced here the `Trim` type, which uses a combination of conditional types and template literal types to trim away newlines and spaces. This way we can format our two uniform statements on separate lines. Note also that we can have more than just those two statements, since the `GetUniform` type will turn strings that don't match what it expects into `unknown`, and this is ignored by the `&` operator. That is, `{a: number} & {b: number} & unknown` is the same as `{a: number, b: number}`.
 
 ```ts
-type Obj<K extends string, V> = {
-  [k in K]: V;
-};
-
 type Trim<T extends string> = T extends `\n${infer Rest}`
   ? Trim<Rest>
   : T extends ` ${infer Rest}`
@@ -371,7 +353,7 @@ type Uniform<
 > = `uniform ${Type} ${Name}`;
 
 type GetUniform<T extends string> = T extends Uniform<infer Type, infer Name>
-  ? Obj<Name, GetRealType<Type>>
+  ? Record<Name, GetRealType<Type>>
   : unknown;
 
 type GetAllUniforms<
@@ -389,19 +371,15 @@ interface Twgl {
   ): ProgramInfo;
   setUniforms(
     programInfo: ProgramInfo,
-    uniforms: Obj<string, number | ArrayLike<number>>
+    uniforms: Record<string, number | ArrayLike<number>>
   ): void;
   // ... more stuff here ...
 }
 ```
 
-This is the interface of `Twgl` that we have to implement. The first method, `createProgramInfo`, takes a tuple of shaders and returns something, we don't really know what it is, but it is `ProgramInfo`. The second method takes the `programInfo` together with a `uniforms` object. I've indicated here that it is an `Obj` where the name is a `string` and the type is either a `number` or an `ArrayLike<number>`. Currently this isn't very useful, there is no way to ensure that the `uniforms` passed to `setUniforms` contains all the right keys with the correct types. So let's replace some of the types with the clever stuff we have already written.
+This is the interface of `Twgl` that we have to implement. The first method, `createProgramInfo`, takes a tuple of shaders and returns something, we don't really know what it is, but it is `ProgramInfo`. The second method takes the `programInfo` together with a `uniforms` object. I've indicated here that it is an `Record` where the name is a `string` and the type is either a `number` or an `ArrayLike<number>`. Currently this isn't very useful, there is no way to ensure that the `uniforms` passed to `setUniforms` contains all the right keys with the correct types. So let's replace some of the types with the clever stuff we have already written.
 
 ```ts
-type Obj<K extends string, V> = {
-  [k in K]: V;
-};
-
 type Trim<T extends string> = T extends `\n${infer Rest}`
   ? Trim<Rest>
   : T extends ` ${infer Rest}`
@@ -427,7 +405,7 @@ type Uniform<
 > = `uniform ${Type} ${Name}`;
 
 type GetUniform<T extends string> = T extends Uniform<infer Type, infer Name>
-  ? Obj<Name, GetRealType<Type>>
+  ? Record<Name, GetRealType<Type>>
   : unknown;
 
 type GetAllUniforms<
@@ -454,10 +432,6 @@ interface Twgl {
 The big change here is to make everything generic on the two shaders, the vertex shader `VS` and the fragment shader `FS`. This way the `setUniforms` method can declare that the second parameter, the `uniforms`, depends on those two shaders. Note that it uses `GetAllUniforms<VS> & GetAllUniforms<FS>` to extract all the uniforms from both the vertex shader and the fragment shader and combine them into a single object. TypeScript is able to infer all of these generic parameters, so we don't have to specify them in our code.
 
 ```ts
-type Obj<K extends string, V> = {
-  [k in K]: V;
-};
-
 type Trim<T extends string> = T extends `\n${infer Rest}`
   ? Trim<Rest>
   : T extends ` ${infer Rest}`
@@ -483,7 +457,7 @@ type Uniform<
 > = `uniform ${Type} ${Name}`;
 
 type GetUniform<T extends string> = T extends Uniform<infer Type, infer Name>
-  ? Obj<Name, GetRealType<Type>>
+  ? Record<Name, GetRealType<Type>>
   : unknown;
 
 type GetAllUniforms<
@@ -542,6 +516,8 @@ twgl.setUniforms(programInfo, {
 
 So now, given the `vertexShader` and the `fragmentShader` the `twgl.setUniforms()` method will complain if the `time: 10` line is missing.
 
-This is a working example, but it is a bit simple and doesn't handle all scenarios. For example, since it splits on semicolon only, it's not able to handle comments. And this code only extracts the uniforms, it would be useful to extract the attributes as well. Implementing that is possible, but requires some changes to the types that makes them even more complicated, and this is just a demonstration of how it can be done, so I'm going to leave this for now.
-
 </CodeWave>
+
+This is of course just a simple demonstration, and it does not handle all scenarios and it can be improved quite a bit. For example, since it splits on semicolon only, it's not able to handle comments. Comments start with `//` and end at a newline, but we don't split our code on newlines, only on semicolon, so the statement on the line after a comment is included with the comment. Note also that since we split on semicolon we don't actually parse the code very well, but that's not necessary since we are only interested in getting the uniforms, and they are all declared at the top level. Therefore we don't care that the parsing doesn't understand `{` and `}`.
+
+The code currently only extracts the uniforms, it would be useful to extract the attributes as well. It can be done in almost exactly the same way, just producing a different shape of the object. And I have skipped the uniform types `sampler2D` and `samplerCube`, but it shouldn't be too difficult to implement them too.

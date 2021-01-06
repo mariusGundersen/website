@@ -1,14 +1,15 @@
 
+  <!DOCTYPE html>
   <html lang="en">
 
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marius Gundersen</title>
-    <link rel="icon" type="image/png" href="/favicon.png"></link>
-    <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
-    <link rel="stylesheet" href="/style/main.css?v=1591396731352"></link>
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591396731352"></link>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=700px, initial-scale=0.5" />
+    <link rel="stylesheet" href="/style/main.css?v=1609936985787" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1609936985787" />
   </head>
 
   <body>
@@ -34,22 +35,22 @@
 <p>It&#39;s a bit tricky to explain exactly how and when to use this trick, so I&#39;ll look at a specific use-case and work our way towards a specific solution. From there we can generalize it until we hit on the limitations of this pattern and find other specific use-cases for it within those limitations.</p>
 <h3 id="an-imaginary-inefficient-orm">An imaginary inefficient ORM</h3>
 <p>Let&#39;s imagine we are working on an ORM library, one that will be really good. It will work like many other ORMs, where a C# class maps to a table in our database. Let&#39;s ignore if this is a good or bad idea and focus on just a tiny part of the implementation, the way we map the class to the table. We can use the <code>[Table]</code> attribute like so:</p>
-<pre><code class="language-csharp">[<span class="hljs-meta">Table(<span class="hljs-meta-string">"BlogPosts"</span>)</span>]
-<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">BlogPost</span>
-{
-  <span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> Id { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+<pre><code class="language-csharp">[Table(<span class="hljs-string">&quot;BlogPosts&quot;</span>)]
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">BlogPost</span>
+{</span>
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">int</span> Id { <span class="hljs-built_in">get</span>; <span class="hljs-built_in">set</span>; }
 
-  <span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> Title { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+  <span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> Title { <span class="hljs-built_in">get</span>; <span class="hljs-built_in">set</span>; }
 
-  <span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> Content { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+  <span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> Content { <span class="hljs-built_in">get</span>; <span class="hljs-built_in">set</span>; }
 
-  <span class="hljs-keyword">public</span> DateTime Published { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+  <span class="hljs-keyword">public</span> DateTime Published { <span class="hljs-built_in">get</span>; <span class="hljs-built_in">set</span>; }
 }</code></pre>
 <p>The class <code>BlogPost</code> maps to the table <code>BlogPosts</code> in the database through the attribute <code>[Table]</code>. How can our code find out this? We need to use reflection.</p>
-<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> Reflections
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Reflections</span>
 {
-  <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">string</span> GetTableName&lt;T&gt;<span class="hljs-function"><span class="hljs-params">()</span>
-    =&gt;</span> <span class="hljs-keyword">typeof</span>(T)
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">string</span> <span class="hljs-title">GetTableName</span>&lt;<span class="hljs-title">T</span>&gt;(<span class="hljs-params"></span>)</span>
+    =&gt; <span class="hljs-keyword">typeof</span>(T)
       .CustomAttributes
       .OfType&lt;TableAttribute&gt;()
       .First()
@@ -57,13 +58,13 @@
 }</code></pre>
 <p>This looks up all the attributes applied to a type, finds the <code>Table</code> attributes and takes the first one and gets the <code>Name</code> property from it. If you have used reflection in C# then this will look familiar and straight forward. But you will then also know that it&#39;s not very efficient.</p>
 <p>Reflection is slow. If we run this method every time we query the database then we are not being as efficient as we could be. The <code>Name</code> property of the <code>Table</code> attribute applied to a specific type will not change while the code is running, so we have a method that will slowly find the same answer every time we call it. We can speed it up by saving the result in a dictionary, so that we don&#39;t need to use reflection every time:</p>
-<pre><code class="language-csharp">public static class Reflections
-{
-  private static ConcurrentDictionary&lt;Type, string&gt; TableNames = new ConcurrentDictionary&lt;Type, string&gt;();
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Reflections</span>
+</span>{
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ConcurrentDictionary&lt;Type, <span class="hljs-built_in">string</span>&gt; TableNames = <span class="hljs-keyword">new</span> ConcurrentDictionary&lt;Type, <span class="hljs-built_in">string</span>&gt;();
 
-  public static string GetTableName&lt;T&gt;()
-    =&gt; TableNames.GetOrAdd(typeof(T),<span class="hljs-built_in"> type </span>=&gt;<span class="hljs-built_in"> type
-</span>      .GetCustomAttributes(typeof(TableAttribute), <span class="hljs-literal">true</span>)
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">string</span> GetTableName&lt;T&gt;<span class="hljs-function">()
+    =&gt;</span> TableNames.GetOrAdd(<span class="hljs-keyword">typeof</span>(T), <span class="hljs-function"><span class="hljs-params">type</span> =&gt;</span> <span class="hljs-keyword">type</span>
+      .GetCustomAttributes(<span class="hljs-keyword">typeof</span>(TableAttribute), <span class="hljs-literal">true</span>)
       .Cast&lt;TableAttribute&gt;()
       .FirstOrDefault()
       ?.Name);
@@ -73,12 +74,12 @@
 <p>So let&#39;s do what the name implies and add a private static generic inner class:</p>
 <pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Reflections</span>
 {
-  <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> GetTableName&lt;T&gt;()
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">string</span> <span class="hljs-title">GetTableName</span>&lt;<span class="hljs-title">T</span>&gt;(<span class="hljs-params"></span>)</span>
     =&gt; TableName&lt;T&gt;.Name;
 
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">TableName</span>&lt;T&gt;
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">TableName</span>&lt;<span class="hljs-title">T</span>&gt;
   {
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">readonly</span> <span class="hljs-keyword">string</span> Name = <span class="hljs-keyword">typeof</span>(T)
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">readonly</span> <span class="hljs-built_in">string</span> Name = <span class="hljs-keyword">typeof</span>(T)
       .GetCustomAttributes(<span class="hljs-keyword">typeof</span>(TableAttribute), <span class="hljs-literal">true</span>)
       .Cast&lt;TableAttribute&gt;()
       .FirstOrDefault()
@@ -94,51 +95,51 @@
 <span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Program</span>
 {
   [<span class="hljs-meta">Benchmark</span>]
-  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> <span class="hljs-title">Reflection</span>(<span class="hljs-params"></span>)</span> =&gt; GetFromReflection&lt;BlogPost&gt;();
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> <span class="hljs-title">Reflection</span>(<span class="hljs-params"></span>)</span> =&gt; GetFromReflection&lt;BlogPost&gt;();
 
   [<span class="hljs-meta">Benchmark</span>]
-  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> <span class="hljs-title">Dictionary</span>(<span class="hljs-params"></span>)</span> =&gt; GetFromDictionary&lt;BlogPost&gt;();
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> <span class="hljs-title">Dictionary</span>(<span class="hljs-params"></span>)</span> =&gt; GetFromDictionary&lt;BlogPost&gt;();
 
   [<span class="hljs-meta">Benchmark</span>]
-  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">string</span> <span class="hljs-title">Inner</span>(<span class="hljs-params"></span>)</span> =&gt; GetFromInner&lt;BlogPost&gt;();
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> <span class="hljs-title">Inner</span>(<span class="hljs-params"></span>)</span> =&gt; GetFromInner&lt;BlogPost&gt;();
 
   <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Main</span>(<span class="hljs-params"></span>)</span>
     =&gt; BenchmarkRunner.Run&lt;Program&gt;();
 
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> GetFromReflection&lt;T&gt;()
+  <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">string</span> <span class="hljs-title">GetFromReflection</span>&lt;<span class="hljs-title">T</span>&gt;(<span class="hljs-params"></span>)</span>
     =&gt; <span class="hljs-keyword">typeof</span>(T)
       .GetCustomAttributes(<span class="hljs-keyword">typeof</span>(TableAttribute), <span class="hljs-literal">true</span>)
       .Cast&lt;TableAttribute&gt;()
       .FirstOrDefault()
       ?.Name;
 
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Dictionary&lt;Type, <span class="hljs-keyword">string</span>&gt; _dictionary = <span class="hljs-keyword">new</span> Dictionary&lt;Type, <span class="hljs-keyword">string</span>&gt;();
+  <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-title">Dictionary</span>&lt;<span class="hljs-title">Type</span>, <span class="hljs-title">string</span>&gt; _dictionary</span> = <span class="hljs-keyword">new</span> Dictionary&lt;Type, <span class="hljs-built_in">string</span>&gt;();
 
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> GetFromDictionary&lt;T&gt;()
+  <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">string</span> <span class="hljs-title">GetFromDictionary</span>&lt;<span class="hljs-title">T</span>&gt;(<span class="hljs-params"></span>)</span>
     =&gt; _dictionary.TryGetValue(<span class="hljs-keyword">typeof</span>(T), <span class="hljs-keyword">out</span> <span class="hljs-keyword">var</span> result) ? result : _dictionary[<span class="hljs-keyword">typeof</span>(T)] = GetFromReflection&lt;T&gt;();
 
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">string</span> GetFromInner&lt;T&gt;()
+  <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">string</span> <span class="hljs-title">GetFromInner</span>&lt;<span class="hljs-title">T</span>&gt;(<span class="hljs-params"></span>)</span>
     =&gt; InnerClass&lt;T&gt;.Name;
 
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">InnerClass</span>&lt;T&gt;
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">InnerClass</span>&lt;<span class="hljs-title">T</span>&gt;
   {
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">readonly</span> <span class="hljs-keyword">string</span> Name = GetFromReflection&lt;T&gt;();
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">readonly</span> <span class="hljs-built_in">string</span> Name = GetFromReflection&lt;T&gt;();
   }
 }</code></pre>
 <p>This is the result I get on my machine:</p>
-<pre><code class="language-none">BenchmarkDotNet=v<span class="hljs-number">0</span>.<span class="hljs-number">11.5</span>, OS=Windows <span class="hljs-number">10.0</span>.<span class="hljs-number">18362</span>
-Intel Core i7-<span class="hljs-number">3517</span>U CPU <span class="hljs-number">1.90</span>GHz (Ivy Bridge), <span class="hljs-number">1</span> CPU, <span class="hljs-number">4</span> logical <span class="hljs-keyword">and</span> <span class="hljs-number">2</span> physical cores
+<pre><code class="language-none">BenchmarkDotNet=v0.<span class="hljs-number">11.5</span>, OS=Windows <span class="hljs-number">10.0</span>.<span class="hljs-number">18362</span>
+Intel Core i7<span class="hljs-number">-3517</span>U CPU <span class="hljs-number">1.90</span>GHz (Ivy Bridge), <span class="hljs-number">1</span> CPU, <span class="hljs-number">4</span> logical <span class="hljs-keyword">and</span> <span class="hljs-number">2</span> physical cores
 .NET Core SDK=<span class="hljs-number">2.2</span>.<span class="hljs-number">300</span>
   [Host] : .NET Core <span class="hljs-number">2.2</span>.<span class="hljs-number">5</span> (CoreCLR <span class="hljs-number">4.6</span>.<span class="hljs-number">27617.05</span>, CoreFX <span class="hljs-number">4.6</span>.<span class="hljs-number">27618.01</span>), <span class="hljs-number">64</span>bit RyuJIT
   Core   : .NET Core <span class="hljs-number">2.2</span>.<span class="hljs-number">5</span> (CoreCLR <span class="hljs-number">4.6</span>.<span class="hljs-number">27617.05</span>, CoreFX <span class="hljs-number">4.6</span>.<span class="hljs-number">27618.01</span>), <span class="hljs-number">64</span>bit RyuJIT
 
 Job=Core  Runtime=Core
 
-<span class="hljs-params">|     Method |</span>         Mean <span class="hljs-params">|       Error |</span>      StdDev <span class="hljs-params">| Rank |</span>
-<span class="hljs-params">|----------- |</span>-------------<span class="hljs-symbol">:|------------</span><span class="hljs-symbol">:|------------</span><span class="hljs-symbol">:|-----</span><span class="hljs-symbol">:|</span>
-<span class="hljs-params">| Reflection |</span> <span class="hljs-number">5</span>,<span class="hljs-number">426.419</span> ns <span class="hljs-params">| 120.0703 ns |</span> <span class="hljs-number">328.6905</span> ns <span class="hljs-params">|    3 |</span>
-<span class="hljs-params">| Dictionary |</span>    <span class="hljs-number">32.038</span> ns <span class="hljs-params">|   0.1739 ns |</span>   <span class="hljs-number">0</span>.<span class="hljs-number">1627</span> ns <span class="hljs-params">|    2 |</span>
-<span class="hljs-params">|      Inner |</span>     <span class="hljs-number">3.844</span> ns <span class="hljs-params">|   0.0532 ns |</span>   <span class="hljs-number">0</span>.<span class="hljs-number">0471</span> ns <span class="hljs-params">|    1 |</span>
+|     Method |         Mean |       Error |      StdDev | Rank |
+|----------- |-------------<span class="hljs-symbol">:|------------</span><span class="hljs-symbol">:|------------</span><span class="hljs-symbol">:|-----</span><span class="hljs-symbol">:|</span>
+| Reflection | <span class="hljs-number">5</span>,<span class="hljs-number">426.419</span> ns | <span class="hljs-number">120.0703</span> ns | <span class="hljs-number">328.6905</span> ns |    <span class="hljs-number">3</span> |
+| Dictionary |    <span class="hljs-number">32.038</span> ns |   0.<span class="hljs-number">1739</span> ns |   0.<span class="hljs-number">1627</span> ns |    <span class="hljs-number">2</span> |
+|      Inner |     <span class="hljs-number">3.844</span> ns |   0.0532 ns |   0.0471 ns |    <span class="hljs-number">1</span> |
 </code></pre>
 <p>While the Dictionary code takes about 32ns to complete the Inner class version runs in 3.8ns, or more than 8x as fast! It varies a bit, and this is a very simple scenario where the dictionary contains only a single item, so I suspect the Inner method will be even more performant, compared to the Dictionary method, in the real world.</p>
 <h3 id="where-does-this-trick-come-from">Where does this trick come from?</h3>
@@ -165,47 +166,47 @@ Job=Core  Runtime=Core
 <p>A place where reflection is often used is for dependency injection, like the <code>IServiceProvider</code> in .NET core. We can use the trick to make a super fast service lookup, like this:</p>
 <pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FastServiceProvider</span>
 </span>{
-  <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> AddService&lt;TService&gt;(Func&lt;TService&gt; factory)
-    =&gt; Inner&lt;TService&gt;.ServiceFactory = factory;
+  <span class="hljs-keyword">public</span> void <span class="hljs-type">AddService</span>&lt;<span class="hljs-type">TService</span>&gt;(<span class="hljs-type">Func</span>&lt;<span class="hljs-type">TService</span>&gt; factory)
+    <span class="hljs-operator">=&gt;</span> <span class="hljs-type">Inner</span>&lt;<span class="hljs-type">TService</span>&gt;.<span class="hljs-type">ServiceFactory</span> <span class="hljs-operator">=</span> factory;
 
-  <span class="hljs-keyword">public</span> TService GetService&lt;TService&gt;()
-    =&gt; Inner&lt;TService&gt;.ServiceFactory();
+  <span class="hljs-keyword">public</span> <span class="hljs-type">TService</span> <span class="hljs-type">GetService</span>&lt;<span class="hljs-type">TService</span>&gt;()
+    <span class="hljs-operator">=&gt;</span> <span class="hljs-type">Inner</span>&lt;<span class="hljs-type">TService</span>&gt;.<span class="hljs-type">ServiceFactory</span>();
 
-  <span class="hljs-keyword">private</span> <span class="hljs-built_in">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Inner</span>&lt;<span class="hljs-title">TService</span>&gt;
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Inner</span>&lt;<span class="hljs-title">TService</span>&gt;
   </span>{
-      <span class="hljs-keyword">public</span> <span class="hljs-built_in">static</span> Func&lt;TService&gt; ServiceFactory;
+      <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">Func</span>&lt;<span class="hljs-type">TService</span>&gt; <span class="hljs-type">ServiceFactory</span>;
   }
 }</code></pre>
 <p>This is a very limited example that only lets you register a factory function and look up a service using the generic <code>GetService&lt;TService&gt;()</code> function. But it has a bigger problem, namely that you can&#39;t have multiple instances of <code>FastServiceProvider</code> with different services, since it all relies on the static inner class. How can we work around this problem? First, we need some way to differentiate different instances of <code>FastServiceProvider</code>, and we can do that by making it too generic. The inner class is now unique per two generic type parameters, so as long as we create a <code>new FastServiceProvider&lt;TypeA&gt;</code> and a <code>FastServiceProvider&lt;TypeB&gt;</code> then they will have different inner classes and different &quot;dictionaries&quot; of services.</p>
-<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-symbol">FastServiceProvider</span>&lt;<span class="hljs-symbol">T</span>&gt;
-{
-  <span class="hljs-keyword">public</span> <span class="hljs-built_in">void</span> AddService&lt;TService&gt;(Func&lt;TService&gt; factory)
-    =&gt; Inner&lt;TService&gt;.ServiceFactory = factory;
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FastServiceProvider</span>&lt;<span class="hljs-title">T</span>&gt;
+</span>{
+  <span class="hljs-keyword">public</span> void <span class="hljs-type">AddService</span>&lt;<span class="hljs-type">TService</span>&gt;(<span class="hljs-type">Func</span>&lt;<span class="hljs-type">TService</span>&gt; factory)
+    <span class="hljs-operator">=&gt;</span> <span class="hljs-type">Inner</span>&lt;<span class="hljs-type">TService</span>&gt;.<span class="hljs-type">ServiceFactory</span> <span class="hljs-operator">=</span> factory;
 
-  <span class="hljs-keyword">public</span> TService GetService&lt;TService&gt;()
-    =&gt; Inner&lt;TService&gt;.ServiceFactory();
+  <span class="hljs-keyword">public</span> <span class="hljs-type">TService</span> <span class="hljs-type">GetService</span>&lt;<span class="hljs-type">TService</span>&gt;()
+    <span class="hljs-operator">=&gt;</span> <span class="hljs-type">Inner</span>&lt;<span class="hljs-type">TService</span>&gt;.<span class="hljs-type">ServiceFactory</span>();
 
-  <span class="hljs-keyword">private</span> static <span class="hljs-keyword">class</span> <span class="hljs-symbol">Inner</span>&lt;<span class="hljs-symbol">TService</span>&gt;
-  {
-      <span class="hljs-keyword">public</span> static Func&lt;TService&gt; ServiceFactory;
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Inner</span>&lt;<span class="hljs-title">TService</span>&gt;
+  </span>{
+      <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">Func</span>&lt;<span class="hljs-type">TService</span>&gt; <span class="hljs-type">ServiceFactory</span>;
   }
 }</code></pre>
 <p>But, we have to make sure to always use a new type every time we create a new instance of <code>FastServiceProvider&lt;T&gt;</code>, or else two instances will share services! We need some way to create the generic <code>FastServiceProvider&lt;T&gt;</code> with a different type <code>T</code> each time. We can do that by dynamically creating types, at runtime, when we need one. The code for doing just that look something like this:</p>
 <pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">MyTypeBuilder</span>
 {
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">int</span> Counter { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; } = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-built_in">int</span> Counter { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; } = <span class="hljs-number">0</span>;
 
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> AssemblyName MyAssemblyName { <span class="hljs-keyword">get</span>; } = <span class="hljs-keyword">new</span> AssemblyName(<span class="hljs-string">"MyAssembly"</span>);
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> AssemblyName MyAssemblyName { <span class="hljs-keyword">get</span>; } = <span class="hljs-keyword">new</span> AssemblyName(<span class="hljs-string">&quot;MyAssembly&quot;</span>);
 
   <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> AssemblyBuilder MyAssembly { <span class="hljs-keyword">get</span>; } = AssemblyBuilder.DefineDynamicAssembly(MyAssemblyName, AssemblyBuilderAccess.Run);
 
-  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ModuleBuilder MainModule { <span class="hljs-keyword">get</span>; } = MyAssembly.DefineDynamicModule(<span class="hljs-string">"MainModule"</span>);
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> ModuleBuilder MainModule { <span class="hljs-keyword">get</span>; } = MyAssembly.DefineDynamicModule(<span class="hljs-string">&quot;MainModule&quot;</span>);
 
   <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Type <span class="hljs-title">CreateType</span>(<span class="hljs-params"></span>)</span>
-    =&gt; GetTypeBuilder(<span class="hljs-string">$"MyType<span class="hljs-subst">{Counter++}</span>"</span>)
+    =&gt; GetTypeBuilder(<span class="hljs-string">$&quot;MyType<span class="hljs-subst">{Counter++}</span>&quot;</span>)
       .CreateType();
 
-  <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> TypeBuilder <span class="hljs-title">GetTypeBuilder</span>(<span class="hljs-params"><span class="hljs-keyword">string</span> name</span>)</span>
+  <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> TypeBuilder <span class="hljs-title">GetTypeBuilder</span>(<span class="hljs-params"><span class="hljs-built_in">string</span> name</span>)</span>
     =&gt; MainModule.DefineType(name,
         TypeAttributes.Public |
         TypeAttributes.Class |
@@ -217,35 +218,35 @@ Job=Core  Runtime=Core
 }</code></pre>
 <p>Don&#39;t worry too much about this code, it is mostly copied from a Stack Overflow answer. It creates a new Type in an assembly created at runtime. The type we create here is empty, since we don&#39;t need it for anything apart from being unique. The <code>Counter</code> that increments ensures that the name is unique.</p>
 <p>Now that we have a way to create new unique types whenever we need them we just have to combine it with the generic <code>FastServiceProvider&lt;T&gt;</code> somehow. We&#39;ve used inner classes to solve all kinds of problems so far, so why stop now? We can take the generic class we have and put it inside a new class, one that is static and only has a single public method, <code>Create()</code>. This creates a new instance using a new type. The way it does it is through reflection and to make it all easy to use I&#39;ve created an interface that we can rely on.</p>
-<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">interface</span> <span class="hljs-title">IFastServiceProvider</span>
-</span>{
-  <span class="hljs-keyword">void</span> AddService&lt;TService&gt;(Func&lt;TService&gt; factory);
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">IFastServiceProvider</span>
+{
+  <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">AddService</span>&lt;<span class="hljs-title">TService</span>&gt;(<span class="hljs-params">Func&lt;TService&gt; factory</span>)</span>;
 
-  TService GetService&lt;TService&gt;();
+  <span class="hljs-function">TService <span class="hljs-title">GetService</span>&lt;<span class="hljs-title">TService</span>&gt;(<span class="hljs-params"></span>)</span>;
 }
 
-<span class="hljs-keyword">public</span> <span class="hljs-built_in">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">FastServiceProvider</span>
-</span>{
-  <span class="hljs-keyword">public</span> <span class="hljs-built_in">static</span> IFastServiceProvider Create()
-    =&gt; (IFastServiceProvider) typeof(FastServiceProvider)
-      .GetMethod(<span class="hljs-string">"CreateInner"</span>, BindingFlags.NonPublic | BindingFlags.<span class="hljs-built_in">Static</span>)
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">FastServiceProvider</span>
+{
+  <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> IFastServiceProvider <span class="hljs-title">Create</span>(<span class="hljs-params"></span>)</span>
+    =&gt; (IFastServiceProvider) <span class="hljs-keyword">typeof</span>(FastServiceProvider)
+      .GetMethod(<span class="hljs-string">&quot;CreateInner&quot;</span>, BindingFlags.NonPublic | BindingFlags.Static)
       .MakeGenericMethod(MyTypeBuilder.CreateType())
       .Invoke(<span class="hljs-literal">null</span>, <span class="hljs-literal">null</span>);
 
-  <span class="hljs-keyword">private</span> <span class="hljs-built_in">static</span> InnerFast&lt;T&gt; CreateInner&lt;T&gt;()
+  <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-title">InnerFast</span>&lt;<span class="hljs-title">T</span>&gt; <span class="hljs-title">CreateInner</span>&lt;<span class="hljs-title">T</span>&gt;(<span class="hljs-params"></span>)</span>
     =&gt; <span class="hljs-keyword">new</span> InnerFast&lt;T&gt;();
 
-  <span class="hljs-keyword">private</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">GenericServiceProvider</span>&lt;<span class="hljs-title">T</span>&gt;
-  </span>{
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> AddService&lt;TService&gt;(Func&lt;TService&gt; factory)
+  <span class="hljs-keyword">private</span> <span class="hljs-keyword">class</span> <span class="hljs-title">GenericServiceProvider</span>&lt;<span class="hljs-title">T</span>&gt;
+  {
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">AddService</span>&lt;<span class="hljs-title">TService</span>&gt;(<span class="hljs-params">Func&lt;TService&gt; factory</span>)</span>
       =&gt; Inner&lt;TService&gt;.ServiceFactory = factory;
 
-    <span class="hljs-keyword">public</span> TService GetService&lt;TService&gt;()
+    <span class="hljs-function"><span class="hljs-keyword">public</span> TService <span class="hljs-title">GetService</span>&lt;<span class="hljs-title">TService</span>&gt;(<span class="hljs-params"></span>)</span>
       =&gt; Inner&lt;TService&gt;.ServiceFactory();
 
-    <span class="hljs-keyword">private</span> <span class="hljs-built_in">static</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Inner</span>&lt;<span class="hljs-title">TService</span>&gt;
-    </span>{
-        <span class="hljs-keyword">public</span> <span class="hljs-built_in">static</span> Func&lt;TService&gt; ServiceFactory;
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Inner</span>&lt;<span class="hljs-title">TService</span>&gt;
+    {
+        <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Func&lt;TService&gt; ServiceFactory;
     }
   }
 }</code></pre>

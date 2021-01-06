@@ -1,14 +1,15 @@
 
+  <!DOCTYPE html>
   <html lang="en">
 
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marius Gundersen</title>
-    <link rel="icon" type="image/png" href="/favicon.png"></link>
-    <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
-    <link rel="stylesheet" href="/style/main.css?v=1591396731454"></link>
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591396731454"></link>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=700px, initial-scale=0.5" />
+    <link rel="stylesheet" href="/style/main.css?v=1609936986019" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1609936986019" />
   </head>
 
   <body>
@@ -46,24 +47,24 @@
 <p>The other two methods, <code>get clientHeight</code> and <code>get length</code> are the real culprits. By following the percentage of execution time in the Top Down view we can navigate down into the call tree and find where these two getters are used. The image below shows that the <code>injectItems</code> takes up almost all the execution time, and that it uses jQuery to set the <code>innerHTML</code>, which accounts for 25% of the time spent. But further down we see that the method <code>reportInjectedItems</code> takes up more than 60% of the time. So, what does this method do?</p>
 <p><a class="imageLink" href="fullsize/twitter_updateTimestamps.PNG"><img src="thumbnail/twitter_updateTimestamps.PNG" /></a></p>
 <p>Digging down into it we see two methods that take up most of the time, <code>updateTimestamps</code> and <code>watchUnloadedCards</code>. Lets start with the first one.</p>
-<pre><code class="language-js"><span class="hljs-keyword">this</span>.updateTimestamps = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">this</span>.$node.find(<span class="hljs-string">".js-relative-timestamp"</span>).each(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">a, b</span>) </span>{
+<pre><code class="language-js"><span class="hljs-built_in">this</span>.updateTimestamps = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">this</span>.$node.find(<span class="hljs-string">&quot;.js-relative-timestamp&quot;</span>).each(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">a, b</span>) </span>{
         <span class="hljs-keyword">var</span> c = $(b);
-        <span class="hljs-keyword">var</span> d = c.data(<span class="hljs-string">"time"</span>);
-        <span class="hljs-keyword">var</span> e = <span class="hljs-keyword">this</span>.isMuricanLocale() ? <span class="hljs-string">"abbreviated"</span> : <span class="hljs-string">"short"</span>;
-        <span class="hljs-keyword">var</span> f = <span class="hljs-keyword">this</span>.formatTimestamp(d, e);
+        <span class="hljs-keyword">var</span> d = c.data(<span class="hljs-string">&quot;time&quot;</span>);
+        <span class="hljs-keyword">var</span> e = <span class="hljs-built_in">this</span>.isMuricanLocale() ? <span class="hljs-string">&quot;abbreviated&quot;</span> : <span class="hljs-string">&quot;short&quot;</span>;
+        <span class="hljs-keyword">var</span> f = <span class="hljs-built_in">this</span>.formatTimestamp(d, e);
         <span class="hljs-keyword">if</span>(!f.relative){
-            c.removeClass(<span class="hljs-string">"js-relative-timestamp"</span>);
+            c.removeClass(<span class="hljs-string">&quot;js-relative-timestamp&quot;</span>);
         }
         c.text(f.text);
-        <span class="hljs-keyword">this</span>.updateAccessibleShortTimestamp(c, d);
-    }.bind(<span class="hljs-keyword">this</span>))
+        <span class="hljs-built_in">this</span>.updateAccessibleShortTimestamp(c, d);
+    }.bind(<span class="hljs-built_in">this</span>))
 }</code></pre>
 <p>Remember that the new tweets are returned by the server as rendered HTML, and that twitter shows tweets with friendly timestamps, like &quot;a few minutes ago&quot;. These timestamps must be updated regularly since they are relative. Since the tweets are loaded in the background every 30 seconds the timestamps rendered in the HTML is outdated very quickly, and needs to be updated before the HTML is shown to the user.</p>
 <p><a class="imageLink" href="fullsize/twitter_isMuricanLocale.PNG"><img src="thumbnail/twitter_isMuricanLocale.PNG" /></a></p>
-<pre><code class="language-js"><span class="hljs-keyword">this</span>.isMuricanLocale = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">var</span> a = [<span class="hljs-string">"en"</span>];
-    <span class="hljs-keyword">return</span> $.inArray($(<span class="hljs-string">"html"</span>).attr(<span class="hljs-string">"lang"</span>), a) &gt;= <span class="hljs-number">0</span>
+<pre><code class="language-js"><span class="hljs-built_in">this</span>.isMuricanLocale = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> a = [<span class="hljs-string">&quot;en&quot;</span>];
+    <span class="hljs-keyword">return</span> $.inArray($(<span class="hljs-string">&quot;html&quot;</span>).attr(<span class="hljs-string">&quot;lang&quot;</span>), a) &gt;= <span class="hljs-number">0</span>
 }</code></pre>
 <p>The <code>isMuricanLocale</code> function had such a strange name that I had to look into it, and from the profiling result I saw that it took up quite a bit of the time. This function looks up the <code>lang</code> attribute on the <code>&lt;html&gt;</code> element and checks if it is <code>en</code>, but it does it in an incredibly inefficient way, using arrays. It also does this for every tweet, when the value is unlikely to change at all. It would have been enough to call this method once and stored the result in a variable outside the <code>.each()</code> loop. That would have reduced the time it takes to render all the tweets by a few hundred milliseconds.</p>
 <p>The remaining time spent in <code>updateTimestamps</code> is from creating the jQuery object (<code>var c = $(b)</code> in the code above). I don&#39;t see any way to improve this right now, so lets take a look at the other slow function, the <code>watchUnloadedCards</code>.</p>
@@ -87,9 +88,9 @@
         <span class="hljs-keyword">var</span> b = <span class="hljs-keyword">this</span>.loadedCards[a];
         <span class="hljs-keyword">if</span> (!viewportHelpers.isWithinBounds(<span class="hljs-keyword">this</span>.$viewport, $(b), <span class="hljs-number">200</span>)) {
             <span class="hljs-keyword">var</span> c = $(b);
-            <span class="hljs-keyword">var</span> d = c.find(<span class="hljs-string">"iframe"</span>).attr(<span class="hljs-string">"height"</span>);
+            <span class="hljs-keyword">var</span> d = c.find(<span class="hljs-string">&quot;iframe&quot;</span>).attr(<span class="hljs-string">&quot;height&quot;</span>);
             <span class="hljs-keyword">if</span>(d){
-              c.css(<span class="hljs-string">"min-height"</span>, d);
+              c.css(<span class="hljs-string">&quot;min-height&quot;</span>, d);
             }
             <span class="hljs-keyword">this</span>.unloadCard(b);
             <span class="hljs-keyword">this</span>.watchedCards.push(b);
@@ -111,9 +112,9 @@
 <p>A better function to delay than <code>processWatchedCards</code> is probably <code>reportInjectedItems</code>. This is the function we looked at right at the beginning, the one that takes up more than 60% of the time. It triggers a few listeners that are handled synchronously, listeners that probably should be handled asynchronously. So a simple fix to this function is to wrap the two triggers in a timeout, which ensure that the triggers are handled after the tweets are inserted into the DOM, not before. The function could look something like this: </p>
 <pre><code class="language-js">this.reportInjectedItems = <span class="hljs-keyword">function</span>(a, b, c) {
     <span class="hljs-keyword">function</span> g(a) {
-        <span class="hljs-keyword">return</span> b == "uiHasInjectedNewTimeline" 
-            || b == "uiHasInjectedOldTimelineItems" 
-            || b == "uiHasInjectedRangeTimelineItems"
+        <span class="hljs-keyword">return</span> b == &quot;uiHasInjectedNewTimeline&quot; 
+            || b == &quot;uiHasInjectedOldTimelineItems&quot; 
+            || b == &quot;uiHasInjectedRangeTimelineItems&quot;
     }
     var d = [], e = <span class="hljs-number">0</span>;
     a.<span class="hljs-keyword">each</span>(<span class="hljs-keyword">function</span>(a, c) {
@@ -121,14 +122,14 @@
             d = d.concat(this.extraInteractionData($(c)));
             d.push(this.interactionData(this.findFirstItemContent($(c))));
             e = Math.max(e, this.extractTimestamp($(c)));
-            this.<span class="hljs-keyword">trigger</span>(c, "uiHasInjectedTimelineItem")
+            this.<span class="hljs-keyword">trigger</span>(c, &quot;uiHasInjectedTimelineItem&quot;)
         }
     }.bind(this));
     d = this.removeDuplicates(d);
     <span class="hljs-keyword">if</span>(g(b)){
         var f = {
             scribeContext: {
-                component: "stream"
+                component: &quot;stream&quot;
             },
             scribeData: {},
             items: d
@@ -137,7 +138,7 @@
             f.scribeData.event_initiator = eventInitiators.clientSideApp;
         }
         setTimeout(<span class="hljs-keyword">function</span>(){
-            this.<span class="hljs-keyword">trigger</span>("uiWantsToRefreshTimestamps");
+            this.<span class="hljs-keyword">trigger</span>(&quot;uiWantsToRefreshTimestamps&quot;);
             this.<span class="hljs-keyword">trigger</span>(b, f)
         }.bind(this), <span class="hljs-number">100</span>);
     }
