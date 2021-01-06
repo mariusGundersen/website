@@ -8,7 +8,7 @@ import frontMatter from 'gulp-front-matter';
 import minify from 'gulp-minify-css';
 import plumber from 'gulp-plumber';
 import sort from 'gulp-sort';
-import uglify from 'gulp-uglify';
+import uglify from 'gulp-uglify-es';
 import merge from 'merge-stream';
 import * as path from 'path';
 import rehypeWaves from 'rehype-waves';

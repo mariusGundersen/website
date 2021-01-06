@@ -1,11 +1,12 @@
 ---
 title: "Template Literal Types"
 short: "Exploring template literal types in TypeScript for some WebGL fun"
-date: "2021-01-07"
+date: "2021-01-06"
 type: "article"
 ---
 
 import CodeWave from "../../waves/code-wave.jsx";
+import Triangle from "./Triangle.jsx";
 
 # Template Literal Types
 
@@ -69,9 +70,11 @@ requestAnimationFrame(function render(time) {
 });
 ```
 
-This is about as simple of a WebGL program you can have, but don't worry if it looks intimidating, we don't really need to understand how it works. The important bits are the ones I have commented. There is one attribute (`position`) and one uniform (`time`), and they show up twice, once in the shader and once in the js code below. For the WebGL code to work the attributes and uniforms used in the shaders have to be given a value in the js code, and they have to be given the correct type of value. If the value isn't set, the name is spelled wrong or the wrong js type is given, then the code will either not behave correctly or not work at all. So, it would be useful to have TypeScript check for us if we have set the right attributes and uniforms for us, by comparing the TypeScript code with the shader program. But that means we have to teach TypeScript to understand a C program string.
+This code results in this fantastic looking WebGL demo:
 
-## Template Literal Types
+<Triangle />
+
+This is about as simple of a WebGL program you can have, but don't worry if it looks intimidating, we don't really need to understand how it works. The important bits are the ones I have commented. There is one attribute (`position`) and one uniform (`time`), and they show up twice, once in the shaders and once in the js code. For the WebGL code to work the attributes and uniforms used in the shaders have to be given a value in the js code, and they have to be given the correct type of value. If the value isn't set, the name is spelled wrong or the wrong js type is given, then the code will either not behave correctly or not work at all. So, it would be useful to have TypeScript check for us if we have set the right attributes and uniforms for us, by comparing the TypeScript code with the shader program. But that means we have to teach TypeScript to understand a C program string. So let's do that!
 
 <CodeWave>
 
@@ -85,7 +88,7 @@ const success: Uniform = "uniform vec2 something";
 const failure: Uniform = "not a uniform";
 ```
 
-In this code we have a type called `Uniform` and it is defined using the template literal syntax. We can use this type on a variable, and that makes it only possible to assign values to that variable that matches the string pattern. In the above example that means it has to start with the string `uniform` and then contain some more stuff with at least one space. This matches the pattern of the uniforms that we have in the shader code above.
+In this code we have a type called `Uniform` and it is defined using the template literal syntax. We can use this type on a variable, and that makes it only possible to assign values to that variable that matches the string pattern. That means variables of type `Uniform` have to start with the string `uniform` and then contain some more stuff (with at least one space between any string values). In the code example at the beginning of the article you can see that in the `fragmentShader` there is one line with `uniform float time` which will match this pattern.
 
 You can find more information about template literal types in the [TypeScript documentation](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html).
 
@@ -105,6 +108,9 @@ type Uniform = `uniform ${UniformType} ${string}`;
 const success: Uniform = "uniform vec2 something";
 
 // this is not ok
+const failure: Uniform = "not a uniform";
+
+// this is also not ok
 const failure: Uniform = "uniform unknown something";
 ```
 
@@ -128,7 +134,7 @@ type Uniform<
 // this is ok
 const success: Uniform<"vec2", "something"> = "uniform vec2 something";
 
-// this is not ok
+// this is not OK
 const failure: Uniform<"float", "something"> = "uniform vec2 something";
 ```
 
@@ -521,3 +527,7 @@ So now, given the `vertexShader` and the `fragmentShader` the `twgl.setUniforms(
 This is of course just a simple demonstration, and it does not handle all scenarios and it can be improved quite a bit. For example, since it splits on semicolon only, it's not able to handle comments. Comments start with `//` and end at a newline, but we don't split our code on newlines, only on semicolon, so the statement on the line after a comment is included with the comment. Note also that since we split on semicolon we don't actually parse the code very well, but that's not necessary since we are only interested in getting the uniforms, and they are all declared at the top level. Therefore we don't care that the parsing doesn't understand `{` and `}`.
 
 The code currently only extracts the uniforms, it would be useful to extract the attributes as well. It can be done in almost exactly the same way, just producing a different shape of the object. And I have skipped the uniform types `sampler2D` and `samplerCube`, but it shouldn't be too difficult to implement them too.
+
+A lot of the code above is based on work done by others, for example the [ts-sql](https://github.com/codemix/ts-sql) I mentioned earlier. There is a [curated list of awesome template literal types](https://github.com/ghoullier/awesome-template-literal-types) and examples by very clever people. TypeScript has become very powerful as of version 4.1.
+
+I think this could be a very useful way for TypeScript code to suddenly understand other languages, like CSS or SQL. I've created a [feature suggestion for the TypeScript language](https://github.com/microsoft/TypeScript/issues/42219) to support importing other files as strings, and then using template literal types and conditional types be able to parse the string and produce useful types that can be used in projects.
