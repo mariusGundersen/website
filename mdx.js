@@ -8,6 +8,9 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { mapContentsAsync } from './utils';
 
+// a hack to make React stop complaining when rendering to string
+React.useLayoutEffect = React.useEffect;
+
 const defaultBabelOptions = {
   presets: [
     [
