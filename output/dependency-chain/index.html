@@ -1,14 +1,15 @@
 
+  <!DOCTYPE html>
   <html lang="en">
 
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marius Gundersen</title>
-    <link rel="icon" type="image/png" href="/favicon.png"></link>
-    <meta name="viewport" content="width=700px, initial-scale=0.5"></meta>
-    <link rel="stylesheet" href="/style/main.css?v=1591396721541"></link>
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1591396721541"></link>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=700px, initial-scale=0.5" />
+    <link rel="stylesheet" href="/style/main.css?v=1609936962718" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1609936962718" />
   </head>
 
   <body>
@@ -50,7 +51,7 @@ define(<span class="hljs-function"><span class="hljs-keyword">function</span><sp
 });</code></pre>
 <p>It does not currently do very much, but we can write two extensions to it, one for adding two vectors together and another for reversing a vector:</p>
 <pre><code class="language-JavaScript"><span class="hljs-comment">//Vector.plugin.add.js</span>
-define(<span class="hljs-literal">['V<span class="hljs-identifier">ector</span>']</span>, <span class="hljs-keyword">function</span>(Vector){
+define(<span class="hljs-literal">[&#x27;V<span class="hljs-identifier">ector</span>&#x27;]</span>, <span class="hljs-keyword">function</span>(Vector){
 
   <span class="hljs-comment">//add a new method to the Vector</span>
   <span class="hljs-module-access"><span class="hljs-module"><span class="hljs-identifier">Vector</span>.</span></span>prototype.add = <span class="hljs-keyword">function</span>(that){
@@ -61,7 +62,7 @@ define(<span class="hljs-literal">['V<span class="hljs-identifier">ector</span>'
   return Vector;
 });</code></pre>
 <pre><code class="language-JavaScript"><span class="hljs-comment">//Vector.plugin.reverse.js</span>
-define([<span class="hljs-string">'Vector'</span>], <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(Vector)</span></span>{
+define([<span class="hljs-string">&#x27;Vector&#x27;</span>], <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">(Vector)</span></span>{
 
   <span class="hljs-comment">//add a new method to the Vector</span>
   Vector.prototype.reverse = <span class="hljs-function"><span class="hljs-keyword">function</span><span class="hljs-params">()</span></span>{
@@ -72,21 +73,21 @@ define([<span class="hljs-string">'Vector'</span>], <span class="hljs-function">
   <span class="hljs-keyword">return</span> Vector;
 });</code></pre>
 <p>Instead of having our application code depend on one of these plugins, we can set up the dependency chain in the require config:</p>
-<pre><code class="language-JavaScript"><span class="hljs-comment">//main.js</span>
+<pre><code class="language-JavaScript">//<span class="hljs-selector-tag">main</span><span class="hljs-selector-class">.js</span>
 <span class="hljs-selector-tag">require</span><span class="hljs-selector-class">.config</span>({
   <span class="hljs-attribute">chain</span>: {
-    <span class="hljs-comment">//name  : [root, first link, second link, ...]</span>
-    <span class="hljs-string">'Vector'</span>: [
-      <span class="hljs-string">'path/to/Vector'</span>,
-      <span class="hljs-string">'path/to/Vector.plugin.add'</span>,
-      <span class="hljs-string">'path/to/Vector.plugin.reverse'</span>
+    //name  : [root, first link, second link, ...]
+    <span class="hljs-string">&#x27;Vector&#x27;</span>: [
+      <span class="hljs-string">&#x27;path/to/Vector&#x27;</span>,
+      <span class="hljs-string">&#x27;path/to/Vector.plugin.add&#x27;</span>,
+      <span class="hljs-string">&#x27;path/to/Vector.plugin.reverse&#x27;</span>
     ]
   }
 });</code></pre>
 <p>This config file sets up a chain with the name of the root library (<code>Vector</code>), and a list of modules to chain together. The first entry in the list is the path to the root library (<code>Vector.js</code>). The rest of the array is the links in the chain. Each entry in the array is given the previous entry, rather than the root library. The <code>Vector.plugin.reverse</code> module is given the result of the <code>Vector.plugin.add</code> module instead of the <code>Vector</code> module.</p>
 <p>An application module which wants to use the <code>Vector</code> module, with all of the extensions applied, uses the name of the chain, and is given the last entry in the chain:</p>
 <pre><code class="language-JavaScript"><span class="hljs-comment">//MyApplication.js</span>
-define([<span class="hljs-string">'Vector'</span>], <span class="hljs-function"><span class="hljs-keyword">function</span></span>(Vector){
+define([<span class="hljs-string">&#x27;Vector&#x27;</span>], <span class="hljs-function"><span class="hljs-keyword">function</span></span>(Vector){
 
   <span class="hljs-keyword">var</span> v1 = <span class="hljs-keyword">new</span> <span class="hljs-type">Vector</span>(<span class="hljs-number">3</span>,<span class="hljs-number">2</span>);
   <span class="hljs-keyword">var</span> v2 = <span class="hljs-keyword">new</span> <span class="hljs-type">Vector</span>(<span class="hljs-number">1</span>,<span class="hljs-number">5</span>);
@@ -100,7 +101,7 @@ define([<span class="hljs-string">'Vector'</span>], <span class="hljs-function">
 <p>The only requirement for dependency chains is a <code>chain</code> in the config file and extension modules which return the original module they depend on. Neither the root library nor the application modules need to know that a dependency chain has been used. This means that existing AMD libraries can be used in dependency chains without any modifications. jQuery, for example, is very easy to extend with new functionality through the <code>jQuery.fn</code> object. Each jQuery plugin can be placed in a separate module, and chained together:</p>
 <p><strong><a href="http://lab.mariusgundersen.net/dependency-chain/jQuery/">Demo of jQuery dependency chain</a></strong></p>
 <pre><code class="language-JavaScript"><span class="hljs-comment">//jQuery.plugin.math.js</span>
-define([<span class="hljs-string">'jQuery'</span>], <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">$</span>)</span>{
+define([<span class="hljs-string">&#x27;jQuery&#x27;</span>], <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">$</span>)</span>{
 
   <span class="hljs-comment">//add a new method to jQuery</span>
   $.fn.add = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">a, b</span>)</span>{

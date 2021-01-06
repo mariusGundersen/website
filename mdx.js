@@ -1,12 +1,15 @@
 import * as babel from '@babel/core';
-import React from 'react';
-import { renderToString } from 'react-dom/server';
 import mdx from '@mdx-js/mdx';
 import { MDXProvider } from '@mdx-js/react';
-import { createRequire } from 'module';
 import * as fs from 'fs';
-import { relative } from 'path';
+import { createRequire } from 'module';
+import { dirname, relative } from 'path';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
 import { mapContentsAsync } from './utils';
+
+// a hack to make React stop complaining when rendering to string
+React.useLayoutEffect = React.useEffect;
 
 const defaultBabelOptions = {
   presets: [
@@ -50,7 +53,7 @@ function getDefaultExportFromModule(code, require) {
 function createTranspilingRequire(path, mdxOptions, babelOptions) {
   const require = createRequire(path);
 
-  for (const key of Object.keys(require.cache).filter(isWithin(path))) {
+  for (const key of Object.keys(require.cache).filter(isWithin(dirname(path)))) {
     delete require.cache[key];
   }
 
