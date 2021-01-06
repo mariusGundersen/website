@@ -1,17 +1,17 @@
-import { rollup } from 'rollup';
-import { relative } from 'path';
 import babelPlugin from '@rollup/plugin-babel';
-import resolvePlugin from '@rollup/plugin-node-resolve';
 import cjsPlugin from '@rollup/plugin-commonjs';
-import mdxPlugin from 'rollup-plugin-mdx';
-import replacePlugin from '@rollup/plugin-replace';
 import jsonPlugin from '@rollup/plugin-json';
+import resolvePlugin from '@rollup/plugin-node-resolve';
+import replacePlugin from '@rollup/plugin-replace';
+import { relative } from 'path';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import { rollup } from 'rollup';
+import mdxPlugin from 'rollup-plugin-mdx';
 import nodePlugin from 'rollup-plugin-node-builtins';
 import untab from 'untab';
 import { mapContentsAsync } from './utils';
 
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 
 const defaultBabelOptions = {
   presets: [
@@ -77,6 +77,7 @@ const rollupMdx = ({ mdxOptions = {}, babelOptions = defaultBabelOptions } = {})
       }),
       babelPlugin({
         ...babelOptions,
+        babelHelpers: 'bundled',
         exclude: /node_modules/,
         sourceMaps: true
       }),
