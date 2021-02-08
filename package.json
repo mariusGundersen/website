@@ -42,7 +42,7 @@
     "gulp-uglify": "^3.0.2",
     "gulp-uglify-es": "^2.0.0",
     "highlight.js": "^10.5.0",
-    "marked": "^1.2.7",
+    "marked": "^2.0.0",
     "merge-stream": "^2.0.0",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
