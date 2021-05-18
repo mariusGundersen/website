@@ -67,7 +67,8 @@ const rollupMdx = ({ mdxOptions = {}, babelOptions = defaultBabelOptions } = {})
         babelOptions
       }),
       replacePlugin({
-        'process.env.NODE_ENV': "'production'"
+        'process.env.NODE_ENV': "'production'",
+        preventAssignment: true
       }),
       cjsPlugin({
         namedExports: {

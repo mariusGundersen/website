@@ -1,7 +1,7 @@
 body {
   /* theme-ui adds these, so I need to override them... */
-	--theme-ui-colors-background: white;
-	--theme-ui-colors-text: #333;
+  --theme-ui-colors-background: white;
+  --theme-ui-colors-text: #333;
 }
 
 .waves-wave {
@@ -95,8 +95,24 @@ body {
     align-items: center;
     border-left: none;
   }
-  
+
   .waves-scroller-progress {
     left: -8px;
   }
+}
+
+.math-wave {
+  display: grid;
+  grid-template-columns: auto;
+  grid-template-rows: auto;
+  align-content: center;
+  justify-content: center;
+  color: #d4d4d4;
+  background: #1e1e1e;
+  font-size: 2em;
+}
+
+.math-wave > div.math {
+  grid-column: 1;
+  grid-row: 1;
 }

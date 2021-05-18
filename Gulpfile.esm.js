@@ -11,7 +11,9 @@ import sort from 'gulp-sort';
 import uglify from 'gulp-uglify-es';
 import merge from 'merge-stream';
 import * as path from 'path';
+import rehypeKatex from 'rehype-katex';
 import rehypeWaves from 'rehype-waves';
+import remarkMath from 'remark-math';
 import layout from './layout';
 import linkBlock from './layout/linkBlock';
 import mdArticle from './layout/mdArticle';
@@ -26,9 +28,13 @@ const src = (...args) => gulpSrc(...args).pipe(plumber());
 const cwd = './src';
 
 const mdxOptions = {
+  remarkPlugins: [
+    remarkMath
+  ],
   rehypePlugins: [
+    [rehypeKatex, { output: 'html', trust: true }],
     rehypeWaves,
-    rehypePrism
+    rehypePrism,
   ]
 };
 
