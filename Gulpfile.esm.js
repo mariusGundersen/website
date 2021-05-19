@@ -32,7 +32,7 @@ const mdxOptions = {
     remarkMath
   ],
   rehypePlugins: [
-    [rehypeKatex, { output: 'html', trust: true }],
+    [rehypeKatex, { output: 'html', trust: true, strict: false }],
     rehypeWaves,
     rehypePrism,
   ]

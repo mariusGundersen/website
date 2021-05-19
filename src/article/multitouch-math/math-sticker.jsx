@@ -1,59 +1,101 @@
+// @ts-check
+
 import React, { useEffect, useRef, useState } from "react";
 const fadeOutDuration = .5;
 const fadeInDuration = .5;
 
 export default function MathSticker({ progress, steps }) {
+  /** @type {[HTMLElement[], import("react").Dispatch<import("react").SetStateAction<HTMLElement[]>>]} */
   const [blocks, setBlocks] = useState();
-  const currentStep = Math.round(progress);
   const activeStep = useRef(0);
-  const promise = useRef(Promise.resolve());
+  const promise = useRef(Promise.resolve(1));
   const ref = useRef(null);
 
   useEffect(() => {
-    const blocks = Array.from(ref.current.querySelectorAll('.katex-display'));
+    const blocks = Array.from(ref.current.querySelectorAll('.math-display'));
     setBlocks(blocks);
 
     for (const block of blocks) {
+      block.style.position = 'relative';
       block.style.opacity = 0;
       block.style.zIndex = 0;
     }
 
     blocks[0].style.opacity = 1;
     blocks[0].style.zIndex = 1;
+
+    setTimeout(() => {
+      const newScale = calculateScale(blocks[0], ref.current);
+      scaleContainer(ref.current, newScale, 1);
+    }, 100);
   }, []);
+
+  const currentStep = Math.round(progress);
 
   useEffect(() => {
     if(currentStep > activeStep.current){
       activeStep.current++;
       const from = blocks[activeStep.current - 1];
       const to = blocks[activeStep.current];
-      promise.current = promise.current.then(() => transition(from, to));
+      promise.current = promise.current.then(async (scale) => {
+        return await transition(ref.current, from, to, scale);
+      });
     }else if(currentStep < activeStep.current){
       activeStep.current--;
       const from = blocks[activeStep.current + 1];
       const to = blocks[activeStep.current];
-      promise.current = promise.current.then(() => transition(from, to, true));
+      promise.current = promise.current.then(async (scale) => {
+        return await transition(ref.current, from, to, scale, true);
+      });
     }
   }, [currentStep])
 
   return (
     <div className="waves-sticker-container">
-      <div ref={ref} className="waves-sticker math-wave">
-        {steps}
+      <div className="waves-sticker math-wave">
+        <div ref={ref} className="math-wave-content">
+          {steps}
+        </div>
       </div>
     </div>
   )
 }
 
 
+
+
+/**
+ * @param {HTMLElement} block
+ * @param {HTMLElement} container
+ */
+function calculateScale(block, container) {
+  /** @type {HTMLElement} */
+  const baseBlock = block.querySelector('.base');
+  const hScale = container.offsetWidth / baseBlock.offsetWidth;
+  const vScale = container.offsetHeight / baseBlock.offsetHeight;
+  const newScale = Math.min(hScale * 0.8, vScale / 2, 2);
+  return newScale;
+}
+
+/**
+ * @param {HTMLElement} container
+ * @param {number} scale
+ * @param {number} duration
+ */
+function scaleContainer(container, scale, duration) {
+    container.style.transition = `transform ${duration}s ease`;
+    container.style.transform = `scale(${scale})`;
+}
+
 /**
  *
+ * @param {HTMLElement} container
  * @param {HTMLElement} fromBlock
  * @param {HTMLElement} toBlock
+ * @param {number} scale
  * @param {boolean} backwards
  */
-  async function transition(fromBlock, toBlock, backwards = false) {
-
+async function transition(container, fromBlock, toBlock, scale, backwards = false) {
   const fromElms = getElmMap(fromBlock);
   const toElms = getElmMap(toBlock);
 
@@ -89,12 +131,12 @@ export default function MathSticker({ progress, steps }) {
     }
   }
 
-  fromBlock.style.opacity = 1;
-  fromBlock.style.zIndex = 1;
+  fromBlock.style.opacity = '1';
+  fromBlock.style.zIndex = '1';
 
   for (const { elm } of removed) {
     elm.style.transition = `opacity ${fadeOutDuration}s ease`;
-    elm.style.opacity = 0;
+    elm.style.opacity = '0';
   }
 
   if (removed.length) {
@@ -117,6 +159,8 @@ export default function MathSticker({ progress, steps }) {
       if (from) {
         added.splice(added.findIndex(x => x.id === id), 1);
 
+        /** @type {HTMLElement} */
+        // @ts-ignore
         const clone = from.cloneNode(true);
 
         clone.style.position = 'absolute';
@@ -131,10 +175,8 @@ export default function MathSticker({ progress, steps }) {
     }
   }
 
-  const fromBox = fromBlock.getBoundingClientRect();
-  const toBox = toBlock.getBoundingClientRect();
   const motions = moved
-    .map(({ from, to }) => getMotion(from, fromBox, to, toBox, backwards));
+    .map(({ from, to }) => getMotion(from, fromBlock, to, toBlock, backwards));
 
   const duration = 1.5//Math.max(...motions.map(m => m.duration));
 
@@ -144,16 +186,22 @@ export default function MathSticker({ progress, steps }) {
     elm.style.transform = transform;
   }
 
+  const newScale = calculateScale(toBlock, container);
+  // don't scale down unless we need to
+  if(newScale/scale > 1.5 || scale/newScale > 1){
+    scaleContainer(container, newScale, duration);
+  }
+
   if (moved.length) {
     await delay(duration);
   }
 
   fromBlock.style.transition = `opacity ${fadeInDuration}s ${fadeInDuration/2}s ease`;
   toBlock.style.transition = `opacity ${fadeInDuration}s ease`;
-  fromBlock.style.opacity = 0;
-  toBlock.style.opacity = 1;
-  fromBlock.style.zIndex = 0;
-  toBlock.style.zIndex = 1;
+  fromBlock.style.opacity = '0';
+  toBlock.style.opacity = '1';
+  fromBlock.style.zIndex = '0';
+  toBlock.style.zIndex = '1';
 
   await delay(fadeInDuration + fadeInDuration/2);
 
@@ -170,9 +218,11 @@ export default function MathSticker({ progress, steps }) {
   for (const clone of clones) {
     clone.parentNode.removeChild(clone);
   }
+
   await delay(0.001);
   console.log('end')
 
+  return newScale;
 }
 
 /**
@@ -188,10 +238,31 @@ function getElmMap(parent) {
   return map;
 }
 
-const getX = (pos, box) => (pos.x + pos.width / 2) - (box.x);
-const getY = (pos, box) => (pos.y + pos.height / 2) - (box.y);
+const getX = (/** @type {{ x: number; width: number; }} */ pos, /** @type {{ x: any; }} */ box) => (pos.x + pos.width / 2) - (box.x);
+const getY = (/** @type {{ y: number; height: number; }} */ pos, /** @type {{ y: any; }} */ box) => (pos.y + pos.height / 2) - (box.y);
 
-const delay = s => new Promise(res => setTimeout(res, s * 1000));
+/**
+ *
+ * @param {HTMLElement} element
+ * @param {HTMLElement} ancestor
+ */
+function getPos(element, ancestor){
+  const width = element.offsetWidth;
+  const height = element.offsetHeight;
+  let x = width / 2;
+  let y = height / 2;
+
+  while(element !== ancestor && element !== null){
+    x += element.offsetLeft;
+    y += element.offsetTop;
+    // @ts-ignore
+    element = element.offsetParent;
+  }
+
+  return {x, y, width, height};
+}
+
+const delay = (/** @type {number} */ s) => new Promise(res => setTimeout(res, s * 1000));
 
 /**
  *
@@ -203,17 +274,13 @@ const delay = s => new Promise(res => setTimeout(res, s * 1000));
  */
 function getMotion(from, fromBox, to, toBox, backwards) {
   const motion = (backwards ? to : from).getAttribute('data-motion');
-  const toPos = to.getBoundingClientRect();
-  const fromPos = from.getBoundingClientRect();
-  const destX = getX(toPos, toBox);
-  const srcX = getX(fromPos, fromBox);
-  const destY = getY(toPos, toBox);
-  const srcY = getY(fromPos, fromBox);
-  const dx = destX - srcX;
-  const dy = destY - srcY;
+  const dest = getPos(to, toBox);
+  const src = getPos(from, fromBox);
+  const dx = dest.x - src.x;
+  const dy = dest.y - src.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
   if (motion === 'arc' || motion === 'reverse-arc') {
-    const degrees = backwards ^ (motion === 'reverse-arc') ? 180 : -180;
+    const degrees = backwards !== (motion === 'reverse-arc') ? 180 : -180;
     return {
       elm: from,
       transform: `
@@ -221,15 +288,15 @@ function getMotion(from, fromBox, to, toBox, backwards) {
         rotate(${degrees}deg)
         translate(${-dx / 2}px, ${-dy / 2}px)
         rotate(${-degrees}deg)
-        scale(${toPos.width/fromPos.width}, ${toPos.height/fromPos.height})`,
+        scale(${dest.width/src.width}, ${dest.height/src.height})`,
       duration: distance / 100,
     };
   } else {
     return {
       elm: from,
       transform: `
-        translate(${destX - srcX}px, ${destY - srcY}px)
-        scale(${toPos.width/fromPos.width}, ${toPos.height/fromPos.height})`,
+        translate(${dest.x - src.x}px, ${dest.y - src.y}px)
+        scale(${dest.width/src.width}, ${dest.height/src.height})`,
       duration: Math.max(1, distance / 50),
     };
   }

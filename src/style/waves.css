@@ -102,17 +102,26 @@ body {
 }
 
 .math-wave {
+  color: #d4d4d4;
+  background: #1e1e1e;
+  font-size: 2em;
+  overflow: hidden;
+}
+
+.math-wave-content {
+  height: 100%;
+  margin: 0;
   display: grid;
   grid-template-columns: auto;
   grid-template-rows: auto;
   align-content: center;
   justify-content: center;
-  color: #d4d4d4;
-  background: #1e1e1e;
-  font-size: 2em;
 }
 
-.math-wave > div.math {
+.math-wave-content > div.math {
   grid-column: 1;
   grid-row: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
