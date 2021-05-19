@@ -1,7 +1,7 @@
 import React from "react"
-import BarScroller from "../../waves/bar-scroller.jsx"
-import Wave from "../../waves/wave.jsx"
+import BarScroller from "./bar-scroller.jsx"
 import MathSticker from "./math-sticker.jsx"
+import Wave from "./wave.jsx"
 
 /**
  *

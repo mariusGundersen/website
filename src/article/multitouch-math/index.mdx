@@ -5,82 +5,9 @@ date: "2021-05-18"
 type: "article"
 ---
 
-import MathWave from "./math-wave.jsx";
+import MathWave from "../../waves/math-wave.jsx";
+import SolvingForScaling from "./SolvingForScaling.mdx";
 
 # Multitouch math
 
-<MathWave>
-
-$$
-\htmlData{key=y}{y} \, \htmlData{key=eq}{=} \, {\htmlData{key=e}{e}}^{\htmlData{key=x}{x}}
-$$
-
-This is the exponential formula. How do we figure out what x is?
-
-$$
-\htmlData{key=ln,motion=arc}{\ln} \htmlData{key=y,motion=arc}{y} \, \htmlData{key=eq}{=} \, \htmlData{key=x,motion=arc}{x}
-$$
-
-We can invert it by using the $\ln$ function.
-
-$$
-\htmlData{key=x}{x} \, \htmlData{key=eq}{=} \, \htmlData{key=ln}{\ln} \htmlData{key=y}{y}
-$$
-
-Let's flip it around at the end to make it prettier.
-
-</MathWave>
-
-## solving for scaling
-
-<MathWave>
-
-$$
-\begin{aligned}
-\phantom{P_x^0 \, - \, s M_x^0 \, = \,} &\htmlData{key=tx1}{t_x} \, \htmlData{key=eq1,motion=arc}{=} \, \htmlData{key=px0,motion=arc}{P_x^0} \, \htmlData{key=neg1,motion=arc}{-} \, \htmlData{key=s1,motion=arc}{s} \htmlData{key=mx0,motion=arc}{M_x^0} \\
-&\htmlData{key=tx2}{t_x} \, \htmlData{key=eq2}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=s2}{s} \htmlData{key=mx1}{M_x^1}
-\end{aligned}
-$$
-
-These are the two equations we have, one for the first pointer ($P_x^0$) and one for the second pointer ($P_x^1).
-
-$$
-\begin{aligned}
-  \htmlData{key=px0}{P_x^0} \, \htmlData{key=neg1}{-} \, \htmlData{key=s1}{s} \htmlData{key=mx0}{M_x^0} \, \htmlData{key=eq1}{=} \, &\htmlData{key=tx1}{t_x} \\
-  &\htmlData{key=tx2}{t_x} \, \htmlData{key=eq2}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=s2}{s} \htmlData{key=mx1}{M_x^1}
-\end{aligned}
-$$
-
-Let's just flip it around
-
-$$
-\htmlData{key=px0}{P_x^0} \, \htmlData{key=neg1}{-} \, \htmlData{key=s1}{s} \htmlData{key=mx0}{M_x^0} \, \htmlData{key=eq1}{=} \, \htmlData{key=tx2}{t_x} \, \htmlData{key=eq2}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=s2}{s} \htmlData{key=mx1}{M_x^1}
-$$
-
-We can now convert this into one equation, since both are equal to the same thing, namely $t_x$
-
-$$
-\htmlData{key=px0,motion=arc}{P_x^0} \, \htmlData{key=neg1}{-} \, \htmlData{key=s1}{s} \htmlData{key=mx0}{M_x^0} \, \htmlData{key=eq1}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=s2,motion=arc}{s} \htmlData{key=mx1,motion=arc}{M_x^1}
-$$
-
-We don't need $t_x$ anymore, so we set the two halves equal to each other directly
-
-$$
-\htmlData{key=s2}{s} \htmlData{key=mx1}{M_x^1} \, \htmlData{key=neg1}{-} \, \htmlData{key=s1,motion=arc}{s} \htmlData{key=mx0}{M_x^0} \, \htmlData{key=eq1}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=px0}{P_x^0}
-$$
-
-Now we can group similar values together, so we get the models on one side and the pointers on the other
-
-$$
-\htmlData{key=s2}{s} \htmlData{key=br1}{(} \htmlData{key=mx1}{M_x^1} \, \htmlData{key=neg1}{-} \, \htmlData{key=mx0}{M_x^0} \htmlData{key=br2}{)} \, \htmlData{key=eq1}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=px0}{P_x^0}
-$$
-
-The scaling factior $s$ is common, so we can pull it out
-
-$$
-\htmlData{key=s2}{s} \, \htmlData{key=eq1}{=} \, \frac{\htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=px0}{P_x^0}} {\htmlData{key=mx1}{M_x^1} \, \htmlData{key=neg1}{-} \, \htmlData{key=mx0}{M_x^0}}
-$$
-
-And finally we divide by the model values on both side, to get the equation for scaling
-
-</MathWave>
+<SolvingForScaling />
