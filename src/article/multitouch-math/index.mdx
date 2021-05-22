@@ -10,4 +10,186 @@ import SolvingForScaling from "./SolvingForScaling.mdx";
 
 # Multitouch math
 
+<MathWave>
+
+$$
+\def\moveIt#1{\htmlData{key=#1}{#1}}
+\def\move#1#2{\htmlData{key=#1}{#2}}
+
+\moveIt{v} \, \move{eq}{=} \, \moveIt{T}\moveIt{m}
+$$
+
+This is the basic equation. We can expand the matrix to the following
+
+$$
+\def\move#1#2{\htmlData{key=#1}{#2}}
+\def\arc#1#2{\htmlData{key=#1,motion=arc}{#2}}
+
+\move{v}{
+  \begin{bmatrix}
+    v_x \\
+    v_y \\
+    1
+  \end{bmatrix}
+}
+\,
+\move{eq1}{=}
+\,
+\stackrel{
+  \phantom{
+    \begin{matrix}
+      m_x & m_y & 1
+    \end{matrix}
+  }
+}{
+  \move{T}{
+    \begin{bmatrix}
+    \move{s1}{s}     & \move{zero_a}{0} & \move{t_x}{t_x} \\
+    \move{zero_b}{0} & \move{s2}{s}     & \move{t_y}{t_y} \\
+    \move{zero_c}{0} & \move{zero_d}{0} & \move{onex}{1}
+    \end{bmatrix}
+  }
+}
+\move{m}{
+  \begin{bmatrix}
+    \arc{m_x1}{m_x} \\
+    \arc{m_y1}{m_y} \\
+    \arc{one1}{1}
+  \end{bmatrix}
+}
+$$
+
+$v$ and $m$ are vectors while $T$ is a matrix, each with three rows. This is the very common transformation matrix used in a lot of computer graphics.
+
+$$
+\def\move#1#2{\htmlData{key=#1}{#2}}
+\def\arc#1#2{\htmlData{key=#1,motion=arc}{#2}}
+
+
+\move{v}{
+  \begin{bmatrix}
+    v_x \\
+    v_y \\
+    1
+  \end{bmatrix}
+}
+\,
+\move{eq1}{=}
+\,
+\stackrel{
+  \begin{matrix}
+    \move{m_x1}{m_x} & \move{m_y1}{m_y} & \move{one1}{1}
+  \end{matrix}
+}{
+  \begin{matrix}
+    \move{s1}{s}     & \move{zero_a}{0} & \move{t_x}{t_x} \\
+    \move{zero_b}{0} & \move{s2}{s}     & \move{t_y}{t_y} \\
+    \move{zero_c}{0} & \move{zero_d}{0} & \move{onex}{1}
+  \end{matrix}
+}
+\move{m}{
+  \phantom{
+    \begin{bmatrix}
+      m_x \\
+      m_y \\
+      1
+    \end{bmatrix}
+  }
+}
+$$
+
+We multiply out the matrix like so.
+
+$$
+\def\move#1#2{\htmlData{key=#1}{#2}}
+\def\arc#1#2{\htmlData{key=#1,motion=arc}{#2}}
+
+
+\move{v}{
+  \begin{bmatrix}
+    v_x \\
+    v_y \\
+    1
+  \end{bmatrix}
+}
+\,
+\move{eq1}{=}
+\,
+\stackrel{
+  \begin{matrix}
+    \phantom{s} \move{m_x1}{m_x} & \phantom{s} \move{m_y1}{m_y} & \move{one1}{1} \phantom{t_x}
+  \end{matrix}
+}{
+  \begin{matrix}
+    \move{s1}{s} \phantom{m_x}     & \move{zero_a}{0} \phantom{m_y} & \phantom{1} \move{t_x}{t_x} \\
+    \move{zero_b}{0} \phantom{m_x} & \move{s2}{s} \phantom{m_y}     & \phantom{1} \move{t_y}{t_y} \\
+    \move{zero_c}{0} \phantom{m_x} & \move{zero_d}{0} \phantom{m_y} & \phantom{1} \move{onex}{1}
+  \end{matrix}
+}
+$$
+
+Now we multiply this out, one row at a time
+
+$$
+\def\move#1#2{\htmlData{key=#1}{#2}}
+\def\arc#1#2{\htmlData{key=#1,motion=arc}{#2}}
+
+
+\move{v}{
+  \begin{bmatrix}
+    \move{v_x}{v_x} \\
+    \move{v_y}{v_y} \\
+    \move{v_1}{1}
+  \end{bmatrix}
+}
+\,
+\move{eq1}{=}
+\,
+\stackrel{
+  \phantom{
+    \begin{matrix}
+      m_x s & m_y s & 1 t_x
+    \end{matrix}
+  }
+}{
+  \begin{matrix}
+    \move{s1}{s} \move{m_x1}{m_x}      & \move{zero_a}{0} \move{m_y1}{m_y} & \move{one1}{1} \move{t_x}{t_x} \\
+    \move{zero_b}{0} \move{m_x2}{m_x}  & \move{s2}{s} \move{m_y2}{m_y}     & \move{one2}{1} \move{t_y}{t_y} \\
+    \move{zero_c}{0} \move{m_x3}{m_x}  & \move{zero_d}{0} \move{m_y3}{m_y} & \move{one3}{1} \move{onex}{1}
+  \end{matrix}
+}
+$$
+
+The column is multiplied with each row in the matrix
+
+$$
+\def\move#1#2{\htmlData{key=#1}{#2}}
+\def\arc#1#2{\htmlData{key=#1,motion=arc}{#2}}
+
+
+\begin{alignedat}{5}
+                  & \phantom{m_x} \\
+  \move{v_x}{v_x} \quad & \move{eq2}{=} \, \move{s1}{s} \move{m_x1,nomatch=1}{m_x} & \move{p_a}{+} & \move{zero_a}{0}                           & \move{p_d}{+} & \move{t_x}{t_x} \\
+  \move{v_y}{v_y} \quad & \move{eq1}{=} \, \move{zero_b}{0}                        & \move{p_b}{+} & \move{s2}{s} \move{m_y2,nomatch=1}{m_y}    & \move{p_e}{+} & \move{t_y}{t_y} \\
+  \move{v_1}{1}   \quad & \move{eq3}{=} \, \move{zero_c}{0}                        & \move{p_c}{+} & \move{zero_d}{0}                           & \move{p_f}{+} & \move{one3,nomatch=1}{1}
+\end{alignedat}
+$$
+
+This can finally be exanded to three equations. The last equation is the identity equation; it's not useful for anything apart from verifying that we have done the multiplication correctly. It states that $1 = 0 + 0 + 1$, which is the obvious truth $1 = 1$. Let's get rid of that and the useless zeros.
+
+$$
+\def\move#1#2{\htmlData{key=#1}{#2}}
+\def\arc#1#2{\htmlData{key=#1,motion=arc}{#2}}
+
+
+\begin{alignedat}{2}
+  \move{v_x}{v_x} & \move{eq2,nomatch=1}{=} \move{s1}{s} \move{m_x1}{m_x}               & \move{p_d}{+} \move{t_x}{t_x} \\
+  \move{v_y}{v_y} & \move{eq1,nomatch=1}{=} \move{s2}{s} \move{m_y2}{m_y} & \move{p_e}{+} \move{t_y}{t_y}
+\end{alignedat}
+$$
+
+And if we simplify it, removing all zeros and ones, we get the final two equations
+
+</MathWave>
+
 <SolvingForScaling />

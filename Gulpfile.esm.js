@@ -8,6 +8,7 @@ import frontMatter from 'gulp-front-matter';
 import minify from 'gulp-minify-css';
 import plumber from 'gulp-plumber';
 import sort from 'gulp-sort';
+import tap from 'gulp-tap';
 import uglify from 'gulp-uglify-es';
 import merge from 'merge-stream';
 import * as path from 'path';
@@ -81,25 +82,31 @@ const pageWithImages = base => (_stream, file, name = file.relative) => merge(
 );
 
 const markdownPage = (base, name) => src(`${base}/${name}/index.md`, { base, allowEmpty: true })
+  .pipe(tap(() => console.time('markdown')))
   .pipe(setSlug(name))
   .pipe(frontMatter())
   .pipe(markdown())
-  .pipe(template(mdArticle));
+  .pipe(template(mdArticle))
+  .pipe(tap(() => console.timeEnd('markdown')));
 
 const mdxPage = (base, name) => src(`${base}/${name}/index.mdx`, { base, allowEmpty: true })
+  .pipe(tap(() => console.time('mdx')))
   .pipe(setSlug(name))
   .pipe(frontMatter())
   .pipe(mdx({
     mdxOptions
   }))
-  .pipe(template(mdxArticle));
+  .pipe(template(mdxArticle))
+  .pipe(tap(() => console.timeEnd('mdx')));
 
 const mdxApp = (base, name) => src(`${base}/${name}/index.mdx`, { base, allowEmpty: true })
+  .pipe(tap(() => console.time('rollup')))
   .pipe(frontMatter())
   .pipe(rollupMdx({
     mdxOptions
   }))
-  .pipe(uglify());
+  .pipe(uglify())
+  .pipe(tap(() => console.timeEnd('rollup')));
 
 export const build = parallel(articles, talks, css, notFound, favicon);
 
@@ -111,12 +118,12 @@ export const dev = series(build, () => {
         .filter((_, i) => i > 0 && i < 3)
         .join('/');
 
-      console.log('Changed:', folder, file);
-      console.time('change');
+      console.log('Compiling change in', folder, file);
+      console.time('changed');
       src(folder, { cwd })
         .pipe(flatMap(pageWithImages('src/article')))
         .pipe(dest('output', { sourcemaps: '.' }))
-        .on('end', e => console.timeEnd('change'))
+        .on('end', e => console.timeEnd('changed'))
         .on('error', e => console.error(e));
     })
     .on('error', e => console.error(e));

@@ -125,3 +125,7 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+.math-wave-content .enclosing[data-key] {
+  display: inline-block;
+}

@@ -24,10 +24,12 @@ export default function MathSticker({ progress, steps }) {
     blocks[0].style.opacity = 1;
     blocks[0].style.zIndex = 1;
 
-    setTimeout(() => {
+    promise.current = promise.current.then(async() => {
+      await delay(0.1);
       const newScale = calculateScale(blocks[0], ref.current);
       scaleContainer(ref.current, newScale, 1);
-    }, 100);
+      return newScale;
+    });
   }, []);
 
   const currentStep = Math.round(progress);
@@ -70,7 +72,7 @@ export default function MathSticker({ progress, steps }) {
  */
 function calculateScale(block, container) {
   /** @type {HTMLElement} */
-  const baseBlock = block.querySelector('.base');
+  const baseBlock = block.querySelector('.katex-html');
   const hScale = container.offsetWidth / baseBlock.offsetWidth;
   const vScale = container.offsetHeight / baseBlock.offsetHeight;
   const newScale = Math.min(hScale * 0.8, vScale / 2, 2);
@@ -87,6 +89,7 @@ function scaleContainer(container, scale, duration) {
     container.style.transform = `scale(${scale})`;
 }
 
+const PrefixRegex = /(^\D+)(\d+)$/;
 /**
  *
  * @param {HTMLElement} container
@@ -115,20 +118,21 @@ async function transition(container, fromBlock, toBlock, scale, backwards = fals
 
   // handle merging of symbols
   // merging should not be removing one, it should be moving both to the same place
-  for (const { id, elm } of removed) {
-    const r = /(^\D+)\d+$/.exec(id);
-    if (r) {
-      const prefix = r[1];
-      const to = Array.from(toElms.entries())
-        .map(([id, elm]) => ({ elm, r: /(^\D+)\d+$/.exec(id) }))
-        .filter(({ r }) => r)
-        .find(({ r }) => r[1] === prefix)?.elm;
+  for (const { id, elm } of [...removed]) {
+    const prefix = getPrefixedIndex(id)?.prefix;
+    if (prefix) {
+      const to = findBestMatch(toElms, prefix);
 
       if (to) {
         removed.splice(removed.findIndex(x => x.id === id), 1);
         moved.push({ from: elm, to });
       }
     }
+  }
+
+  // if the removed element contains tracked elements, then don't remove it
+  for(const ignored of removed.filter(r => moved.some(m => r.elm.contains(m.from)))){
+    removed.splice(removed.indexOf(ignored), 1);
   }
 
   fromBlock.style.opacity = '1';
@@ -147,14 +151,10 @@ async function transition(container, fromBlock, toBlock, scale, backwards = fals
   // splitting should not be adding one, it should be moving both from the same place
   const clones = [];
 
-  for (const { id, elm } of added) {
-    const r = /(^\D+)\d+$/.exec(id);
-    if (r) {
-      const prefix = r[1];
-      const from = Array.from(fromElms.entries())
-        .map(([id, elm]) => ({ elm, r: /(^\D+)\d+$/.exec(id) }))
-        .filter(({ r }) => r)
-        .find(({ r }) => r[1] === prefix)?.elm;
+  for (const { id, elm } of [...added]) {
+    const prefix = getPrefixedIndex(id)?.prefix;
+    if (prefix) {
+      const from = findBestMatch(fromElms, prefix);
 
       if (from) {
         added.splice(added.findIndex(x => x.id === id), 1);
@@ -226,6 +226,33 @@ async function transition(container, fromBlock, toBlock, scale, backwards = fals
 }
 
 /**
+ * @param {Map<string, HTMLElement>} elements
+ * @param {string} prefix
+ */
+function findBestMatch(elements, prefix) {
+  return Array.from(elements.entries())
+    .filter(([_, elm]) => !elm.hasAttribute('data-nomatch'))
+    .map(([id, elm]) => ({ elm, r: getPrefixedIndex(id) }))
+    .filter(({ r }) => r?.prefix === prefix)
+    .sort((a, b) => a.r.index.localeCompare(b.r.index)) // pick the lowest matching
+  [0]?.elm;
+}
+
+/**
+ * @param {string} id
+ */
+function getPrefixedIndex(id) {
+  const r = PrefixRegex.exec(id);
+
+  if(r){
+    return {
+      prefix: r[1],
+      index: r[2]
+    }
+  }
+}
+
+/**
  *
  * @param {HTMLElement} parent
  * @returns {Map<string, HTMLElement>}
@@ -237,9 +264,6 @@ function getElmMap(parent) {
   }
   return map;
 }
-
-const getX = (/** @type {{ x: number; width: number; }} */ pos, /** @type {{ x: any; }} */ box) => (pos.x + pos.width / 2) - (box.x);
-const getY = (/** @type {{ y: number; height: number; }} */ pos, /** @type {{ y: any; }} */ box) => (pos.y + pos.height / 2) - (box.y);
 
 /**
  *
@@ -259,7 +283,12 @@ function getPos(element, ancestor){
     element = element.offsetParent;
   }
 
-  return {x, y, width, height};
+  return {
+    x,
+    y,
+    width,
+    height
+  };
 }
 
 const delay = (/** @type {number} */ s) => new Promise(res => setTimeout(res, s * 1000));

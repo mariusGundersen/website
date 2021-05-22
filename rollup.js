@@ -56,6 +56,7 @@ const rollupMdx = ({ mdxOptions = {}, babelOptions = defaultBabelOptions } = {})
   const jsModule = module(file.path, bootstrapContent);
 
   const bundle = await rollup({
+    perf: true,
     input: file.path,
     cache,
     plugins: [
