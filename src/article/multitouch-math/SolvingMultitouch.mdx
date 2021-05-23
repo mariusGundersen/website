@@ -1,0 +1,113 @@
+import MathWave from "../../waves/math-wave.jsx";
+
+<MathWave>
+
+$$
+
+\move{A-l}{A} \move{x}{x} \move{eq}{=} \move{b}{b}
+
+
+$$
+
+There is a way to solve an equation like this. Here $A$ is a matrix while $x$ and $b$ are vectors, and we want to know the values in $x$. To solve it we just take multiply by the inverse of $A$ on both sides of the equation, like this:
+
+$$
+
+\move{A-inv-a}{A^{-1}} \move{A-l}{A} \move{x}{x} \move{eq}{=} \move{A}{A}\move{inv-b}{^{-1}} \move{b}{b}
+
+
+$$
+
+The inverse of a matrix multiplied with itself is roughly the same as the inverse of a number multiplied with itself. That is, $5^{-1} * 5 * 7 = 1 * 7 = 1$, so $A^-1 * A * x = I * x = x$, where $I$ is the identity matrix.
+
+$$
+
+\move{x}{x} \move{eq}{=} \move{A}{A}\move{inv-b}{^{-1}} \move{b}{b}
+
+
+$$
+
+So we remove the $A^{-1}A$ part, since it doesn't do anything useful, and the result is this simple equation where we find $x$ by multiplying the inverse of $A$ with $b$.
+
+But, we have a problem that makes this simple trick not work.
+
+$$
+
+\arc{A}{A} \move{x}{x} \move{eq}{=} \move{b}{b}
+
+
+$$
+
+We go back to where we started, $Ax=b$.
+
+Finding the inverse assumes that $A$ is a square matrix, that it has the same number of rows and columns. But what does our $A$ look like?
+
+$$
+
+\move{A}{
+  \begin{bmatrix}
+    1 & 2 & 3 \\
+    4 & 5 & 6 \\
+    7 & 8 & 9 \\
+    7 & 8 & 9
+  \end{bmatrix}
+}
+
+\move{x}{
+  \begin{bmatrix}
+    s \\
+    t_x \\
+    t_y
+  \end{bmatrix}
+}
+
+\move{eq}{=}
+
+\move{b}{
+  \begin{bmatrix}
+    1 \\
+    2 \\
+    3 \\
+    4
+  \end{bmatrix}
+}
+
+
+$$
+
+In our scenario we have three unknowns, the scale ($s$) and the translation ($t_x$ and $t_y$). But we have at least four equations, therefore $A$ has four rows and three columns. And there is no way to take the inverse of a 3x4 matrix!
+
+So what can we do?
+
+$$
+
+\move{A}{A} \move{x}{x} \move{eq}{=} \move{b}{b}
+
+
+$$
+
+Back to this simple formula again.
+
+Math is fun, because we can use tricks to make the impossible possible. Since we can't take the inverse of a non square matrix, we make a square one that we can inverse!
+
+$$
+
+\move{At-a}{A\t} \move{A}{A} \move{x}{x} \move{eq}{=} \move{At-b}{A\t} \move{b}{b}
+
+
+$$
+
+We can multiply both sides by the transpose of the $A$ matrix.
+
+Doing the same operation on both sides is (almost) always allowed in algebra. When multiplying $A\t$ and $A$ we get a square matrix which is possible to inverse.
+
+$$
+
+\move{x}{x} \move{eq}{=} \fade{l-parent}{(} \move{At-a,motion=arc-inverse}{A\t} \move{A,motion=arc-inverse}{A} \fade{inv}{)^{-1}} \move{At-b}{A\t} \move{b}{b}
+
+
+$$
+
+Moving (and inverting) $A\t A$ to the other side of the equal sign gives us the equation for $x$ that we can solve.
+
+</MathWave>

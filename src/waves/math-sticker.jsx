@@ -130,8 +130,13 @@ async function transition(container, fromBlock, toBlock, scale, backwards = fals
     }
   }
 
-  // if the removed element contains tracked elements, then don't remove it
+  // if the removed element contains moved elements, then don't remove it
   for(const ignored of removed.filter(r => moved.some(m => r.elm.contains(m.from)))){
+    removed.splice(removed.indexOf(ignored), 1);
+  }
+
+  // if the removed element is inside a moved element, then don't remove it
+  for(const ignored of removed.filter(r => moved.some(m => m.from.contains(r.elm)))){
     removed.splice(removed.indexOf(ignored), 1);
   }
 
@@ -302,14 +307,14 @@ const delay = (/** @type {number} */ s) => new Promise(res => setTimeout(res, s 
  * @param {boolean} backwards
  */
 function getMotion(from, fromBox, to, toBox, backwards) {
-  const motion = (backwards ? to : from).getAttribute('data-motion');
+  const motion = (backwards ? from : to).getAttribute('data-motion');
   const dest = getPos(to, toBox);
   const src = getPos(from, fromBox);
   const dx = dest.x - src.x;
   const dy = dest.y - src.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
-  if (motion === 'arc' || motion === 'reverse-arc') {
-    const degrees = backwards !== (motion === 'reverse-arc') ? 180 : -180;
+  if (motion === 'arc' || motion === 'arc-inverse') {
+    const degrees = backwards !== (motion === 'arc-inverse') ? 180 : -180;
     return {
       elm: from,
       transform: `
@@ -319,6 +324,12 @@ function getMotion(from, fromBox, to, toBox, backwards) {
         rotate(${-degrees}deg)
         scale(${dest.width/src.width}, ${dest.height/src.height})`,
       duration: distance / 100,
+    };
+  } else if (motion === 'none') {
+    return {
+      elm: from,
+      transform: '',
+      duration: 0,
     };
   } else {
     return {

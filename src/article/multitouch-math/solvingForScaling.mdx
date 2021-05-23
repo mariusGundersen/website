@@ -5,51 +5,79 @@ import MathWave from "../../waves/math-wave.jsx";
 <MathWave>
 
 $$
-\begin{aligned}
-\phantom{P_x^0 \, - \, s M_x^0 \, = \,} &\htmlData{key=tx1}{t_x} \, \htmlData{key=eq1,motion=arc}{=} \, \htmlData{key=px0,motion=arc}{P_x^0} \, \htmlData{key=neg1,motion=arc}{-} \, \htmlData{key=s1,motion=arc}{s} \htmlData{key=mx0,motion=arc}{M_x^0} \\
-&\htmlData{key=tx2}{t_x} \, \htmlData{key=eq2}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=s2}{s} \htmlData{key=mx1}{M_x^1}
-\end{aligned}
+\phantom{\, - \, s m_{x_0}} \move{vx0}{v_{x\phantom{_0}}} \, \move{eq1}{=} \, \move{s1}{s} \move{mx0}{m_{x\phantom{_0}}} \, \move{plus1}{+} \, \move{tx1}{t_x}
 $$
 
-These are the two equations we have, one for the first pointer ($P_x^0$) and one for the second pointer ($P_x^1$). We have two equations and two unknowns ($t_x$ and $s$) so it should be straight forward to solve for both of them.
+Ah, the familiar old equation. We have two touch-points, so we should have two equations.
 
 $$
 \begin{aligned}
-  \htmlData{key=px0}{P_x^0} \, \htmlData{key=neg1}{-} \, \htmlData{key=s1}{s} \htmlData{key=mx0}{M_x^0} \, \htmlData{key=eq1}{=} \, &\htmlData{key=tx1}{t_x} \\
-  &\htmlData{key=tx2}{t_x} \, \htmlData{key=eq2}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=s2}{s} \htmlData{key=mx1}{M_x^1}
+\phantom{\, - \, s m_{x_0}} \move{vx0}{v_{x_0}} \, &\move{eq1}{=} \, \move{s1}{s} \move{mx0}{m_{x_0}} \, \move{plus1}{+} \, \move{tx1}{t_x} \\
+\move{vx1}{v_{x_1}} \, &\move{eq2}{=} \, \move{s2}{s} \move{mx1}{m_{x_1}} \, \move{plus2}{+} \, \move{tx2}{t_x}
 \end{aligned}
 $$
 
-We can start by flipping the first equation around, so that we get $t_x$ in the middle
+$v_{x_0}$ and $m_{x_0}$ is respectively the view and model position of the first touch-point. $v_{x_1}$ and $m_{x_1}$ is for the second touch point.
+
+We now have two equations and two unknowns, the scale $s$ and the translation $t_x$.
 
 $$
-\htmlData{key=px0}{P_x^0} \, \htmlData{key=neg1}{-} \, \htmlData{key=s1}{s} \htmlData{key=mx0}{M_x^0} \, \htmlData{key=eq1}{=} \, \htmlData{key=tx2}{t_x} \, \htmlData{key=eq2}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=s2}{s} \htmlData{key=mx1}{M_x^1}
+\begin{aligned}
+\move{vx0}{v_{x_0}} \, \move{neg1}{-} \, \arc{s1}{s} \arc{mx0}{m_{x_0}} \, &\move{eq1}{=} \, \move{tx1}{t_x} \phantom{\, + \, s m_{x_0}} \\
+\move{vx1}{v_{x_1}} \, \move{neg2}{-} \, \arc{s2}{s} \arc{mx1}{m_{x_1}} \, &\move{eq2}{=} \, \move{tx2}{t_x}
+\end{aligned}
+$$
+
+The first step is to get $t_x$ alone in both equations, by moving the $sm_x$ term to the other side.
+
+$$
+\begin{aligned}
+  \move{vx0}{v_{x_0}} \, \move{neg1}{-} \, \move{s1}{s} \move{mx0}{m_{x_0}} \, \move{eq1}{=} \, &\move{tx1}{t_x} \phantom{\, + \, s m_{x_0}} \\
+  &\move{tx2}{t_x} \, \arc{eq2}{=} \, \arc{vx1}{v_{x_1}} \, \arc{neg2}{-} \, \arc{s2}{s} \arc{mx1}{m_{x_1}}
+\end{aligned}
+$$
+
+Now we can flip the bottom equation around, so that we get both $t_x$ in the middle.
+
+Let's remember that bottom one, $t_x = v_{x_1} - sm_{x_1}$, for later. It's the solution to $t_x$, but we also need a solution for $s$.
+
+$$
+\move{vx0}{v_{x_0}} \, \move{neg1}{-} \, \move{s1}{s} \move{mx0}{m_{x_0}} \, \move{eq1}{=} \, \move{tx2}{t_x} \, \move{eq2}{=} \, \move{vx1}{v_{x_1}} \, \move{neg2}{-} \, \move{s2}{s} \move{mx1}{m_{x_1}}
 $$
 
 We can now convert this into one equation, since both are equal to the same thing, namely $t_x$
 
 $$
-\htmlData{key=px0,motion=arc}{P_x^0} \, \htmlData{key=neg1}{-} \, \htmlData{key=s1}{s} \htmlData{key=mx0}{M_x^0} \, \htmlData{key=eq1}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=s2,motion=arc}{s} \htmlData{key=mx1,motion=arc}{M_x^1}
+\move{vx0}{v_{x_0}} \, \move{neg1}{-} \, \move{s1}{s} \move{mx0}{m_{x_0}} \, \move{eq1}{=} \, \move{vx1}{v_{x_1}} \, \move{neg2}{-} \, \move{s2}{s} \move{mx1}{m_{x_1}}
 $$
 
 We don't need $t_x$ anymore, so we set the two halves equal to each other directly
 
 $$
-\htmlData{key=s2}{s} \htmlData{key=mx1}{M_x^1} \, \htmlData{key=neg1}{-} \, \htmlData{key=s1,motion=arc}{s} \htmlData{key=mx0}{M_x^0} \, \htmlData{key=eq1}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=px0}{P_x^0}
+\arc{s2}{s} \arc{mx1}{m_{x_1}} \, \move{neg1}{-} \, \move{s1}{s} \move{mx0}{m_{x_0}} \, \move{eq1}{=} \, \move{vx1}{v_{x_1}} \, \move{neg2}{-} \, \arc{vx0}{v_{x_0}}
 $$
 
 Now we can group similar values together, so we get the models on one side and the pointers on the other
 
 $$
-\htmlData{key=s2}{s} \htmlData{key=br1}{(} \htmlData{key=mx1}{M_x^1} \, \htmlData{key=neg1}{-} \, \htmlData{key=mx0}{M_x^0} \htmlData{key=br2}{)} \, \htmlData{key=eq1}{=} \, \htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=px0}{P_x^0}
+\arc{s2}{s} \move{br1}{(} \move{mx1}{m_{x_1}} \, \move{neg1}{-} \, \move{mx0}{m_{x_0}} \move{br2}{)} \, \move{eq1}{=} \, \move{vx1}{v_{x_1}} \, \move{neg2}{-} \, \move{vx0}{v_{x_0}}
 $$
 
 The scaling factor $s$ is common, so we can pull it out
 
 $$
-\htmlData{key=s2}{s} \, \htmlData{key=eq1}{=} \, \frac{\htmlData{key=px1}{P_x^1} \, \htmlData{key=neg2}{-} \, \htmlData{key=px0}{P_x^0}} {\htmlData{key=mx1}{M_x^1} \, \htmlData{key=neg1}{-} \, \htmlData{key=mx0}{M_x^0}}
+\move{s2}{s} \, \move{eq1}{=} \, \move{frac}{\frac{\move{vx1}{v_{x_1}} \, \move{neg2}{-} \, \move{vx0}{v_{x_0}}} {\move{mx1}{m_{x_1}} \, \move{neg1}{-} \, \move{mx0}{m_{x_0}}}}
 $$
 
 And finally we divide by the model values on both side, to get the equation for scaling
+
+$$
+\begin{aligned}
+  \move{s2}{s} \, &\move{eq1}{=} \, \move{frac}{\frac{v_{x_1} \, - \, v_{x_0}} {m_{x_1} \, - \, m_{x_0}}} \\
+  \fade{tx}{t_x} \, &\fade{eq}{=} \, \fade{vx}{v_{x_1}} \, \fade{neg}{-} \, \fade{s}{s} \fade{mx}{m_{x_1}}
+\end{aligned}
+$$
+
+Recall the solution for $t_x$ from earlier, and we have solutions to both the uknowns.
 
 </MathWave>
