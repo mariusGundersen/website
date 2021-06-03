@@ -33,7 +33,18 @@ const mdxOptions = {
     remarkMath
   ],
   rehypePlugins: [
-    [rehypeKatex, { output: 'html', trust: true, strict: false }],
+    [rehypeKatex, {
+      output: 'html',
+      trust: true,
+      strict: false,
+      globalGroup: true,
+      macros: {
+        '\\move': '\\htmlData{key=#1}{#2}',
+        '\\arc': '\\htmlData{key=#1,motion=arc}{#2}',
+        '\\fade': '\\htmlData{key=#1,motion=none}{#2}',
+        '\\t': '^{\\mathsf{T}}',
+      }
+    }],
     rehypeWaves,
     rehypePrism,
   ]
