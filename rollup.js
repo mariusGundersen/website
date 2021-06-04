@@ -23,7 +23,14 @@ const defaultBabelOptions = {
         modules: false
       }
     ],
-    '@babel/preset-react'
+    '@babel/preset-react',
+    [
+      '@babel/preset-typescript',
+      {
+        //isTSX: true,
+
+      }
+    ]
   ]
 };
 
@@ -81,7 +88,8 @@ const rollupMdx = ({ mdxOptions = {}, babelOptions = defaultBabelOptions } = {})
         ...babelOptions,
         babelHelpers: 'bundled',
         exclude: /node_modules/,
-        sourceMaps: true
+        sourceMaps: true,
+        extensions: ['.js', '.jsx', '.ts', '.tsx']
       }),
       jsonPlugin(),
       nodePlugin()

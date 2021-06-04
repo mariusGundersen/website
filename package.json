@@ -13,6 +13,7 @@
     "@babel/core": "^7.14.3",
     "@babel/preset-env": "^7.14.2",
     "@babel/preset-react": "^7.13.13",
+    "@babel/preset-typescript": "^7.13.0",
     "@babel/register": "^7.13.16",
     "@code-surfer/standalone": "^3.1.1",
     "@code-surfer/themes": "^3.1.1",

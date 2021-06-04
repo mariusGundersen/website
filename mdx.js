@@ -19,7 +19,14 @@ const defaultBabelOptions = {
         modules: 'cjs'
       }
     ],
-    '@babel/preset-react'
+    '@babel/preset-react',
+    [
+      '@babel/preset-typescript',
+      {
+        //isTSX: true,
+
+      }
+    ]
   ]
 };
 
@@ -32,7 +39,7 @@ async function mdxToHtml(mdxCode, path, { mdxOptions = {}, babelOptions = defaul
   const require = createTranspilingRequire(path, mdxOptions, babelOptions);
 
   const jsxCode = await mdx(mdxCode, mdxOptions);
-  const { code } = await babel.transformAsync("import { mdx } from '@mdx-js/react';\n" + jsxCode, babelOptions);
+  const { code } = await babel.transformAsync("import { mdx } from '@mdx-js/react';\n" + jsxCode, { ...babelOptions, filename: 'index.mdx' });
 
   const layoutComponent = getDefaultExportFromModule(code, require);
 
@@ -60,13 +67,13 @@ function createTranspilingRequire(path, mdxOptions, babelOptions) {
   require.extensions['.mdx'] = (module, filename) => {
     const mdxCode = fs.readFileSync(filename, 'utf8');
     const jsxCode = mdx.sync(mdxCode, mdxOptions);
-    const { code } = babel.transformSync("import { mdx } from '@mdx-js/react';\n" + jsxCode, babelOptions);
+    const { code } = babel.transformSync("import { mdx } from '@mdx-js/react';\n" + jsxCode, { ...babelOptions, filename });
     module._compile(code, filename);
   };
 
-  require.extensions['.jsx'] = (module, filename) => {
+  require.extensions['.jsx'] = require.extensions['.tsx'] = (module, filename) => {
     const jsxCode = fs.readFileSync(filename, 'utf8');
-    const { code } = babel.transformSync(jsxCode, babelOptions);
+    const { code } = babel.transformSync(jsxCode, { ...babelOptions, filename });
     module._compile(code, filename);
   };
 
