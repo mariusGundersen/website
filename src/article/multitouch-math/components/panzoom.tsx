@@ -1,10 +1,23 @@
 import React, {
+  Dispatch,
   PointerEvent,
+  SetStateAction,
   useCallback,
   useMemo,
   useRef,
   useState,
 } from "react";
+
+interface Transform {
+  x: number;
+  y: number;
+  s: number;
+}
+
+export interface Props {
+  setTransform: Dispatch<SetStateAction<Transform>>;
+  transform: Transform;
+}
 
 interface PointerInfo {
   model: { x: number; y: number };
@@ -12,11 +25,14 @@ interface PointerInfo {
 }
 
 // v = sm + t
-export default function PanZoom() {
+export default function PanZoom(props: Props | {}) {
   const pointers = useMemo(() => new Map<number, PointerInfo>(), []);
   const requested = useRef(false);
 
-  const [transform, setTransform] = useState({ x: 0, y: 0, s: 1 });
+  const [transform, setTransform] =
+    "transform" in props
+      ? [props.transform, props.setTransform]
+      : useState({ x: 0, y: 0, s: 1 });
 
   const solve = useCallback(() => {
     requested.current = false;

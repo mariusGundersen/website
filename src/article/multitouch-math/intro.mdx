@@ -1,0 +1,24 @@
+import PanZoom from "./components/panzoom.tsx";
+import Transform from "./components/transform.tsx";
+
+## intro
+
+With multitouch devices the popularity of pan-zoom components have grown. You know, like Google maps, where you can move around with one finger and zoom in and out with two fingers. These kind of components are great for more than maps, but they can also be horrible to use if implement poorly. In this article I want to look into how to implement them properly. Well, at leas the mathematics behind them. There are many subtle details to making a truly great pan-zoom component, and I can't cover all of them here (I've tried, but the article became too long and I never finished it). So instead we will look at the math, where we will solve unsolvable equations and invert uninvertable matrices. Yes, there will be matrix multiplication, don't worry, it's not as hard as it looks.
+
+<PanZoom />
+
+Try dragging the image above with one finger. Try dragging in opposite directions with two fingers. Try with three fingers. Try dragging with one finger, then adding a second finger and then lifting the first finger. No matter what you try, it will always work and always behave as you would expect it to. Getting it to do all that is both quite difficult and also perfectly straight forward.
+
+A draggable image can be implemented by solving two simpler problems: listening for pointer events and moving the image to the right place. By pointer events I mean both mouse and touch events, like mouse button pressed, mouse moved and mouse released, and touch start, touch move and touch end. Moving the image to the right place involves transformations.
+
+<Transform />
+
+There are three properties use to transform the image: the x and y translation and the scaling. In the above example you can see how changing the three values moves and scales the image. The translation controls the top left of the image, while the scale controls the size of the image. You can also drag the image, and you will see how that changes the transformation values.
+
+Try the following: touch/click the nose of the cat, and then slowly drag it around. As you drag it the transformation values change, and as they change the top left corner of the image moves, and (since the image doesn't change size) the position (on screen) of the cat's nose also changes. This is how to make a draggable image:
+
+> Find the transformation values such that the dragpoint in the image is where the touchpoint is on the screen.
+
+This is the TL;DR of this entire article. The rest of it will look at how we find the transformation values. The above description also works for multiple touch points, in which case we need to find the x, y and s values such that the two (or three or many more) dragpoints in the image match the touchpoints on the screen. But let's stay with only one pointer for now.
+
+You can try in the example above to manually solve this problem by changing the x and y translation values.
