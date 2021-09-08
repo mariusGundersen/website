@@ -124,6 +124,7 @@ export const dev = series(build, () => {
     }))
     .use((_, res) => res.sendFile(__dirname + '/output/404.html'))
     .listen(3000);
+  console.log('Go to http://localhost:3000');
 });
 
 export default build;
