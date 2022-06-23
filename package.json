@@ -51,7 +51,7 @@
     "rollup": "^2.36.0",
     "rollup-plugin-mdx": "^0.1.0",
     "rollup-plugin-node-builtins": "^2.1.2",
-    "shell-quote": "^1.7.2",
+    "shell-quote": "^1.7.3",
     "theme-ui": "^0.3.5",
     "twgl.js": "^4.17.0",
     "untab": "^1.0.1",
