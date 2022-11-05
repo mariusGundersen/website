@@ -10,6 +10,7 @@ export default (contents, file) => html`
     <title>Marius Gundersen</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=700px, initial-scale=0.5" />
+    <a rel="me" href="https://mastodon.social/@gundersen">Mastodon</a>
     <link rel="stylesheet" href="/style/main.css?v=${(new Date).valueOf()}" />
     <link rel="stylesheet" href="/style/tomorrow-night.css?v=${(new Date).valueOf()}" />
   </head>
