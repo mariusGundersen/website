@@ -4,12 +4,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Popover</title>
-  <link href="https://unpkg.com/prismjs@1.20.0/themes/prism.css" rel="stylesheet" />
+  <title>{{title}} - Marius Gundersen</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prism-themes@1/themes/prism-vsc-dark-plus.css" />
 </head>
 
 <body>
-  {{ content }}
+  <header>
+    <nav>
+      <ul>
+        <li><strong><a href="/">Marius Gundersen</a></strong></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    {{ content }}
+  </main>
+  <footer></footer>
 </body>
 
 </html>

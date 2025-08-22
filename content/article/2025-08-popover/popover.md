@@ -1,5 +1,7 @@
 ---
+title: Anchored definition popovers
 layout: post.html
+date: 2025-08-22
 ---
 
 # Anchored definition popovers
@@ -22,17 +24,19 @@ The first step is to make a popover that can be opened, and for that we need a b
 </p>
 ```
 
-<p>
-  Click
-  <button popovertarget="id-0">
-    here
-    <div popover id="id-0">
-      <h2>Popover</h2>
-      <p>This is the popover</p>
-    </div>
-  </button>
-  to show a popover
-</p>
+<div class="demo-div">
+  <p>
+    Click
+    <button popovertarget="id-0">
+      here
+      <div popover id="id-0">
+        <h2>Popover</h2>
+        <p>This is the popover</p>
+      </div>
+    </button>
+    to show a popover
+  </p>
+</div>
 
 Clicking on the button opens a popover because the button has a popovertarget. The popover doesn't look very nice, but we can use css to fix that.
 
@@ -44,7 +48,7 @@ Let's first style the button to not look like a button. It will be included in r
 
 ```css
 p>button[popovertarget] {
-  all: initial;
+  all: unset;
   cursor: help;
   text-decoration: underline dashed;
 }
@@ -52,7 +56,7 @@ p>button[popovertarget] {
 
 We style all buttons with a popovertarget that are direct children of paragraphs, and with the exact same html as before we get the following.
 
-<div>
+<div class="demo-div">
   <p>
     Click
     <button popovertarget="id-1">
@@ -70,7 +74,7 @@ We style all buttons with a popovertarget that are direct children of paragraphs
 
 Let's customize the popover a bit by setting a max-width, adding some padding and a border-radius, replacing the thick black border with some shadow, and change the content of the popover to be a nicer sans-serif text.
 
-<div>
+<div class="demo-div">
   <p>
     Click
     <button popovertarget="id-2">
@@ -109,7 +113,7 @@ bottom: calc(anchor(top) + 0.5em);
 justify-self: anchor-center;
 ```
 
-<div>
+<div class="demo-div">
   <p>
     Click
     <button popovertarget="id-3">
@@ -123,9 +127,11 @@ justify-self: anchor-center;
   </p>
 </div>
 
-The first one sets the `margin` to `0` vertically and `1em` horizontally, so that the popover can go almost all the way out to the side. The next one unsets the `top`, `left`, `right` and `bottom` properties in one single rule. Then we get to the interesting one, setting the `bottom` of this popover to be `0.5em` above the button. When a popover is opened from a button using a popovertarget there is an implicit anchor available to the popover, that is why we can use `anchor(top)` here without specifying which anchor. And then `justify-self: anchor-center` causes the popover to be centered above the button.
+The first one sets the `margin` to `0` vertically and `1em` horizontally, so that the popover can go almost all the way out to the side. The next one unsets the `top`, `left`, `right` and `bottom` properties in one single rule. Then we get to the interesting part, setting the `bottom` of this popover to be `0.5em` above the `anchor(top)` and setting `justify-self: anchor-center`.
 
-This is all we really need, now the popover will be centered above the button, if there is enough room. The popover will never be pushed offscreen, even if the button is close to the edge of the screen. CSS does all of this automatically for us!
+These two properties set the popover to be anchored to the button, such that the bottom is `0.5em` above the button top and so that the popover is centered above the button. It does this because there is an [implicit anchor association](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_anchor_positioning/Using#implicit_anchor_association) between the button with `popovertarget` and the popover. Therefore we don't need `anchor-name` and `position-anchor`, like we usually do with anchor positioning.
+
+This is all we really need, now the popover will be centered above the button. Notice that the popover will always be positioned so that it is fully visible. Even if the button that triggers it is at the edge of the page, the popover will attempt to center above it, but will not be pushed off-screen.
 
 I want this popover to look like a speech bubble though, with a little downward notch pointing to the button that was clicked. That is also easy to add, using the psudo element `::before`.
 
@@ -143,7 +149,7 @@ I want this popover to look like a speech bubble though, with a little downward 
 }
 ```
 
-<div>
+<div class="demo-div">
   <p>
     Click
     <button popovertarget="id-4">
@@ -166,7 +172,7 @@ So far so good, but it's a bit jarring that it just appears and disappears, it w
 ```css
 transform-origin: bottom;
 transition-property: translate, opacity, display, overlay;
-3;
+transition-duration: 3s;
 transition-timing-function: ease-out;
 transition-behavior: allow-discrete;
 
@@ -181,7 +187,7 @@ transition-behavior: allow-discrete;
 }
 ```
 
-<div>
+<div class="demo-div">
   <p>
     Click
     <button popovertarget="id-5">
@@ -214,7 +220,7 @@ Finally we can add the following special rules to animate it appearing too.
 }
 ```
 
-<div>
+<div class="demo-div">
   <p>
     Click
     <button popovertarget="id-6">
@@ -233,6 +239,29 @@ Finally we can add the following special rules to animate it appearing too.
 Again there is the problem with the down arrow not being placed correctly. As mentioned this is probably a Chrome bug, so I'm leaving it in hoping they will fix it.
 
 <style>
+@supports not (bottom: anchor(top)) {
+  div.demo-div::before {
+    content: 'This browser does not support anchors!';
+    color: darkred;
+    background: pink;
+    margin-bottom: .5em;
+    display: block;
+  }
+}
+
+div.demo-div {
+  background: #eee;
+  padding: 1em;
+  > p {
+    margin-bottom: 0;
+  }
+  margin-bottom: 1em;
+
+  button {
+    --pico-color: --pico-primary;
+  }
+}
+
 div:has(#id-1),
 div:has(#id-2),
 div:has(#id-3),
@@ -240,7 +269,7 @@ div:has(#id-4),
 div:has(#id-5),
 div:has(#id-6) {
   > p > button[popovertarget] {
-    all: initial;
+    all: unset;
     cursor: help;
     text-decoration: underline dashed;
 
@@ -306,7 +335,7 @@ div:has(#id-6) {
   >p > button[popovertarget] > [popover] {
       transform-origin: bottom;
       transition-property: bottom, opacity, display, overlay;
-      transition-duration: 3s;
+      transition-duration: .3s;
       transition-timing-function: ease-out;
       transition-behavior: allow-discrete;
 

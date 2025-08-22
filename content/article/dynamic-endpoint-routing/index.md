@@ -5,7 +5,6 @@ date: "2021-09-08"
 type: "article"
 ---
 
-
 # Dynamic endpoint routing in asp.net
 
 I want to share a bit about how the endpoint routing in asp.net can be made dynamic. I tried to look into this, but couldn't find any documentation and so decided that I had to write about it myself. I will use asp.net 6 in this article since I can then use the [minimal apis](https://www.hanselman.com/blog/exploring-a-minimal-web-api-with-aspnet-core-6) and more easily fit everything into a single file, but the code shown here will work in asp.net 5 and will work with the classical `Startup` class too.

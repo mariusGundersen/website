@@ -1,6 +1,5 @@
 import { eleventyImageTransformPlugin } from "@11ty/eleventy-img";
 import syntaxHighlight from "@11ty/eleventy-plugin-syntaxhighlight";
-import mdxPlugin from '@jamshop/eleventy-plugin-mdx';
 
 import pluginFilters from "./content/_config/filters.js";
 
@@ -10,7 +9,7 @@ export default async function (eleventyConfig) {
   eleventyConfig.setLayoutsDirectory("_layouts");
 
   eleventyConfig.addPlugin(syntaxHighlight);
-  eleventyConfig.addPlugin(mdxPlugin);
+  //eleventyConfig.addPlugin(mdxPlugin);
   eleventyConfig.addPlugin(eleventyImageTransformPlugin, {
     widths: ["500"]
   });

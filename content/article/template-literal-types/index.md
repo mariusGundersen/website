@@ -5,8 +5,6 @@ date: "2021-01-06"
 type: "article"
 ---
 
-import Triangle from "./Triangle.jsx";
-
 # Template Literal Types
 
 With the release of TypeScript 4.1 we get a really powerful feature called [template literal types](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html). This is based on the template literals that are in JavaScript, but now for the type system in TypeScript. Together with conditional types it makes it possible to parse strings and represent them as types at compile time. An early example that I saw was of [ts-sql](https://github.com/codemix/ts-sql), which is an sql database implemented purely in TypeScript types. This might seem like a silly example, and while clever not really useful. But I found a place where I needed this kind of functionality, and set about trying to ~~understand~~ implement template literal types.
@@ -71,7 +69,61 @@ requestAnimationFrame(function render(time) {
 
 This code results in this fantastic looking WebGL demo:
 
-<Triangle />
+<canvas id="triangle" style="width: 100%; background: #1d1f21"></canvas>
+<script type="module">
+  import * as twgl from 'https://cdn.jsdelivr.net/npm/twgl.js@7.0.0/dist/7.x/twgl-full.module.js';
+    const vertexShader = `
+      precision highp float;
+
+      // here is an attribute
+      attribute vec3 position;
+
+      varying vec2 uv;
+
+      void main() {
+        gl_Position = vec4(position, 1.0);
+        uv = position.xy;
+      }
+    `;
+
+    const fragmentShader = `
+      precision highp float;
+
+      // and here is a uniform
+      uniform float time;
+
+      varying vec2 uv;
+
+      void main() {
+        gl_FragColor = vec4(0.5*(uv+1.0), 0.5*(cos(time)+1.0), 1.0);
+      }
+    `;
+
+    const canvas = document.querySelector('canvas#triangle');
+    const gl = canvas.getContext("webgl");
+
+    const programInfo = twgl.createProgramInfo(gl, [vertexShader, fragmentShader]);
+
+    const bufferInfo = twgl.createBufferInfoFromArrays(gl, {
+      // this is the attribute again
+      position: [-1, 0, 0, 0, -1, 0, 1, 1, 0],
+    });
+
+    requestAnimationFrame(function render(time) {
+      twgl.resizeCanvasToDisplaySize(canvas, window.devicePixelRatio);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+
+      gl.useProgram(programInfo.program);
+      twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+      twgl.setUniforms(programInfo, {
+        // and this is the uniform again
+        time: time / 1000,
+      });
+      twgl.drawBufferInfo(gl, bufferInfo);
+
+      requestAnimationFrame(render);
+    });
+</script>
 
 This is about as simple of a WebGL program you can have, but don't worry if it looks intimidating, we don't really need to understand how it works. The important bits are the ones I have commented. There is one attribute (`position`) and one uniform (`time`), and they show up twice, once in the shaders and once in the js code. For the WebGL code to work the attributes and uniforms used in the shaders have to be given a value in the js code, and they have to be given the correct type of value. If the value isn't set, the name is spelled wrong or the wrong js type is given, then the code will either not behave correctly or not work at all. So, it would be useful to have TypeScript check for us if we have set the right attributes and uniforms for us, by comparing the TypeScript code with the shader program. But that means we have to teach TypeScript to understand a C program string. So let's do that!
 
