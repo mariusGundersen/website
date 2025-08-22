@@ -1338,4 +1338,51 @@ I want to share one extra little thing that I had trouble finding. The code belo
             .Build();
 ```
 
----
+<template id="code-wave-template">
+<style>
+    :host{
+        width: calc(100vw - 20px);
+        margin-left: calc(50% - 50vw);
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+    .code-container {
+        height: 100dvh;
+        position: sticky;
+        top: 0;
+        bottom: 0;
+        display: grid;
+        place-content: center;
+        background: #1e1e1e;
+    }
+    .text-container {
+        position: relative;
+        padding: 50vh 25px;
+        ::slotted(pre){
+            display: none !important;
+            overflow: visible !important;
+        }
+        ::slotted(div.text){
+            min-height: 25vh;
+        }
+        &::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 5px;
+            height: 100px;
+            background: red;
+        }
+    }
+</style>
+      <div class="code-container">
+        <slot name="code">
+      </div>
+      <div class="text-container">
+        <slot>
+      </div>
+</template>
+
+<script type="module" src="./code-wave.mjs">

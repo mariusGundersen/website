@@ -14,6 +14,10 @@ export default async function (eleventyConfig) {
     widths: ["500"]
   });
 
+  eleventyConfig.addPassthroughCopy("content/**/*.mjs", {
+    mode: "html-relative"
+  });
+
   /*
     eleventyConfig.addTemplateFormats("mdx");
     eleventyConfig.addExtension("mdx", {
