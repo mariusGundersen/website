@@ -1,3 +1,5 @@
+import { patienceDiffPlus } from './diff.mjs';
+
 class CodeWave extends HTMLElement {
   constructor() {
     super();
@@ -19,8 +21,24 @@ class CodeWave extends HTMLElement {
       const index = chunks.indexOf(target);
       if (index < 0) return;
       console.log('index', index);
-      this.querySelector('pre[slot="code"]')?.removeAttribute('slot');
-      pres[index]?.setAttribute('slot', 'code');
+      const from = this.querySelector('pre[slot="code"]');
+      const to = pres[index];
+      if (from && to) {
+        const diff = patienceDiffPlus(
+          Array.from(from.firstElementChild.children).map(c => c.textContent),
+          Array.from(to.firstElementChild.children).map(c => c.textContent));
+        console.log(diff);
+      }
+      from?.removeAttribute('slot');
+      to?.setAttribute('slot', 'code');
+
+      this.querySelector('div.text.current')?.classList.remove('current');
+      to?.nextElementSibling.classList.add('current');
+
+      if (to) {
+        console.log(to.clientWidth);
+        to.style.scale = this.shadowRoot.querySelector('.code-container').clientWidth / to.clientWidth
+      }
     }, {
       root: null,
       rootMargin: '-50% 0px -50% 0px',
@@ -29,16 +47,17 @@ class CodeWave extends HTMLElement {
 
     for (const elm of Array.from(elms)) {
       if (elm instanceof HTMLPreElement) {
-        console.log(elm);
+        elm.firstElementChild.innerHTML = elm.firstElementChild.innerHTML.split('\n').map(l => `<span style="display: block; min-height: 1lh;">${l}</span>`).join('');
         pres.push(elm);
         if (chunk.hasChildNodes()) {
+          console.log(elm, chunk);
           chunks.push(chunk);
           elm.before(chunk);
+          this.io.observe(chunk);
           chunk = document.createElement('div');
           chunk.className = 'text';
-          this.io.observe(chunk);
         }
-      } else if (elm instanceof HTMLDivElement) {
+      } else if (elm instanceof HTMLDivElement && elm.className === 'text') {
 
       } else {
         chunk.append(elm);
@@ -47,10 +66,14 @@ class CodeWave extends HTMLElement {
 
     console.log(pres, chunks)
 
-    this.querySelector('& > pre').setAttribute('slot', 'code');
+    const current = this.querySelector('& > pre');
+    current.setAttribute('slot', 'code');
+    current.nextElementSibling.classList.add('current');
 
     this.shadowRoot.innerHTML = '';
     this.shadowRoot.append(document.getElementById('code-wave-template').content.cloneNode(true));
+
+    this.ownerDocument.documentElement.style.scrollSnapType = 'y proximity';
   }
 
   disconnectedCallback() {

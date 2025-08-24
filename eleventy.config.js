@@ -15,7 +15,11 @@ export default async function (eleventyConfig) {
   });
 
   eleventyConfig.addPassthroughCopy("content/**/*.mjs", {
-    mode: "html-relative"
+    //mode: "html-relative"
+  });
+
+  eleventyConfig.addPassthroughCopy("content/**/*.js", {
+    //mode: "html-relative"
   });
 
   /*

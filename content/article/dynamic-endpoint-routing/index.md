@@ -1355,25 +1355,35 @@ I want to share one extra little thing that I had trouble finding. The code belo
         display: grid;
         place-content: center;
         background: #1e1e1e;
+        overflow: hidden;
+        ::slotted(pre){
+            overflow: visible !important;
+        }
     }
     .text-container {
         position: relative;
         padding: 50vh 25px;
         ::slotted(pre){
             display: none !important;
-            overflow: visible !important;
         }
         ::slotted(div.text){
-            min-height: 25vh;
+            --min-height: 25vh;
+            scroll-snap-align: center;
+            margin-block: max(3em, calc(100% - 25vh));
+        }
+        ::slotted(div.current){
+            anchor-name: --text;
         }
         &::after {
             content: '';
             position: absolute;
-            top: 10px;
+            position-anchor: --text;
+            top: anchor(top);
+            bottom: anchor(bottom);
             left: 0;
             width: 5px;
-            height: 100px;
             background: red;
+            transition: inset .5s;
         }
     }
 </style>
