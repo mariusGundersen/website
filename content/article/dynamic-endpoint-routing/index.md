@@ -1358,7 +1358,7 @@ I want to share one extra little thing that I had trouble finding. The code belo
             position: absolute;
             top: 0;
             left: 0;
-            transition: scale 1s;
+            transition: scale 1s, translate 2s;
             transform-origin: top left;
             ::slotted(pre){
                 overflow: visible !important;
@@ -1376,9 +1376,8 @@ I want to share one extra little thing that I had trouble finding. The code belo
             display: none !important;
         }
         ::slotted(div.text){
-            --min-height: 25vh;
             scroll-snap-align: center;
-            margin-block: max(3em, calc(100% - 25vh));
+            margin-block: max(3em, 25vh);
         }
         ::slotted(div.current){
             anchor-name: --text;
@@ -1390,9 +1389,10 @@ I want to share one extra little thing that I had trouble finding. The code belo
             top: anchor(top);
             bottom: anchor(bottom);
             left: 0;
-            width: 5px;
-            background: red;
-            transition: inset .5s;
+            width: 4px;
+            border-radius: 2px;
+            background: currentColor;
+            transition: inset 1s cubic-bezier(0.65, 0, 0.35, 1);
         }
     }
 </style>
