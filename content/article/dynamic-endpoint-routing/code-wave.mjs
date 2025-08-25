@@ -1,6 +1,7 @@
-import { patienceDiffPlus } from './diff.mjs';
+import { patienceDiff } from './diff.mjs';
 
 class CodeWave extends HTMLElement {
+  #pres = [];
   #currentlyBusy = false;
   #nextCodeBlock = undefined;
   #codeContainer;
@@ -21,7 +22,6 @@ class CodeWave extends HTMLElement {
       @keyframes cw-slide-out {
           from {
               translate: 0%;
-              opacity: 1;
           }
           to {
               translate: var(--cw-offset);
@@ -36,7 +36,7 @@ class CodeWave extends HTMLElement {
           }
           to {
               translate: 0%;
-              opacity: 1;
+              opacity: var(--cw-opacity);
           }
       }
 
@@ -46,17 +46,7 @@ class CodeWave extends HTMLElement {
           }
           to {
               translate: 0 0;
-          }
-      }
-
-      @keyframes cw-move-old-line {
-          from {
-              translate: 0 0;
-              opacity: 0;
-          }
-          to {
-              translate: 0 var(--cw-offset);
-              opacity: 0;
+              opacity: var(--cw-opacity);
           }
       }
     `);
@@ -70,7 +60,6 @@ class CodeWave extends HTMLElement {
     /** @type {HTMLDivElement} */
     this.#transformer = this.shadowRoot.querySelector('.transformer');
 
-    let pres = [];
     let chunks = [];
     let chunk = document.createElement('div');
     chunk.className = 'text';
@@ -83,7 +72,7 @@ class CodeWave extends HTMLElement {
       const index = chunks.indexOf(target);
       if (index < 0) return;
       console.log('index', index);
-      const to = pres[index];
+      const to = this.#pres[index];
       console.log('to', to)
       if (this.#currentlyBusy) {
         this.#nextCodeBlock = to;
@@ -103,7 +92,7 @@ class CodeWave extends HTMLElement {
     for (const elm of Array.from(elms)) {
       if (elm instanceof HTMLPreElement) {
         elm.firstElementChild.innerHTML = elm.firstElementChild.innerHTML.split('\n').map(l => `<span style="display: block; min-height: 1lh;">${l}</span>`).join('');
-        pres.push(elm);
+        this.#pres.push(elm);
         if (chunk.hasChildNodes()) {
           console.log(elm, chunk);
           chunks.push(chunk);
@@ -119,7 +108,7 @@ class CodeWave extends HTMLElement {
       }
     }
 
-    console.log(pres, chunks)
+    console.log(this.#pres, chunks)
 
     const current = this.querySelector('& > pre');
     current.setAttribute('slot', 'code');
@@ -139,16 +128,39 @@ class CodeWave extends HTMLElement {
     /** @type {HTMLPreElement} */
     const oldPre = this.querySelector('pre[slot="code"]');
     if (oldPre && newPre && oldPre !== newPre) {
-      const backwards = isElmSiblingOf(oldPre, newPre);
+      const oldPreIndex = this.#pres.indexOf(oldPre);
+      const newPreIndex = this.#pres.indexOf(newPre);
+      const forward = newPreIndex > oldPreIndex;
       this.#currentlyBusy = true;
       this.#nextCodeBlock = undefined;
 
       const oldLines = oldPre.firstElementChild.children;
       const newLines = newPre.firstElementChild.children;
-      const diff = patienceDiffPlus(
+      const diff = patienceDiff(
         Array.from(oldLines).map(c => c.textContent),
         Array.from(newLines).map(c => c.textContent));
       console.log(diff);
+
+      const linesOfInterest = [];
+      if (oldPreIndex + 1 !== newPreIndex) {
+        const diff = patienceDiff(
+          Array.from(this.#pres[newPreIndex - 1]?.firstElementChild.children ?? []).map(c => c.textContent),
+          Array.from(newLines).map(c => c.textContent));
+        for (const { aIndex, bIndex } of diff.lines) {
+          if (aIndex === -1) {
+            linesOfInterest.push(bIndex);
+          }
+        }
+      } else {
+        for (const { aIndex, bIndex } of diff.lines) {
+          if (aIndex === -1) {
+            linesOfInterest.push(bIndex);
+          }
+        }
+      }
+
+
+
       const hasRemove = diff.lineCountDeleted > 0 ? 1 : 0;
       const hasInsert = diff.lineCountInserted > 0 ? 1 : 0;
       const hasMove = diff.lines.some(({ aIndex, bIndex }) => aIndex !== bIndex && aIndex !== -1 && bIndex !== -1) ? 1 : 0;
@@ -160,24 +172,22 @@ class CodeWave extends HTMLElement {
       for (const { aIndex, bIndex, line } of diff.lines) {
         if (bIndex === -1) {
           const oldLine = oldLines[aIndex];
-          oldLine.style.setProperty('--cw-offset', backwards ? '-100%' : '100%')
+          oldLine.style.setProperty('--cw-offset', forward ? '-100%' : '100%')
           oldLine.style.animation = 'cw-slide-out ease-in 1s 0s both';
         } else if (aIndex === -1) {
           const newLine = newLines[bIndex];
-          newLine.style.setProperty('--cw-offset', backwards ? '100%' : '-100%')
+          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(bIndex) ? '1' : '0.5');
+          newLine.style.setProperty('--cw-offset', forward ? '100%' : '-100%')
           newLine.style.animation = `cw-slide-in ease-out 1s ${insertDelay}s both`;
-        } else if (aIndex !== bIndex) {
-          const oldLine = oldLines[aIndex];
-          const newLine = newLines[bIndex];
-          oldLine.style.opacity = '0';
-          //oldLines.style.animation = `cw-move-old-line 0s ease-in-out ${moveDelay}s both`;
-          //oldLine.style.setProperty('--cw-offset', `${bIndex - aIndex}lh`)
-          newLine.style.animation = `cw-move-new-line 1s ease-in-out ${moveDelay}s both`;
-          newLine.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`)
         } else {
           const oldLine = oldLines[aIndex];
+          const newLine = newLines[bIndex];
+          newLine.style.opacity = window.getComputedStyle(oldLine).getPropertyValue('opacity');
           oldLine.style.opacity = '0';
-
+          oldLine.style.animation = '';
+          newLine.style.animation = `cw-move-new-line 1s ease-in-out ${moveDelay}s both`;
+          newLine.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`);
+          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(bIndex) ? '1' : '0.5');
         }
       }
 
@@ -190,11 +200,8 @@ class CodeWave extends HTMLElement {
         console.log('animation-end');
         oldPre.removeAttribute('slot');
         for (const line of oldLines) {
-          line.style.animation = '';
-          line.style.opacity = '';
-        }
-        for (const line of newLines) {
-          line.style.animation = '';
+          //line.style.animation = '';
+          //line.style.opacity = '';
         }
         newPre.setAttribute('slot', 'code');
         this.#transformer.style.isolation = 'auto';
@@ -212,11 +219,3 @@ class CodeWave extends HTMLElement {
 }
 
 customElements.define('code-wave', CodeWave);
-
-function isElmSiblingOf(a, b) {
-  while (a) {
-    if (a === b) return true;
-    a = a.nextElementSibling;
-  }
-  return false;
-}
