@@ -18,10 +18,12 @@ class CodeWave extends HTMLElement {
           from {
               translate: 0;
               opacity: 1;
+              mix-blend-mode: plus-lighter;
           }
           to {
               translate: -100%;
               opacity: 0;
+              mix-blend-mode: plus-lighter;
           }
       }
 
@@ -29,10 +31,12 @@ class CodeWave extends HTMLElement {
           from {
               translate: 100%;
               opacity: 0;
+              mix-blend-mode: plus-lighter;
           }
           to {
               translate: 0%;
               opacity: 1;
+              mix-blend-mode: plus-lighter;
           }
       }
 
@@ -40,10 +44,12 @@ class CodeWave extends HTMLElement {
           from {
               translate: 0 var(--cw-offset);
               opacity: 0;
+              mix-blend-mode: plus-lighter;
           }
           to {
               translate: 0 0;
               opacity: 1;
+              mix-blend-mode: plus-lighter;
           }
       }
 
@@ -51,10 +57,12 @@ class CodeWave extends HTMLElement {
           from {
               translate: 0 0;
               opacity: 1;
+              mix-blend-mode: plus-lighter;
           }
           to {
               translate: 0 var(--cw-offset);
               opacity: 0;
+              mix-blend-mode: plus-lighter;
           }
       }
     `);
@@ -89,37 +97,45 @@ class CodeWave extends HTMLElement {
           Array.from(from.firstElementChild.children).map(c => c.textContent),
           Array.from(to.firstElementChild.children).map(c => c.textContent));
         console.log(diff);
-        //from?.removeAttribute('slot');
+        const hasRemove = diff.lineCountDeleted > 0 ? 1 : 0;
+        const hasInsert = diff.lineCountInserted > 0 ? 1 : 0;
+        const hasMove = diff.lines.some(({ aIndex, bIndex }) => aIndex !== bIndex && aIndex !== -1 && bIndex !== -1) ? 1 : 0;
+        const moveDelay = hasRemove;
+        const insertDelay = hasRemove + hasMove;
+        console.log('delays', moveDelay, insertDelay)
         to?.setAttribute('slot', 'code-new');
+        transformer.style.isolation = 'isolate';
         for (const { aIndex, bIndex, line } of diff.lines) {
           if (bIndex === -1) {
             from.firstElementChild.children[aIndex].style.animation = 'cw-slide-out ease-in 1s 0s both';
           } else if (aIndex === -1) {
-            to.firstElementChild.children[bIndex].style.animation = 'cw-slide-in ease-out 1s 2s both';
+            to.firstElementChild.children[bIndex].style.animation = `cw-slide-in ease-out 1s ${insertDelay}s both`;
           } else if (aIndex !== bIndex) {
             const fromLine = from.firstElementChild.children[aIndex];
             const toLine = to.firstElementChild.children[bIndex];
-            fromLine.style.animation = 'cw-move-to 1s ease-in-out 1s both';
+            fromLine.style.animation = `cw-move-to 1s ease-in-out ${moveDelay}s both`;
             fromLine.style.setProperty('--cw-offset', `${bIndex - aIndex}lh`)
-            toLine.style.animation = 'cw-move-from 1s ease-in-out 1s both';
+            toLine.style.animation = `cw-move-from 1s ease-in-out ${moveDelay}s both`;
             to.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`)
           }
         }
+
+        const duration = (hasRemove + hasMove + hasInsert);
+
+        transformer.style.transitionDuration = `${moveDelay}s`
+        transformer.style.scale = codeContainer.clientWidth / to.clientWidth;
 
         setTimeout(() => {
           console.log('animation-end');
           from.removeAttribute('slot');
           to.setAttribute('slot', 'code');
-        }, 3000);
+          transformer.style.isolation = 'auto';
+        }, 1000 * duration);
       }
 
       this.querySelector('div.text.current')?.classList.remove('current');
       to?.nextElementSibling.classList.add('current');
 
-      if (from) {
-        console.log(from.clientWidth);
-        transformer.style.scale = codeContainer.clientWidth / from.clientWidth
-      }
     }, {
       root: null,
       rootMargin: '-50% 0px -50% 0px',
@@ -150,6 +166,7 @@ class CodeWave extends HTMLElement {
     const current = this.querySelector('& > pre');
     current.setAttribute('slot', 'code');
     current.nextElementSibling.classList.add('current');
+    transformer.style.scale = codeContainer.clientWidth / current.clientWidth;
   }
 
   disconnectedCallback() {

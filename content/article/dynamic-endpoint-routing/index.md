@@ -1352,18 +1352,19 @@ I want to share one extra little thing that I had trouble finding. The code belo
         position: sticky;
         top: 0;
         bottom: 0;
-        display: grid;
-        place-content: stretch;
         background: #1e1e1e;
         overflow: hidden;
         .transformer {
-            display: grid;
-            place-content: center;
-            grid-template: 'stack';
+            position: absolute;
+            top: 0;
+            left: 0;
             transition: scale 1s;
+            transform-origin: top left;
             ::slotted(pre){
                 overflow: visible !important;
-                grid-area: stack;
+                position: absolute;
+                top: 0;
+                left: 0;
             }
         }
     }
