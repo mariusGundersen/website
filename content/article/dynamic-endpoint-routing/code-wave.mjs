@@ -1,6 +1,10 @@
 import { patienceDiffPlus } from './diff.mjs';
 
 class CodeWave extends HTMLElement {
+  #currentlyBusy = false;
+  #nextCodeBlock = undefined;
+  #codeContainer;
+  #transformer;
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
@@ -16,53 +20,43 @@ class CodeWave extends HTMLElement {
 
       @keyframes cw-slide-out {
           from {
-              translate: 0;
+              translate: 0%;
               opacity: 1;
-              mix-blend-mode: plus-lighter;
           }
           to {
-              translate: -100%;
+              translate: var(--cw-offset);
               opacity: 0;
-              mix-blend-mode: plus-lighter;
           }
       }
 
       @keyframes cw-slide-in {
           from {
-              translate: 100%;
+              translate: var(--cw-offset);
               opacity: 0;
-              mix-blend-mode: plus-lighter;
           }
           to {
               translate: 0%;
               opacity: 1;
-              mix-blend-mode: plus-lighter;
           }
       }
 
-      @keyframes cw-move-from {
+      @keyframes cw-move-new-line {
           from {
               translate: 0 var(--cw-offset);
-              opacity: 0;
-              mix-blend-mode: plus-lighter;
           }
           to {
               translate: 0 0;
-              opacity: 1;
-              mix-blend-mode: plus-lighter;
           }
       }
 
-      @keyframes cw-move-to {
+      @keyframes cw-move-old-line {
           from {
               translate: 0 0;
-              opacity: 1;
-              mix-blend-mode: plus-lighter;
+              opacity: 0;
           }
           to {
               translate: 0 var(--cw-offset);
               opacity: 0;
-              mix-blend-mode: plus-lighter;
           }
       }
     `);
@@ -72,9 +66,9 @@ class CodeWave extends HTMLElement {
     this.shadowRoot.innerHTML = '';
     this.shadowRoot.append(document.getElementById('code-wave-template').content.cloneNode(true));
 
-    const codeContainer = this.shadowRoot.querySelector('.code-container');
+    this.#codeContainer = this.shadowRoot.querySelector('.code-container');
     /** @type {HTMLDivElement} */
-    const transformer = this.shadowRoot.querySelector('.transformer');
+    this.#transformer = this.shadowRoot.querySelector('.transformer');
 
     let pres = [];
     let chunks = [];
@@ -89,48 +83,12 @@ class CodeWave extends HTMLElement {
       const index = chunks.indexOf(target);
       if (index < 0) return;
       console.log('index', index);
-      const from = this.querySelector('pre[slot="code"]');
       const to = pres[index];
       console.log('to', to)
-      if (from && to && from !== to) {
-        const diff = patienceDiffPlus(
-          Array.from(from.firstElementChild.children).map(c => c.textContent),
-          Array.from(to.firstElementChild.children).map(c => c.textContent));
-        console.log(diff);
-        const hasRemove = diff.lineCountDeleted > 0 ? 1 : 0;
-        const hasInsert = diff.lineCountInserted > 0 ? 1 : 0;
-        const hasMove = diff.lines.some(({ aIndex, bIndex }) => aIndex !== bIndex && aIndex !== -1 && bIndex !== -1) ? 1 : 0;
-        const moveDelay = hasRemove;
-        const insertDelay = hasRemove + hasMove;
-        console.log('delays', moveDelay, insertDelay)
-        to?.setAttribute('slot', 'code-new');
-        transformer.style.isolation = 'isolate';
-        for (const { aIndex, bIndex, line } of diff.lines) {
-          if (bIndex === -1) {
-            from.firstElementChild.children[aIndex].style.animation = 'cw-slide-out ease-in 1s 0s both';
-          } else if (aIndex === -1) {
-            to.firstElementChild.children[bIndex].style.animation = `cw-slide-in ease-out 1s ${insertDelay}s both`;
-          } else if (aIndex !== bIndex) {
-            const fromLine = from.firstElementChild.children[aIndex];
-            const toLine = to.firstElementChild.children[bIndex];
-            fromLine.style.animation = `cw-move-to 1s ease-in-out ${moveDelay}s both`;
-            fromLine.style.setProperty('--cw-offset', `${bIndex - aIndex}lh`)
-            toLine.style.animation = `cw-move-from 1s ease-in-out ${moveDelay}s both`;
-            to.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`)
-          }
-        }
-
-        const duration = (hasRemove + hasMove + hasInsert);
-
-        transformer.style.transitionDuration = `${moveDelay}s`
-        transformer.style.scale = codeContainer.clientWidth / to.clientWidth;
-
-        setTimeout(() => {
-          console.log('animation-end');
-          from.removeAttribute('slot');
-          to.setAttribute('slot', 'code');
-          transformer.style.isolation = 'auto';
-        }, 1000 * duration);
+      if (this.#currentlyBusy) {
+        this.#nextCodeBlock = to;
+      } else {
+        this.transition(to);
       }
 
       this.querySelector('div.text.current')?.classList.remove('current');
@@ -166,12 +124,99 @@ class CodeWave extends HTMLElement {
     const current = this.querySelector('& > pre');
     current.setAttribute('slot', 'code');
     current.nextElementSibling.classList.add('current');
-    transformer.style.scale = codeContainer.clientWidth / current.clientWidth;
+    this.#transformer.style.scale = this.#codeContainer.clientWidth / current.clientWidth;
   }
 
   disconnectedCallback() {
     this.io.disconnect();
   }
+
+  /**
+   *
+   * @param {HTMLPreElement} newPre
+   */
+  transition(newPre) {
+    /** @type {HTMLPreElement} */
+    const oldPre = this.querySelector('pre[slot="code"]');
+    if (oldPre && newPre && oldPre !== newPre) {
+      const backwards = isElmSiblingOf(oldPre, newPre);
+      this.#currentlyBusy = true;
+      this.#nextCodeBlock = undefined;
+
+      const oldLines = oldPre.firstElementChild.children;
+      const newLines = newPre.firstElementChild.children;
+      const diff = patienceDiffPlus(
+        Array.from(oldLines).map(c => c.textContent),
+        Array.from(newLines).map(c => c.textContent));
+      console.log(diff);
+      const hasRemove = diff.lineCountDeleted > 0 ? 1 : 0;
+      const hasInsert = diff.lineCountInserted > 0 ? 1 : 0;
+      const hasMove = diff.lines.some(({ aIndex, bIndex }) => aIndex !== bIndex && aIndex !== -1 && bIndex !== -1) ? 1 : 0;
+      const moveDelay = hasRemove;
+      const insertDelay = hasRemove + hasMove;
+      console.log('delays', moveDelay, insertDelay)
+      newPre?.setAttribute('slot', 'code-new');
+      this.#transformer.style.isolation = 'isolate';
+      for (const { aIndex, bIndex, line } of diff.lines) {
+        if (bIndex === -1) {
+          const oldLine = oldLines[aIndex];
+          oldLine.style.setProperty('--cw-offset', backwards ? '-100%' : '100%')
+          oldLine.style.animation = 'cw-slide-out ease-in 1s 0s both';
+        } else if (aIndex === -1) {
+          const newLine = newLines[bIndex];
+          newLine.style.setProperty('--cw-offset', backwards ? '100%' : '-100%')
+          newLine.style.animation = `cw-slide-in ease-out 1s ${insertDelay}s both`;
+        } else if (aIndex !== bIndex) {
+          const oldLine = oldLines[aIndex];
+          const newLine = newLines[bIndex];
+          oldLine.style.opacity = '0';
+          //oldLines.style.animation = `cw-move-old-line 0s ease-in-out ${moveDelay}s both`;
+          //oldLine.style.setProperty('--cw-offset', `${bIndex - aIndex}lh`)
+          newLine.style.animation = `cw-move-new-line 1s ease-in-out ${moveDelay}s both`;
+          newLine.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`)
+        } else {
+          const oldLine = oldLines[aIndex];
+          oldLine.style.opacity = '0';
+
+        }
+      }
+
+      const duration = (hasRemove + hasMove + hasInsert);
+
+      this.#transformer.style.transitionDuration = '1s';
+      this.#transformer.style.scale = this.#codeContainer.clientWidth / newPre.clientWidth;
+
+      setTimeout(() => {
+        console.log('animation-end');
+        oldPre.removeAttribute('slot');
+        for (const line of oldLines) {
+          line.style.animation = '';
+          line.style.opacity = '';
+        }
+        for (const line of newLines) {
+          line.style.animation = '';
+        }
+        newPre.setAttribute('slot', 'code');
+        this.#transformer.style.isolation = 'auto';
+        if (this.#nextCodeBlock) {
+          this.transition(this.#nextCodeBlock);
+        } else {
+          this.#currentlyBusy = false;
+        }
+      }, 1000 * duration);
+    } else {
+      this.#currentlyBusy = false;
+      this.#nextCodeBlock = undefined;
+    }
+  }
 }
 
 customElements.define('code-wave', CodeWave);
+
+function isElmSiblingOf(a, b) {
+  while (a) {
+    if (a === b) return true;
+    a = a.nextElementSibling;
+  }
+  return false;
+}

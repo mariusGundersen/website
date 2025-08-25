@@ -1363,6 +1363,7 @@ I want to share one extra little thing that I had trouble finding. The code belo
             ::slotted(pre){
                 overflow: visible !important;
                 position: absolute;
+                background: #0000 !important;
                 top: 0;
                 left: 0;
             }
