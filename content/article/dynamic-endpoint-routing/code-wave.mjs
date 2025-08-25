@@ -8,6 +8,66 @@ class CodeWave extends HTMLElement {
   connectedCallback() {
     const elms = this.children;
 
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(/*css*/`
+      html {
+        scroll-snap: y proximity;
+      }
+
+      @keyframes cw-slide-out {
+          from {
+              translate: 0;
+              opacity: 1;
+          }
+          to {
+              translate: -100%;
+              opacity: 0;
+          }
+      }
+
+      @keyframes cw-slide-in {
+          from {
+              translate: 100%;
+              opacity: 0;
+          }
+          to {
+              translate: 0%;
+              opacity: 1;
+          }
+      }
+
+      @keyframes cw-move-from {
+          from {
+              translate: 0 var(--cw-offset);
+              opacity: 0;
+          }
+          to {
+              translate: 0 0;
+              opacity: 1;
+          }
+      }
+
+      @keyframes cw-move-to {
+          from {
+              translate: 0 0;
+              opacity: 1;
+          }
+          to {
+              translate: 0 var(--cw-offset);
+              opacity: 0;
+          }
+      }
+    `);
+
+    document.adoptedStyleSheets.push(sheet);
+
+    this.shadowRoot.innerHTML = '';
+    this.shadowRoot.append(document.getElementById('code-wave-template').content.cloneNode(true));
+
+    const codeContainer = this.shadowRoot.querySelector('.code-container');
+    /** @type {HTMLDivElement} */
+    const transformer = this.shadowRoot.querySelector('.transformer');
+
     let pres = [];
     let chunks = [];
     let chunk = document.createElement('div');
@@ -23,21 +83,42 @@ class CodeWave extends HTMLElement {
       console.log('index', index);
       const from = this.querySelector('pre[slot="code"]');
       const to = pres[index];
-      if (from && to) {
+      console.log('to', to)
+      if (from && to && from !== to) {
         const diff = patienceDiffPlus(
           Array.from(from.firstElementChild.children).map(c => c.textContent),
           Array.from(to.firstElementChild.children).map(c => c.textContent));
         console.log(diff);
+        //from?.removeAttribute('slot');
+        to?.setAttribute('slot', 'code-new');
+        for (const { aIndex, bIndex, line } of diff.lines) {
+          if (bIndex === -1) {
+            from.firstElementChild.children[aIndex].style.animation = 'cw-slide-out ease-in 1s 0s both';
+          } else if (aIndex === -1) {
+            to.firstElementChild.children[bIndex].style.animation = 'cw-slide-in ease-out 1s 2s both';
+          } else if (aIndex !== bIndex) {
+            const fromLine = from.firstElementChild.children[aIndex];
+            const toLine = to.firstElementChild.children[bIndex];
+            fromLine.style.animation = 'cw-move-to 1s ease-in-out 1s both';
+            fromLine.style.setProperty('--cw-offset', `${bIndex - aIndex}lh`)
+            toLine.style.animation = 'cw-move-from 1s ease-in-out 1s both';
+            to.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`)
+          }
+        }
+
+        setTimeout(() => {
+          console.log('animation-end');
+          from.removeAttribute('slot');
+          to.setAttribute('slot', 'code');
+        }, 3000);
       }
-      from?.removeAttribute('slot');
-      to?.setAttribute('slot', 'code');
 
       this.querySelector('div.text.current')?.classList.remove('current');
       to?.nextElementSibling.classList.add('current');
 
-      if (to) {
-        console.log(to.clientWidth);
-        to.style.scale = this.shadowRoot.querySelector('.code-container').clientWidth / to.clientWidth
+      if (from) {
+        console.log(from.clientWidth);
+        transformer.style.scale = codeContainer.clientWidth / from.clientWidth
       }
     }, {
       root: null,
@@ -69,11 +150,6 @@ class CodeWave extends HTMLElement {
     const current = this.querySelector('& > pre');
     current.setAttribute('slot', 'code');
     current.nextElementSibling.classList.add('current');
-
-    this.shadowRoot.innerHTML = '';
-    this.shadowRoot.append(document.getElementById('code-wave-template').content.cloneNode(true));
-
-    this.ownerDocument.documentElement.style.scrollSnapType = 'y proximity';
   }
 
   disconnectedCallback() {

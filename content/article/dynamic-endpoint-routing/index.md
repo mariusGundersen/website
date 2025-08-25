@@ -1353,11 +1353,18 @@ I want to share one extra little thing that I had trouble finding. The code belo
         top: 0;
         bottom: 0;
         display: grid;
-        place-content: center;
+        place-content: stretch;
         background: #1e1e1e;
         overflow: hidden;
-        ::slotted(pre){
-            overflow: visible !important;
+        .transformer {
+            display: grid;
+            place-content: center;
+            grid-template: 'stack';
+            transition: scale 1s;
+            ::slotted(pre){
+                overflow: visible !important;
+                grid-area: stack;
+            }
         }
     }
     .text-container {
@@ -1388,7 +1395,10 @@ I want to share one extra little thing that I had trouble finding. The code belo
     }
 </style>
       <div class="code-container">
-        <slot name="code">
+        <div class="transformer">
+            <slot name="code"></slot>
+            <slot name="code-new"></slot>
+        </div>
       </div>
       <div class="text-container">
         <slot>
