@@ -1344,16 +1344,23 @@ I want to share one extra little thing that I had trouble finding. The code belo
         width: calc(100vw - 20px);
         margin-left: calc(50% - 50vw);
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template: '.' 50vh '.' 1fr / auto;
+        @media (orientation: landscape) {
+            grid-template: '. .' auto / minmax(0, 1fr) minmax(0, 1fr);
+        }
         gap: 10px;
     }
     .code-container {
-        height: 100dvh;
+        height: 50dvh;
+        @media (orientation: landscape) {
+            height: 100dvh;
+        }
         position: sticky;
         top: 0;
         bottom: 0;
         background: #1e1e1e;
         overflow: hidden;
+        z-index: 2;
         .transformer {
             position: absolute;
             top: 0;
@@ -1371,7 +1378,10 @@ I want to share one extra little thing that I had trouble finding. The code belo
     }
     .text-container {
         position: relative;
-        padding: 50vh 25px;
+        padding: 0 25px;
+        @media (orientation: landscape) {
+            padding-block: 25vh;
+        }
         ::slotted(pre){
             display: none !important;
         }
