@@ -91,7 +91,19 @@ class CodeWave extends HTMLElement {
 
     for (const elm of Array.from(elms)) {
       if (elm instanceof HTMLPreElement) {
-        elm.firstElementChild.innerHTML = elm.firstElementChild.innerHTML.split('\n').map(l => `<span style="display: block; min-height: 1lh;">${l}</span>`).join('');
+        elm.firstElementChild.innerHTML = elm.firstElementChild.innerHTML
+          .split('\n')
+          .map(l => `<span style="display: block; min-height: 1lh;">${l}</span>`)
+          .join('');
+
+        for (const line of elm.firstElementChild.children) {
+          if (line.firstElementChild?.tagName === 'MARK') {
+            line.append(...line.firstElementChild.childNodes);
+            line.firstElementChild.remove();
+            line.setAttribute('data-highlight', 'true');
+          }
+        }
+
         this.#pres.push(elm);
         if (chunk.hasChildNodes()) {
           console.log(elm, chunk);
@@ -141,20 +153,23 @@ class CodeWave extends HTMLElement {
         Array.from(newLines).map(c => c.textContent));
       console.log(diff);
 
+      /** @type {HTMLElement[]} */
       const linesOfInterest = [];
-      if (oldPreIndex + 1 !== newPreIndex) {
+      if (newPre.querySelectorAll('[data-highlight]').length > 0) {
+        newPre.querySelectorAll('[data-highlight]').forEach(elm => linesOfInterest.push(elm));
+      } else if (oldPreIndex + 1 !== newPreIndex) {
         const diff = patienceDiff(
           Array.from(this.#pres[newPreIndex - 1]?.firstElementChild.children ?? []).map(c => c.textContent),
           Array.from(newLines).map(c => c.textContent));
         for (const { aIndex, bIndex } of diff.lines) {
           if (aIndex === -1) {
-            linesOfInterest.push(bIndex);
+            linesOfInterest.push(newLines[bIndex]);
           }
         }
       } else {
         for (const { aIndex, bIndex } of diff.lines) {
           if (aIndex === -1) {
-            linesOfInterest.push(bIndex);
+            linesOfInterest.push(newLines[bIndex]);
           }
         }
       }
@@ -176,7 +191,7 @@ class CodeWave extends HTMLElement {
           oldLine.style.animation = 'cw-slide-out ease-in 1s 0s both';
         } else if (aIndex === -1) {
           const newLine = newLines[bIndex];
-          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(bIndex) ? '1' : '0.5');
+          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(newLine) ? '1' : '0.5');
           newLine.style.setProperty('--cw-offset', forward ? '100%' : '-100%')
           newLine.style.animation = `cw-slide-in ease-out 1s ${insertDelay}s both`;
         } else {
@@ -187,7 +202,7 @@ class CodeWave extends HTMLElement {
           oldLine.style.animation = '';
           newLine.style.animation = `cw-move-new-line 1s ease-in-out ${moveDelay}s both`;
           newLine.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`);
-          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(bIndex) ? '1' : '0.5');
+          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(newLine) ? '1' : '0.5');
         }
       }
 

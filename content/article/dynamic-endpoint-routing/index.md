@@ -314,7 +314,7 @@ Moving the `AddSingleton` call into an extension method hides some details from 
 
 And there we have it, we have set up our own endpoint data source, just like the routing that is part of asp.net does it. Now we just need to make it do something useful.
 
-```csharp/33-40
+```csharp/32-39
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMyEndpoints();
@@ -774,7 +774,7 @@ public abstract class MutableEndpointDataSource : EndpointDataSource
 
 And there we have it, probably the simplest way to implement dynamic route updates in asp.net.
 
-```csharp 1:59
+```csharp/0-59
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMyEndpoints();
