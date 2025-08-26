@@ -1338,4 +1338,4 @@ I want to share one extra little thing that I had trouble finding. The code belo
             .Build();
 ```
 
-<script type="module" src="./code-wave.mjs">
+<script type="module" src="/js/code-wave.mjs">

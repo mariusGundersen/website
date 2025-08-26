@@ -582,3 +582,5 @@ The code currently only extracts the uniforms, it would be useful to extract the
 A lot of the code above is based on work done by others, for example the [ts-sql](https://github.com/codemix/ts-sql) I mentioned earlier. There is a [curated list of awesome template literal types](https://github.com/ghoullier/awesome-template-literal-types) and examples by very clever people. TypeScript has become very powerful as of version 4.1.
 
 I think this could be a very useful way for TypeScript code to suddenly understand other languages, like CSS or SQL. I've created a [feature suggestion for the TypeScript language](https://github.com/microsoft/TypeScript/issues/42219) to support importing other files as strings, and then using template literal types and conditional types be able to parse the string and produce useful types that can be used in projects.
+
+<script type="module" src="/js/code-wave.mjs">

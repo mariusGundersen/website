@@ -341,7 +341,6 @@ es.addEventListener('message', ev => {
 
 I've expanded the server with an EventEmitter and made the function return an object with a `sendMessage` function. The data parameter is serialized as json and sent to the client. We can now use this in our plugin to send messages to the client.
 
-
 ```js
 // webpack.config.js
 
@@ -515,7 +514,6 @@ es.addEventListener('message', ev => {
 The client gets a message every time any asset changes, but so far it only `console.logs` it. We can filter it so it only reacts to css files (maybe this should have been done in the server?).
 
 Next we want to update the stylesheet that has changed. We can look at all the stylesheets in the document using [`document.stylesheets`](https://developer.mozilla.org/en-US/docs/Web/API/Document/styleSheets) and compare their [`href`](https://developer.mozilla.org/en-US/docs/Web/API/StyleSheet/href) with the `asset` value. We can then use [`ownerNode`](https://developer.mozilla.org/en-US/docs/Web/API/StyleSheet/ownerNode) to find the `<link rel="stylesheet" href="...">` that imported it. This is slightly limiting in that it cannot replace `@import url('./another.css')` stylesheets.
-
 
 ```js
 // webpack.config.js
@@ -704,6 +702,7 @@ es.addEventListener('message', ev => {
   clone.addEventListener('load', () => link.remove());
 });
 ```
+
 ### Getting the client code into the bundle
 
 There are a few details I have skipped over so far to keep things simple. For example, we only want this plugin during `watch`. So let's check if the watch option is enabled, and if it isn't this plugin shouldn't do anything.
@@ -911,7 +910,6 @@ es.addEventListener('message', ev => {
 ```
 
 I've pulled out the plugin as a class so that an instance of it can be made in the plugin array with some option parameters. This way we can pass in different options depending on what you want to do.
-
 
 ```js
 // webpack.config.js
@@ -1138,3 +1136,5 @@ And that's about it! There are improvements that can be done, obviously, but thi
 </code-wave>
 
 I have published this plugin to [npm](https://www.npmjs.com/package/live-reload-css-webpack-plugin) and on [github](https://github.com/mariusGundersen/live-reload-css-webpack-plugin).
+
+<script type="module" src="/js/code-wave.mjs">
