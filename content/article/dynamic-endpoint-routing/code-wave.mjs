@@ -24,10 +24,6 @@ class CodeWave extends HTMLElement {
 
     const documentSheet = new CSSStyleSheet();
     documentSheet.replaceSync(/*css*/`
-      html {
-        scroll-snap: y proximity;
-      }
-
       @keyframes cw-slide-out {
           from {
               translate: 0%;
@@ -109,7 +105,6 @@ class CodeWave extends HTMLElement {
               display: none !important;
           }
           ::slotted(div.text){
-              scroll-snap-align: center;
               margin-block: max(3em, 25vh);
           }
           ::slotted(div.current){
@@ -222,28 +217,29 @@ class CodeWave extends HTMLElement {
     this.#media.onchange = null;
   }
 
+  /** @type {IntersectionObserverCallback} */
+  onIntersection = (entries) => {
+    const target = entries.find(e => e.isIntersecting)?.target;
+    if (!target) return;
+    const to = target.previousElementSibling;
+    if (to instanceof HTMLPreElement) {
+      if (this.#currentlyBusy) {
+        this.#nextCodeBlock = to;
+      } else {
+        this.transition(to);
+      }
+      this.querySelector('div.text.current')?.classList.remove('current');
+      target.classList.add('current');
+    }
+  }
+
   /**
    * @param {Element[]} chunks
    * @param {boolean} isLandscape
    */
   createIntersectionObserver(chunks, isLandscape) {
     this.#io?.disconnect();
-    this.#io = new IntersectionObserver((entries, observer) => {
-      const target = entries.find(e => e.isIntersecting)?.target;
-      if (!target) return;
-      const to = target.previousElementSibling;
-      if (to instanceof HTMLPreElement) {
-        if (this.#currentlyBusy) {
-          this.#nextCodeBlock = to;
-        } else {
-          this.transition(to);
-        }
-      }
-
-      this.querySelector('div.text.current')?.classList.remove('current');
-      to?.nextElementSibling?.classList.add('current');
-
-    }, {
+    this.#io = new IntersectionObserver(this.onIntersection, {
       root: null,
       rootMargin: isLandscape ? '-50% 0px -50% 0px' : '-75% 0px -25% 0px',
       threshold: 0
