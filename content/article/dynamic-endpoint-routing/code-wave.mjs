@@ -1,20 +1,26 @@
-import { patienceDiff } from './diff.mjs';
+// @ts-check
+
+import { patienceDiffPlus } from './diff.mjs';
 
 class CodeWave extends HTMLElement {
+  /** @type {HTMLPreElement[]} */
   #pres = [];
   #currentlyBusy = false;
+  /** @type {HTMLPreElement | undefined} */
   #nextCodeBlock = undefined;
+  /** @type {HTMLDivElement} */
   #codeContainer;
+  /** @type {HTMLDivElement} */
   #transformer;
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
   }
   connectedCallback() {
+    const shadowRoot = this.shadowRoot ?? this.attachShadow({ mode: 'open' });
     const elms = this.children;
 
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(/*css*/`
+    const documentSheet = new CSSStyleSheet();
+    documentSheet.replaceSync(/*css*/`
       html {
         scroll-snap: y proximity;
       }
@@ -50,15 +56,95 @@ class CodeWave extends HTMLElement {
           }
       }
     `);
+    document.adoptedStyleSheets.push(documentSheet);
 
-    document.adoptedStyleSheets.push(sheet);
+    const shadowSheet = new CSSStyleSheet();
+    shadowSheet.replaceSync(/*css*/`
+      :host{
+          width: calc(100vw - 20px);
+          margin-left: calc(50% - 50vw);
+          display: grid;
+          grid-template: '.' 50vh '.' 1fr / auto;
+          @media (orientation: landscape) {
+              grid-template: '. .' auto / minmax(0, 1fr) minmax(0, 1fr);
+          }
+          gap: 10px;
+      }
+      .code-container {
+          height: 50dvh;
+          @media (orientation: landscape) {
+              height: 100dvh;
+          }
+          position: sticky;
+          top: 0;
+          bottom: 0;
+          background: #1e1e1e;
+          overflow: hidden;
+          z-index: 2;
+          .transformer {
+              position: absolute;
+              top: 0;
+              left: 0;
+              transition: scale 1s, translate 2s;
+              transform-origin: top left;
+              ::slotted(pre){
+                  overflow: visible !important;
+                  position: absolute;
+                  background: #0000 !important;
+                  top: 0;
+                  left: 0;
+              }
+          }
+      }
+      .text-container {
+          position: relative;
+          padding: 0 25px;
+          @media (orientation: landscape) {
+              padding-block: 25vh;
+          }
+          ::slotted(pre){
+              display: none !important;
+          }
+          ::slotted(div.text){
+              scroll-snap-align: center;
+              margin-block: max(3em, 25vh);
+          }
+          ::slotted(div.current){
+              anchor-name: --text;
+          }
+          &::after {
+              content: '';
+              position: absolute;
+              position-anchor: --text;
+              top: anchor(top);
+              bottom: anchor(bottom);
+              left: 0;
+              width: 4px;
+              border-radius: 2px;
+              background: currentColor;
+              transition: inset 1s cubic-bezier(0.65, 0, 0.35, 1);
+          }
+      }
+    `)
 
-    this.shadowRoot.innerHTML = '';
-    this.shadowRoot.append(document.getElementById('code-wave-template').content.cloneNode(true));
+    shadowRoot.adoptedStyleSheets.push(shadowSheet);
 
-    this.#codeContainer = this.shadowRoot.querySelector('.code-container');
-    /** @type {HTMLDivElement} */
-    this.#transformer = this.shadowRoot.querySelector('.transformer');
+    shadowRoot.innerHTML = /*html*/`
+      <div class="code-container">
+        <div class="transformer">
+            <slot name="code"></slot>
+            <slot name="code-new"></slot>
+        </div>
+      </div>
+      <div class="text-container">
+        <slot>
+      </div>
+    `;
+
+    // @ts-ignore
+    this.#codeContainer = shadowRoot.querySelector('.code-container');
+    // @ts-ignore
+    this.#transformer = shadowRoot.querySelector('.transformer');
 
     let chunks = [];
     let chunk = document.createElement('div');
@@ -81,7 +167,7 @@ class CodeWave extends HTMLElement {
       }
 
       this.querySelector('div.text.current')?.classList.remove('current');
-      to?.nextElementSibling.classList.add('current');
+      to?.nextElementSibling?.classList.add('current');
 
     }, {
       root: null,
@@ -91,30 +177,51 @@ class CodeWave extends HTMLElement {
 
     for (const elm of Array.from(elms)) {
       if (elm instanceof HTMLPreElement) {
-        elm.firstElementChild.innerHTML = elm.firstElementChild.innerHTML
-          .split('\n')
-          .map(l => `<span style="display: block; min-height: 1lh;">${l}</span>`)
-          .join('');
+        const codeElm = elm.firstElementChild;
+        if (codeElm && codeElm.nodeName === 'CODE') {
+          elm.firstElementChild.innerHTML = elm.firstElementChild.innerHTML
+            .split('\n')
+            .map(l => `<span style="display: inline-block;">${l}</span>\n`)
+            .join('');
 
-        for (const line of elm.firstElementChild.children) {
-          if (line.firstElementChild?.tagName === 'MARK') {
-            line.append(...line.firstElementChild.childNodes);
-            line.firstElementChild.remove();
-            line.setAttribute('data-highlight', 'true');
+          /** @type {number[]} */
+          const linesOfInterest = [];
+          for (let index = 0; index < elm.firstElementChild.children.length; index++) {
+            const line = elm.firstElementChild.children[index];
+            if (line.firstElementChild?.tagName === 'MARK') {
+              line.append(...line.firstElementChild.childNodes);
+              line.firstElementChild.remove();
+              line.setAttribute('data-highlight', 'true');
+              linesOfInterest.push(index)
+            }
+          }
+
+          if (linesOfInterest.length === 0) {
+            const previousPre = this.#pres.at(-1);
+            if (previousPre) {
+              const diff = patienceDiffPlus(previousPre.textContent?.split('\n'), elm.textContent?.split('\n'));
+              for (const { aIndex, bIndex, moved } of diff.lines) {
+                if (aIndex === -1 || (moved && bIndex !== -1)) {
+                  linesOfInterest.push(bIndex);
+                }
+              }
+            } else {
+              linesOfInterest.push(...elm.textContent?.split('\n').map((_, i) => i) ?? [])
+            }
+          }
+
+          elm.setAttribute('data-lines-of-interest', linesOfInterest.join(','));
+
+          this.#pres.push(elm);
+          if (chunk.hasChildNodes()) {
+            console.log(elm, chunk);
+            chunks.push(chunk);
+            elm.before(chunk);
+            this.io.observe(chunk);
+            chunk = document.createElement('div');
+            chunk.className = 'text';
           }
         }
-
-        this.#pres.push(elm);
-        if (chunk.hasChildNodes()) {
-          console.log(elm, chunk);
-          chunks.push(chunk);
-          elm.before(chunk);
-          this.io.observe(chunk);
-          chunk = document.createElement('div');
-          chunk.className = 'text';
-        }
-      } else if (elm instanceof HTMLDivElement && elm.className === 'text') {
-
       } else {
         chunk.append(elm);
       }
@@ -122,14 +229,14 @@ class CodeWave extends HTMLElement {
 
     console.log(this.#pres, chunks)
 
-    const current = this.querySelector('& > pre');
+    const current = this.#pres[0];
     current.setAttribute('slot', 'code');
-    current.nextElementSibling.classList.add('current');
+    current.nextElementSibling?.classList.add('current');
     this.transform(current);
   }
 
   disconnectedCallback() {
-    this.io.disconnect();
+    this.io?.disconnect();
   }
 
   /**
@@ -137,7 +244,7 @@ class CodeWave extends HTMLElement {
    * @param {HTMLPreElement} newPre
    */
   transition(newPre) {
-    /** @type {HTMLPreElement} */
+    /** @type {HTMLPreElement | null} */
     const oldPre = this.querySelector('pre[slot="code"]');
     if (oldPre && newPre && oldPre !== newPre) {
       const oldPreIndex = this.#pres.indexOf(oldPre);
@@ -146,36 +253,18 @@ class CodeWave extends HTMLElement {
       this.#currentlyBusy = true;
       this.#nextCodeBlock = undefined;
 
-      const oldLines = Array.from(oldPre.firstElementChild.children);
-      const newLines = Array.from(newPre.firstElementChild.children);
-      const diff = patienceDiff(
+      const oldLines = Array.from(oldPre.firstElementChild?.children ?? []).filter(e => e instanceof HTMLElement);
+      const newLines = Array.from(newPre.firstElementChild?.children ?? []).filter(e => e instanceof HTMLElement);
+      const diff = patienceDiffPlus(
         oldLines.map(c => c.textContent),
         newLines.map(c => c.textContent));
       console.log(diff);
 
-      /** @type {HTMLElement[]} */
-      const linesOfInterest = [];
-      if (newPre.querySelectorAll('[data-highlight]').length > 0) {
-        newPre.querySelectorAll('[data-highlight]').forEach(elm => linesOfInterest.push(elm));
-      } else if (oldPreIndex + 1 !== newPreIndex) {
-        const diff = patienceDiff(
-          Array.from(this.#pres[newPreIndex - 1]?.firstElementChild.children ?? []).map(c => c.textContent),
-          newLines.map(c => c.textContent));
-        for (const { aIndex, bIndex } of diff.lines) {
-          if (aIndex === -1) {
-            linesOfInterest.push(newLines[bIndex]);
-          }
-        }
-      } else {
-        for (const { aIndex, bIndex } of diff.lines) {
-          if (aIndex === -1) {
-            linesOfInterest.push(newLines[bIndex]);
-          }
-        }
-      }
+      /** @type {number[]} */
+      const linesOfInterest = newPre.getAttribute('data-lines-of-interest')?.split(',').map(v => parseInt(v, 10)) ?? [];
 
-      const firstLineOfInterest = newLines.indexOf(linesOfInterest.at(0));
-      const lastLineOfInterest = newLines.indexOf(linesOfInterest.at(-1));
+      const firstLineOfInterest = linesOfInterest.at(0) ?? 0;
+      const lastLineOfInterest = linesOfInterest.at(-1) ?? 0;
 
       const removeDuration = 0.3;
       const moveDuration = 0.5;
@@ -198,7 +287,7 @@ class CodeWave extends HTMLElement {
           removeDelay += 0.01;
         } else if (aIndex === -1) {
           const newLine = newLines[bIndex];
-          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(newLine) ? '1' : '0.4');
+          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(bIndex) ? '1' : '0.4');
           newLine.style.setProperty('--cw-offset', forward ? '250px' : '-250px')
           newLine.style.animation = `cw-slide-in ease-out ${insertDuration}s ${insertDelay}s both`;
           insertDelay += 0.01
@@ -210,7 +299,7 @@ class CodeWave extends HTMLElement {
           oldLine.style.animation = '';
           newLine.style.animation = `cw-move-new-line ${moveDuration}s ease-in-out ${moveDelay}s both`;
           newLine.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`);
-          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(newLine) ? '1' : '0.4');
+          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(bIndex) ? '1' : '0.4');
         }
       }
 
@@ -240,10 +329,13 @@ class CodeWave extends HTMLElement {
     }
   }
 
+  /**
+   * @param {HTMLPreElement} elm
+   */
   transform(elm, y = 0.5, height = 1) {
     const scale = Math.min(1, this.#codeContainer.clientWidth / elm.clientWidth, this.#codeContainer.clientHeight / (height * elm.clientHeight));
     this.#transformer.style.translate = `0 ${this.#codeContainer.clientHeight / 2 - y * elm.clientHeight * scale}px`
-    this.#transformer.style.scale = scale;
+    this.#transformer.style.scale = `${scale}`;
   }
 }
 
