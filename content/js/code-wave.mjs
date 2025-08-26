@@ -1,6 +1,6 @@
 // @ts-check
 
-import { patienceDiffPlus } from './diff.mjs';
+import { patienceDiff } from './diff.mjs';
 
 class CodeWave extends HTMLElement {
   /** @type {HTMLPreElement[]} */
@@ -153,16 +153,17 @@ class CodeWave extends HTMLElement {
       if (elm instanceof HTMLPreElement) {
         const codeElm = elm.firstElementChild;
         if (codeElm && codeElm.nodeName === 'CODE') {
-          elm.firstElementChild.innerHTML = elm.firstElementChild.innerHTML
+          console.log(codeElm.innerHTML)
+          codeElm.innerHTML = codeElm.innerHTML
             .split('\n')
-            .map(l => `<span style="display: inline-block;">${l}</span>\n`)
+            .map(l => `<div style="display: inline-block;">${l}</div>\n`)
             .join('');
 
           /** @type {number[]} */
           const linesOfInterest = [];
-          for (let index = 0; index < elm.firstElementChild.children.length; index++) {
-            const line = elm.firstElementChild.children[index];
-            if (line.firstElementChild?.tagName === 'MARK') {
+          for (let index = 0; index < codeElm.childNodes.length; index++) {
+            const line = codeElm.childNodes[index];
+            if (line instanceof HTMLElement && line.firstElementChild?.tagName === 'MARK') {
               line.append(...line.firstElementChild.childNodes);
               line.firstElementChild.remove();
               line.setAttribute('data-highlight', 'true');
@@ -173,9 +174,9 @@ class CodeWave extends HTMLElement {
           if (linesOfInterest.length === 0) {
             const previousPre = this.#pres.at(-1);
             if (previousPre) {
-              const diff = patienceDiffPlus(previousPre.textContent?.split('\n'), elm.textContent?.split('\n'));
-              for (const { aIndex, bIndex, moved } of diff.lines) {
-                if (aIndex === -1 || (moved && bIndex !== -1)) {
+              const diff = patienceDiff(previousPre.textContent?.split('\n'), elm.textContent?.split('\n'));
+              for (const { aIndex, bIndex } of diff.lines) {
+                if (aIndex === -1) {
                   linesOfInterest.push(bIndex);
                 }
               }
@@ -266,7 +267,7 @@ class CodeWave extends HTMLElement {
 
       const oldLines = Array.from(oldPre.firstElementChild?.children ?? []).filter(e => e instanceof HTMLElement);
       const newLines = Array.from(newPre.firstElementChild?.children ?? []).filter(e => e instanceof HTMLElement);
-      const diff = patienceDiffPlus(
+      const diff = patienceDiff(
         oldLines.map(c => c.textContent),
         newLines.map(c => c.textContent));
 
