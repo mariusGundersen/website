@@ -153,11 +153,8 @@ class CodeWave extends HTMLElement {
       if (elm instanceof HTMLPreElement) {
         const codeElm = elm.firstElementChild;
         if (codeElm && codeElm.nodeName === 'CODE') {
-          console.log(codeElm.innerHTML)
-          codeElm.innerHTML = codeElm.innerHTML
-            .split('\n')
-            .map(l => `<div style="display: inline-block;">${l}</div>\n`)
-            .join('');
+
+          this.splitLines(codeElm);
 
           /** @type {number[]} */
           const linesOfInterest = [];
@@ -248,6 +245,66 @@ class CodeWave extends HTMLElement {
 
     for (const chunk of chunks) {
       this.#io.observe(chunk);
+    }
+  }
+
+  /**
+   * @param {Element} elm
+   */
+  splitLines(elm) {
+    /**
+     * @param {Element} node
+     */
+    function* recurse(node) {
+      const makeClone = () => {
+        const clone = node.cloneNode();
+        // @ts-ignore
+        clone.append(...group);
+        group = [];
+        return clone;
+      }
+
+      let group = [];
+
+      for (const child of [...node.childNodes]) {
+        if (child.textContent?.includes('\n')) {
+          if (child instanceof Text) {
+            child.remove();
+            const chunks = child.textContent?.split('\n') ?? [];
+            const tail = chunks.pop();
+            for (const chunk of chunks) {
+              group.push(new Text(chunk));
+              yield makeClone();
+              yield '\n';
+            }
+            group.push(tail);
+          } else if (child instanceof Element) {
+            for (const g of recurse(child)) {
+              if (g === '\n') {
+                yield makeClone();
+                yield '\n';
+              } else {
+                group.push(g);
+              }
+            }
+          }
+        } else {
+          group.push(child)
+        }
+      }
+      yield makeClone();
+    }
+
+    const line = document.createElement('div');
+    line.style.display = 'inline-block';
+    line.append(...elm.childNodes);
+
+    for (const l of recurse(line)) {
+      if (l === '\n') {
+        elm.append(new Text('\n'));
+      } else {
+        elm.append(l);
+      }
     }
   }
 
