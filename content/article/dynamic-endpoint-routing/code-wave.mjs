@@ -12,12 +12,15 @@ class CodeWave extends HTMLElement {
   #codeContainer;
   /** @type {HTMLDivElement} */
   #transformer;
+  /** @type {IntersectionObserver} */
+  #io;
+  /** @type {MediaQueryList} */
+  #media;
   constructor() {
     super();
   }
   connectedCallback() {
     const shadowRoot = this.shadowRoot ?? this.attachShadow({ mode: 'open' });
-    const elms = this.children;
 
     const documentSheet = new CSSStyleSheet();
     documentSheet.replaceSync(/*css*/`
@@ -146,36 +149,12 @@ class CodeWave extends HTMLElement {
     // @ts-ignore
     this.#transformer = shadowRoot.querySelector('.transformer');
 
-    let chunks = [];
+    /** @type {Element[]} */
+    const chunks = [];
     let chunk = document.createElement('div');
     chunk.className = 'text';
 
-    this.io = new IntersectionObserver((entries, observer) => {
-      console.log('intersect', entries);
-      const target = entries.find(e => e.isIntersecting)?.target;
-      if (!target) return;
-      console.log('target', target);
-      const index = chunks.indexOf(target);
-      if (index < 0) return;
-      console.log('index', index);
-      const to = this.#pres[index];
-      console.log('to', to)
-      if (this.#currentlyBusy) {
-        this.#nextCodeBlock = to;
-      } else {
-        this.transition(to);
-      }
-
-      this.querySelector('div.text.current')?.classList.remove('current');
-      to?.nextElementSibling?.classList.add('current');
-
-    }, {
-      root: null,
-      rootMargin: '-50% 0px -50% 0px',
-      threshold: 0
-    })
-
-    for (const elm of Array.from(elms)) {
+    for (const elm of Array.from(this.children)) {
       if (elm instanceof HTMLPreElement) {
         const codeElm = elm.firstElementChild;
         if (codeElm && codeElm.nodeName === 'CODE') {
@@ -214,10 +193,8 @@ class CodeWave extends HTMLElement {
 
           this.#pres.push(elm);
           if (chunk.hasChildNodes()) {
-            console.log(elm, chunk);
             chunks.push(chunk);
             elm.before(chunk);
-            this.io.observe(chunk);
             chunk = document.createElement('div');
             chunk.className = 'text';
           }
@@ -227,7 +204,12 @@ class CodeWave extends HTMLElement {
       }
     }
 
-    console.log(this.#pres, chunks)
+    this.#media = window.matchMedia('(orientation: landscape)');
+    this.createIntersectionObserver(chunks, this.#media.matches);
+
+    this.#media.onchange = (e) => {
+      this.createIntersectionObserver(chunks, e.matches);
+    }
 
     const current = this.#pres[0];
     current.setAttribute('slot', 'code');
@@ -236,7 +218,40 @@ class CodeWave extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.io?.disconnect();
+    this.#io?.disconnect();
+    this.#media.onchange = null;
+  }
+
+  /**
+   * @param {Element[]} chunks
+   * @param {boolean} isLandscape
+   */
+  createIntersectionObserver(chunks, isLandscape) {
+    this.#io?.disconnect();
+    this.#io = new IntersectionObserver((entries, observer) => {
+      const target = entries.find(e => e.isIntersecting)?.target;
+      if (!target) return;
+      const to = target.previousElementSibling;
+      if (to instanceof HTMLPreElement) {
+        if (this.#currentlyBusy) {
+          this.#nextCodeBlock = to;
+        } else {
+          this.transition(to);
+        }
+      }
+
+      this.querySelector('div.text.current')?.classList.remove('current');
+      to?.nextElementSibling?.classList.add('current');
+
+    }, {
+      root: null,
+      rootMargin: isLandscape ? '-50% 0px -50% 0px' : '-75% 0px -25% 0px',
+      threshold: 0
+    });
+
+    for (const chunk of chunks) {
+      this.#io.observe(chunk);
+    }
   }
 
   /**
@@ -258,7 +273,6 @@ class CodeWave extends HTMLElement {
       const diff = patienceDiffPlus(
         oldLines.map(c => c.textContent),
         newLines.map(c => c.textContent));
-      console.log(diff);
 
       /** @type {number[]} */
       const linesOfInterest = newPre.getAttribute('data-lines-of-interest')?.split(',').map(v => parseInt(v, 10)) ?? [];
@@ -276,7 +290,6 @@ class CodeWave extends HTMLElement {
       let removeDelay = 0;
       const moveDelay = hasRemove;
       let insertDelay = hasRemove + hasMove;
-      console.log('delays', moveDelay, insertDelay)
       newPre.setAttribute('slot', 'code-new');
       this.#transformer.style.isolation = 'isolate';
       for (const { aIndex, bIndex } of diff.lines) {
@@ -306,14 +319,12 @@ class CodeWave extends HTMLElement {
       const duration = (insertDelay + hasInsert);
 
       this.#transformer.style.transitionDuration = '1s';
-      console.log('y', firstLineOfInterest, lastLineOfInterest)
       this.transform(
         newPre,
         (firstLineOfInterest + lastLineOfInterest) / 2 / (newLines.length - 1),
         (lastLineOfInterest - firstLineOfInterest) / (newLines.length - 1));
 
       setTimeout(() => {
-        console.log('animation-end');
         oldPre.removeAttribute('slot');
         newPre.setAttribute('slot', 'code');
         this.#transformer.style.isolation = 'auto';
