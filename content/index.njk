@@ -1,0 +1,19 @@
+---
+title: Home
+layout: layout.html
+---
+
+<aside>
+	<nav>
+		{% set postslist = collections.posts %}
+		<ul role="menu">
+		{%- for post in postslist | reverse %}
+			<li data-current="{% if post.url == url %}post{% endif %}">
+				<h2><a href="{{ post.data.url or post.url }}" >{% if post.data.title %}{{ post.data.title }}{% else %}<code>{{ post.url }}</code>{% endif %}</a></h2>
+				<p>{{post.data.short}}</p>
+				<time datetime="{{ post.date | htmlDateString }}">{{ post.date | readableDate("LLLL yyyy") }}</time>
+			</li>
+		{%- endfor %}
+		</ul>
+	</nav>
+</aside>
