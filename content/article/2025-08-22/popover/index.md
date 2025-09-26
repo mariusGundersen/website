@@ -3,6 +3,7 @@ title: Anchored definition popovers
 layout: post.html
 date: 2025-08-22
 redirect_from: /popover
+draft: true
 ---
 
 
