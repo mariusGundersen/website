@@ -5,20 +5,31 @@ body {
 }
 
 body {
+  --color-primary: #1e1e1e;
+  --color-secondary: #d4d4d4;
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.2em;
-  color: #333;
+  color: var(--color-primary);
   -webkit-text-size-adjust: none;
   min-height: 100dvh;
 }
 
 header {
-  margin-top: .5em;
-  h1 {
+  padding-top: .5em;
+  background: var(--color-primary);
+  --hover-color: #9cdcfe;
+
+  a {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
     font-variant: small-caps;
-    text-align: right;
     max-width: 900px;
     margin: 0 auto;
+    display: block;
+    text-decoration: none;
+    font-size: 3rem;
+    font-weight: bold;
   }
 
   border-bottom: 5px solid currentColor;
@@ -30,11 +41,26 @@ main {
   padding-inline: 1em;
 }
 
+footer {
+  --hover-color: #dff;
+  margin-top: 2rem;
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  padding-block: 2rem;
+
+  >div {
+    max-width: 900px;
+    margin-inline: auto;
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
 a {
   color: inherit;
 
   &:hover{
-    color: #633;
+    color: var(--hover-color, rgb(51, 88, 102));
     text-decoration-style: double;
   }
 }

@@ -1,28 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
+---
+title: Home
+layout: layout.html
+---
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{title}} - Marius Gundersen</title>
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prism-themes@1/themes/prism-vsc-dark-plus.css" />
-</head>
+<h1>{{ title }}</h1>
 
-<body>
-  <header>
-    <h1><a href="/">Marius Gundersen</a></h1>
-  </header>
+{{ content }}
 
-  <main>
-    <h1>{{ title }}</h1>
-    {{ content }}
-  </main>
+<hr>
 
-  <footer>
-    Did you find a mistake or have a suggestion for an improvement? <a
-      href="https://github.com/mariusGundersen/website/blob/main/{{ page.inputPath }}">Edit this page on GitHub</a>
-  </footer>
-</body>
+Did you find a mistake or have a suggestion for an improvement?
+<a href="https://github.com/mariusGundersen/website/blob/main/{{ page.inputPath }}">Fork and suggest an edit</a>
 
-</html>
+<hr>
+
+<script src="https://utteranc.es/client.js" repo="mariusGundersen/website" issue-term="title" label="💬"
+  crossorigin="anonymous" async></script>
