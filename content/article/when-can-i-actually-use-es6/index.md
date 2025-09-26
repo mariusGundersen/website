@@ -1,7 +1,7 @@
 ---
 title: "When can I actually use ES6?"
 short: "The next version of JavaScript is nearing completion. But when can we actually use it?"
-date: "2013-12-22T15:41:21.189Z"
+date: "2013-12-22"
 type: "article"
 ---
 
@@ -40,5 +40,3 @@ The [Traceur compiler](http://code.google.com/p/traceur-compiler/) can compile m
 As long as a browser implements modules, any other feature of ES6 can be used in the browser. Just like shims and polyfills have helped us use ES5 features in browsers without ES5 support, modules will let us use ES6 features in browsers without full ES6 support. And when ES7 is standardized in a few years, it too can be used in browsers without ES7 support.
 
 This means that browser vendors should focus on implementing modules before any of the other feature of ES6. The moment all browsers in use support modules is the moment all features in ES6 can be used, thanks to the `Loader.prototype.translate` method. We can reach this point quicker if browser vendors prioritize modules above other ES6 features.
-
-
