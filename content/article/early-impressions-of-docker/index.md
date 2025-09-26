@@ -5,7 +5,7 @@ date: "2015-01-17"
 type: "article"
 ---
 
-## Early impressions of Docker
+# Early impressions of Docker
 
 Docker is a tool for deploying applications to servers easily, by creating standardized containers for the applications and running those containers in "virtual machines" that have a simple API for communicating with each other. This means that a container working on one machine will work on any other machine that runs Docker, without any further configuration. The goal seems to be to make it safe and simple to deploy to and set up production and test environments. BTW, I put virtual machine in "quotes" as I'm sure there are people who disagree that Docker is doing virtualization, and the quotes protects me from those people. As I'm sure you can tell, I only have a fairly basic understanding of Docker, since I've only used it for about a week.
 
@@ -19,7 +19,7 @@ Within an hour, and without having to install any other software on the server, 
 It might be that I don't have enough experience with Docker yet, but there are some things that I wish were different. There's absolutely no doubt about the fact that we will use containers to deploy our applications in the future, but there might be an alternative to Docker that does it better. Or maybe Docker will change and improve. In any case, these are the improvements I hope we will get in the future.
 
 ### Name and version in the Dockerfile
-Just like package.json in node, the Dockerfile should contain the name of the image and the version/tag that it will build. It seems strange that this is something that is provided to the build command rather than the definition of the container. The Dockerfile syntax is very simple, and will probably change in the future to become more powerful, and hopefully the name and version will be added to it. 
+Just like package.json in node, the Dockerfile should contain the name of the image and the version/tag that it will build. It seems strange that this is something that is provided to the build command rather than the definition of the container. The Dockerfile syntax is very simple, and will probably change in the future to become more powerful, and hopefully the name and version will be added to it.
 
 ### Build should output a file
 Running the docker build command, for example `sudo docker build -t me/mycontainer:v2 .` takes a path as input, but does not produce an output, at least not the path provided. Instead docker builds the ~~container~~ image in some other location and keeps them there. Combined with the previous criticisms, the build command could be as simple as `sudo docker build`, since the path could be taken from the current working directory. This simple command should produce the image as a file, either in the current directory or in a bin directory, with the name and tag provided in the Dockerfile.

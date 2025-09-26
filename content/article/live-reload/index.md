@@ -263,7 +263,7 @@ es.addEventListener('message', ev => {
 EventSource is part of the web platform, so this is a no dependency client. It connects to the server and then uses an event listener to get notified every time the server sends a message. This client will even reconnect to the server if the connection is lost, without me having to code anything.
 
 ```js
-//webpack.config.js
+// webpack.config.js
 
 import EventEmitter from 'events';
 import http from 'http';

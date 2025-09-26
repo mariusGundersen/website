@@ -5,15 +5,15 @@ date: "2014-08-13"
 type: "article"
 ---
 
-## Other things generators are good for
+# Other things generators are good for
 
 The next version of JavaScript, ES6, will have what is called generators. If you haven't looked at generators yet, watch this video to get an idea of what they can do.
 
-<iframe width="480" height="270" src="//www.youtube.com/embed/QO07THdLWQo" frameborder="0" allowfullscreen></iframe>
+<p><iframe width="480" height="270" src="//www.youtube.com/embed/QO07THdLWQo" frameborder="0" allowfullscreen></iframe></p>
 
 Generators weren't actually designed for writing async functions, so it is unfortunate that async functions is all anyone wants to use them for. In this article we will look at some of these other things generators can be used for, things that do not involve promises or AJAX.
 
-Even though ES6 hasn't been finalized yet, much of it is already implemented in browsers. All of the code in this article works in the latest version of Firefox. Hit F12 to open the Developer Console or Shift + F4 to open the scratchpad. 
+Even though ES6 hasn't been finalized yet, much of it is already implemented in browsers. All of the code in this article works in the latest version of Firefox. Hit F12 to open the Developer Console or Shift + F4 to open the scratchpad.
 
 ## Generators and iterators
 
@@ -64,7 +64,7 @@ function* leibniz(){
 let quarterPi = 0;
 for(let s of leibniz()){
   quarterPi+=s;
-  if(!confirm("pi is "+(quarterPi*4) + 
+  if(!confirm("pi is "+(quarterPi*4) +
      "\n\nDo you want a more exact value?")){
     break;
   }
@@ -72,6 +72,7 @@ for(let s of leibniz()){
 ```
 
 ## Generators and comprehension
+
 ES6 will have [array and iterator comprehension](http://ariya.ofilabs.com/2013/01/es6-and-array-comprehension.html), which is a fancy way of saying that you can put an entire for loop in one line of code. The comprehension syntax is quite limited, and can only do the equivalent of map and filter.
 
 ```js
@@ -93,8 +94,8 @@ Comprehension is not meant to replace every for loop, it is only meant to replac
 The `[for() of]` loop will produce an array of values, which is a great way to reduce a generator to a list. If you use parenthesis, as in `(for() of)`, instead of the square brackets, you get an iteration instead of an array:
 
 ```js
-var fibonacciMultpliedWithLeibniz = (for (x of fibonacci()) 
-                                     for (y of leibniz()) 
+var fibonacciMultpliedWithLeibniz = (for (x of fibonacci())
+                                     for (y of leibniz())
                                      x*y);
 fibonacciMultpliedWithLeibniz.next(); //{value:1, done: false}
 ```
@@ -136,11 +137,11 @@ new Lazy([1,2,3,4,5,6,7,8,9,10])
 
 function Lazy(list, ...steps){
   this.list = list;
-  this.steps = steps; 
+  this.steps = steps;
 }
 
 Lazy.prototype.map = function(f){
-  return new Lazy(this.list, ...this.steps, iteration 
+  return new Lazy(this.list, ...this.steps, iteration
     => ( for (entry of iteration) f(entry)));
 }
 
@@ -165,7 +166,7 @@ Lazy.prototype.toArray = function(){
 
 ```
 
-Using the `Lazy` class, only the first 6 values in the input array are squared. 
+Using the `Lazy` class, only the first 6 values in the input array are squared.
 
 ## Recursive Generators
 
@@ -202,6 +203,4 @@ This is a generator that calls itself, and can therefore recurse down a tree whi
 
 ## Conclusion
 
-Hopefully this article shows that generators can be used for much more than faking async/await. Obviously async/await is a very powerful pattern, which is why [it is being added in ES7](http://jakearchibald.com/2014/es7-async-functions/). 
-
-
+Hopefully this article shows that generators can be used for much more than faking async/await. Obviously async/await is a very powerful pattern, which is why [it is being added in ES7](http://jakearchibald.com/2014/es7-async-functions/).

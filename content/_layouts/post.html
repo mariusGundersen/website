@@ -5,22 +5,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{title}} - Marius Gundersen</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.classless.min.css">
+  <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prism-themes@1/themes/prism-vsc-dark-plus.css" />
 </head>
 
 <body>
   <header>
-    <nav>
-      <ul>
-        <li><strong><a href="/">Marius Gundersen</a></strong></li>
-      </ul>
-    </nav>
+    <h1><a href="/">Marius Gundersen</a></h1>
   </header>
+
   <main>
     {{ content }}
   </main>
-  <footer></footer>
+
+  <footer>
+    <a href="https://github.com/mariusGundersen/website/blob/main/{{ page.inputPath }}">Edit this page on GitHub</a>
+  </footer>
 </body>
 
 </html>

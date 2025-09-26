@@ -5,9 +5,9 @@ date: "2011-04-13"
 type: "project"
 ---
 
-## Pimponator
+# Pimponator
 
-<iframe width="480" height="270" src="//www.youtube.com/embed/eLDVVwEIbq4" frameborder="0" allowfullscreen></iframe>
+<p><iframe width="480" height="270" src="//www.youtube.com/embed/eLDVVwEIbq4" frameborder="0" allowfullscreen></iframe></p>
 
 At the beginning of last semester i started designing a pimpin' [Imponator](http://omegav.no/byggekurs); a Pimponator. This imponator, like all imponators, would use flashing LEDs to impress other students, but I would be able to reprogram it from my cellphone using Bluetooth. The front of the Pimponator would have a 16 by 5 LED matrix, where the brightness of the LEDs could be controlled individually. The design was quickly finished, and I soon had a soldered device to play with. The only problem was that it didn't work. And so it ended up at the bottom of my electronics drawer, along with all the other projects I never finish, and it remained there for almost six months.
 
@@ -20,7 +20,5 @@ The Pimponator Android application makes it easy to put together an animation fo
 ![pimponator2.jpg](pimponator2.jpg)
 
 The Pimponator uses an AVR Atmega 128 micro controller, running at 7.372800Mhz, to control the 16 column by 5 row LED matrix. The micro controller has 64KiB of flash available for the animation, which means it can store almost 6000 frames. To transfer animations to the Pimponator an [RN41 Bluetooth module](http://www.rovingnetworks.com/rn-41.php), which shows up as a virtual COM port, is used. The Android phone is running an app which opens a serial connection the the AVR when it is time to transfer the animation.
-
-
 
 The Android app can store several animations, each made up of one or more sequences of frames. Currently the app only supports scrolling text, but because it is plugin based, it is very easy to write another app which produces a different sequence.

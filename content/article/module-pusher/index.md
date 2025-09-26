@@ -5,7 +5,7 @@ date: "2016-04-23"
 type: "article"
 ---
 
-## Efficient module loading without bundling
+# Efficient module loading without bundling
 
 ### TL;DR
 

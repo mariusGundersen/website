@@ -5,7 +5,7 @@ date: "2013-12-22T15:41:21.189Z"
 type: "article"
 ---
 
-## When can I actually use ES6?
+# When can I actually use ES6?
 
 **TL;DR** ES6 modules can be compiled to ES5 code in the browser. As long as a browser implements modules, it can compile the content of the module into a version of JavaScript it understands. So to use any feature of ES6 (or ES7, ES8, etc) a browser only needs to implement modules.
 
@@ -29,7 +29,7 @@ That's right, you can have your CoffeeScript modules be compiled in the browser 
 
 ### Module translator
 
-There are already many transpilers/compilers which can convert a subset of ES6 to ES5. One example is [Regenerator](http://facebook.github.io/regenerator/) which can (only) convert ES6 generators into ES5 code. Imagine a browser which implements nothing but modules from the ES6 spec. By setting the `Loader.prototype.translate` method to run Regenerator, a module could use generators and still work in this browser. 
+There are already many transpilers/compilers which can convert a subset of ES6 to ES5. One example is [Regenerator](http://facebook.github.io/regenerator/) which can (only) convert ES6 generators into ES5 code. Imagine a browser which implements nothing but modules from the ES6 spec. By setting the `Loader.prototype.translate` method to run Regenerator, a module could use generators and still work in this browser.
 
 While it is unlikely that a browser only implements modules, it is very likely that a version of a browser only implements a subset of ES6. In fact many browsers [already implement parts of ES6](http://kangax.github.io/es5-compat-table/es6/). Some features, like classes, template strings and the spread operator, might not be implemented for many years, and different browsers will implement different features at different rates. So instead of waiting for all the browsers to implement the feature you want to use (like classes), a translator could be used in the browsers that don't support the feature. You could then use the same JavaScript file in all browsers, but compile it in the browsers with missing features.
 

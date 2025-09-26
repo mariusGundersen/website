@@ -5,7 +5,7 @@ date: "2019-06-30"
 type: "article"
 ---
 
-## Type-dictionary trick in C# 
+# Type-dictionary trick in C#
 
 This article explores a trick in C# for looking up values based on types, much like a `Dictionary<Type, T>` only it's almost 10x faster! You probably don't need this trick and even if you need it, it will only work in a few very specific scenarios. But it's a neat trick that might be fun to read about. I don't know if this pattern has a name, and I'm not very good at naming things, so maybe I'll just refer to it as the private static generic inner class trick. If you know of a better name, please let me know.
 
@@ -282,7 +282,7 @@ public static class FastServiceProvider
 
 Ok, that's quite a bit of convoluted code. I don't know if this is at all useful or just too complicated for any practical use. Since this uses reflection in the `Create` method it is not very fast to create new instances, but once the instances have been made they are lightning fast!
 
-We can work around some of the other limitations in similar convoluted ways, but this is already getting a bit out of hand, so I'll leave that as an excercise for the reader. 
+We can work around some of the other limitations in similar convoluted ways, but this is already getting a bit out of hand, so I'll leave that as an excercise for the reader.
 
 ### Conclusion
 

@@ -12,7 +12,7 @@ class CodeWave extends HTMLElement {
   #codeContainer;
   /** @type {HTMLDivElement} */
   #transformer;
-  /** @type {IntersectionObserver} */
+  /** @type {IntersectionObserver | undefined} */
   #io;
   /** @type {MediaQueryList} */
   #media;
@@ -264,6 +264,9 @@ class CodeWave extends HTMLElement {
         return clone;
       }
 
+      /**
+       * @type {(Node)[]}
+       */
       let group = [];
 
       for (const child of [...node.childNodes]) {
@@ -277,7 +280,9 @@ class CodeWave extends HTMLElement {
               yield makeClone();
               yield '\n';
             }
-            group.push(tail);
+            if (tail) {
+              group.push(new Text(tail));
+            }
           } else if (child instanceof Element) {
             for (const g of recurse(child)) {
               if (g === '\n') {

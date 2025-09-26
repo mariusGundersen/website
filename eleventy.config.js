@@ -9,36 +9,17 @@ export default async function (eleventyConfig) {
   eleventyConfig.setLayoutsDirectory("_layouts");
 
   eleventyConfig.addPlugin(syntaxHighlight);
-  //eleventyConfig.addPlugin(mdxPlugin);
   eleventyConfig.addPlugin(eleventyImageTransformPlugin, {
-    widths: ["500"]
+    widths: ["500", "1000"],
+    htmlOptions: {
+      imgAttributes: {
+        loading: 'lazy'
+      }
+    }
   });
 
   eleventyConfig.addPassthroughCopy("content/js/**/*");
-
-  /*
-    eleventyConfig.addTemplateFormats("mdx");
-    eleventyConfig.addExtension("mdx", {
-      compile: async (str, inputPath) => {
-        const { default: mdxContent } = await evaluate(str, {
-          ...runtime,
-          baseUrl: pathToFileURL(inputPath)
-        });
-
-        return async function (data) {
-          let res = await mdxContent(data);
-          return renderToStaticMarkup(res);
-        }
-      }
-    });
-
-    // We can add support for TypeScript too, at the same time:
-    eleventyConfig.addExtension(["jsx"], {
-      compile: async (str, inputPath) => {
-        return str;
-      }
-    });*/
-
+  eleventyConfig.addPassthroughCopy("content/css/**/*");
 
   eleventyConfig.addPlugin(pluginFilters);
 };

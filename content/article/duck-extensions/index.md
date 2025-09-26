@@ -5,7 +5,7 @@ date: "2018-10-21"
 type: "article"
 ---
 
-## Duck-typed Extension methods in C#
+# Duck-typed Extension methods in C#
 
 C# might have started as a static object oriented language but over the years it has ~~stolen~~ implemented a lot of features from other very different languages. It has dynamic types, SQL-like queries, lambdas, async-await and so much more. In this article we'll see what kind of magic we can create if we take extension methods and mix them up with generics and duck-typing. [Extension methods](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods) are ways to add methods to a class without modifying the class and [duck-typing](https://en.wikipedia.org/wiki/Duck_typing) is (in C# at least) when the compiler doesn't require an implementetion of an interface, it just looks for a method with the right name, return type and parameters. Extension methods are quite common, but duck-typing is still pretty rare in C#. There are a few places where it's avaliable, and that's what we will look at in this article.
 

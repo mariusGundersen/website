@@ -5,11 +5,11 @@ date: "2015-12-27"
 type: "article"
 ---
 
-## Maintaining Docker containers with Samsara
+# Maintaining Docker containers with Samsara
 
 > Saṃsāra is a Sanskrit word, the literal meaning of which is "a wandering through" – in reference to the passage through many states of existence that is involved in the endless cycle of death and rebirth
 
-About a year ago I started using docker for this website and all the related projects that I host here. In the beginning I would ssh into the linux box and run the cli commands for creating images and containers and running them, but this quickly got tiresome. The greatest feature with Docker is being able to deploy a brand new version of your application instead of having to tweak the existing deployed version. This means that you don't end up with an application installed on a server that nobody knows how to deploy other places. With Docker, if your container runs on one machine it will run on any other machine with Docker. The result is a new deployment every time you update the application code. 
+About a year ago I started using docker for this website and all the related projects that I host here. In the beginning I would ssh into the linux box and run the cli commands for creating images and containers and running them, but this quickly got tiresome. The greatest feature with Docker is being able to deploy a brand new version of your application instead of having to tweak the existing deployed version. This means that you don't end up with an application installed on a server that nobody knows how to deploy other places. With Docker, if your container runs on one machine it will run on any other machine with Docker. The result is a new deployment every time you update the application code.
 
 The problem I found with Docker is in specifying the runtime configuration of the containers. Having to remember all these configurations everytime I ran `docker run` became a real problem. I experimented with bash files for a bit, but realized I needed a better tool. Thats how the [Samsara](https://github.com/mariusGundersen/samsara) project started.
 
@@ -35,7 +35,7 @@ Finally there is the deployment. Initially I thought of using the application ve
 
 The usecase I initially wanted to cover was using the automated builds and webhooks from [Docker Hub](https://hub.docker.com/) to automate deployments. Most of the applications I make are tracked on GitHub, and I wanted to set up automated deployment of these applications. So when I push changes to my master branch on GitHub, a new build is triggered on the Docker Hub. The new container is automatically built and when it is ready Docker Hub will notify a REST endpoint.
 
-Samsara therefore comes with a REST endpoint that, when called with the right parameters, will automatically pull the new image, create a container and run it. 
+Samsara therefore comes with a REST endpoint that, when called with the right parameters, will automatically pull the new image, create a container and run it.
 
 ## Mobile first
 

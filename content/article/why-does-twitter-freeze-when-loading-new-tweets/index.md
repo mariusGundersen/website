@@ -5,7 +5,7 @@ date: "2015-02-16"
 type: "article"
 ---
 
-## Why does Twitter freeze when loading new tweets?
+# Why does Twitter freeze when loading new tweets?
 
 I usually don't turn of my work computer when I leave the office for the day, so I can continue to work almost uninterupted the next day. So when I come back next morning Twitter is happy to let me know I have hundreds of unread tweets in my timeline. Unfortunately clicking the button to load them freezes my browser for many seconds, as you can see in the animation below, and this has been annoyed me for quite a while. So, why is Twitter freezing my browser, and why can't Twitter fix this bug?
 
@@ -21,7 +21,7 @@ Notice how long it takes from I click the blue ribbon until the content changes.
 
 To begin with I thought twitter was loading the tweets from the server when you click the blue ribbon, but looking at the network tab shows that twitter loads new tweets in the background every 30 seconds. This means it keeps all the HTML in memory until you click the button, at which point it inserts the new HTML into the DOM. In the gif above you can see that it takes a long time, 1.33 seconds, to insert the 220 tweets.
 
-![top down](twitter_top_down.PNG) 
+![top down](twitter_top_down.PNG)
 
 To find out why it takes 1.33 seconds to render ~200 tweets I've used the CPU profiler built into the devtools to find out what JavaScript function is taking up the most time. It's easier to see what takes up the most time the more tweets we try to load, and with a trending topic is is easy to get a thousand tweets in a single load. The images below show the Top Down and Bottom Up views of the profile. There are a few interesting things to note here, and a lot we don't need to consider. (it says 51% next to it, which is the percentage of the total recording time. Note that for 27% of the time nothing happens, and for 21% of the time the browser and garbage collector is doing work, which is out of our hands). The Top Down view shows that the `g.handle.i` function takes 3063ms to return. Looking at the JavaScript source of the page I found that this is probably part of jQuery, and is the `onclick` handler registered by jQuery. So it takes slightly more than 3 seconds for the click handler to return. This is what causes the browser to freeze.
 
@@ -31,7 +31,7 @@ Looking at the Bottom Up view shows us which functions take the longest, not inc
 
 ![html in json result](twitter_html_response.PNG)
 
-The innerHTML taking a long time makes sense, since looking at the network tabs shows that twitter sends rendered HTML as JSON to the client. This HTML is inserted into the DOM using the `innerHTML` setter, which causes the browser to render the HTML. With a thousand tweets this can of course take a while. 
+The innerHTML taking a long time makes sense, since looking at the network tabs shows that twitter sends rendered HTML as JSON to the client. This HTML is inserted into the DOM using the `innerHTML` setter, which causes the browser to render the HTML. With a thousand tweets this can of course take a while.
 
 The other two methods, `get clientHeight` and `get length` are the real culprits. By following the percentage of execution time in the Top Down view we can navigate down into the call tree and find where these two getters are used. The image below shows that the `injectItems` takes up almost all the execution time, and that it uses jQuery to set the `innerHTML`, which accounts for 25% of the time spent. But further down we see that the method `reportInjectedItems` takes up more than 60% of the time. So, what does this method do?
 
@@ -123,15 +123,15 @@ But as you can see from the image above twitter is forcing the browser to calcul
 
 ## Improvement
 
-So, what is a way to improve on this? One simple way is to delay the call to `processWatchedCards` until after the browser has rendered the tweets. That would give the browser time to calculate the layout once and then have the results of all those calculations cached on the DOM elements. 
+So, what is a way to improve on this? One simple way is to delay the call to `processWatchedCards` until after the browser has rendered the tweets. That would give the browser time to calculate the layout once and then have the results of all those calculations cached on the DOM elements.
 
-A better function to delay than `processWatchedCards` is probably `reportInjectedItems`. This is the function we looked at right at the beginning, the one that takes up more than 60% of the time. It triggers a few listeners that are handled synchronously, listeners that probably should be handled asynchronously. So a simple fix to this function is to wrap the two triggers in a timeout, which ensure that the triggers are handled after the tweets are inserted into the DOM, not before. The function could look something like this: 
+A better function to delay than `processWatchedCards` is probably `reportInjectedItems`. This is the function we looked at right at the beginning, the one that takes up more than 60% of the time. It triggers a few listeners that are handled synchronously, listeners that probably should be handled asynchronously. So a simple fix to this function is to wrap the two triggers in a timeout, which ensure that the triggers are handled after the tweets are inserted into the DOM, not before. The function could look something like this:
 
 ````js
 this.reportInjectedItems = function(a, b, c) {
     function g(a) {
-        return b == "uiHasInjectedNewTimeline" 
-            || b == "uiHasInjectedOldTimelineItems" 
+        return b == "uiHasInjectedNewTimeline"
+            || b == "uiHasInjectedOldTimelineItems"
             || b == "uiHasInjectedRangeTimelineItems"
     }
     var d = [], e = 0;
@@ -163,7 +163,7 @@ this.reportInjectedItems = function(a, b, c) {
 }
 ```
 
-This is only a simple patch, a better solution would be to implement an `asyncTrigger` function that could be used instead of the `trigger` function. But even with this simple fix the browser is frozen for a much shorter time. 
+This is only a simple patch, a better solution would be to implement an `asyncTrigger` function that could be used instead of the `trigger` function. But even with this simple fix the browser is frozen for a much shorter time.
 
 ![after the fix](twitter_after_fix.PNG)
 

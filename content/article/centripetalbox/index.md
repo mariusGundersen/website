@@ -5,9 +5,9 @@ date: "2010-01-15"
 type: "project"
 ---
 
-## CentripetalBox
+# CentripetalBox
 
-<iframe width="480" height="270" src="//www.youtube.com/embed/mzUjd7IYpXU" frameborder="0" allowfullscreen></iframe>
+<p><iframe width="480" height="270" src="//www.youtube.com/embed/mzUjd7IYpXU" frameborder="0" allowfullscreen></iframe></p>
 
 I just received my first ever 3D printed object from [Shapeways](http://www.shapeways.com/), a [CentripetalBox](http://www.shapeways.com/model/69177/centripetalbox.html). Shapeways provide a cheap and simple way to 3D print anything you can imagine in a variety of materials, including ABS (like Lego), stainless steel and even color printed 3D objects. This is the first time I have 3D printed anything, so I was quite excited, but at the same time expecting a designflaw showing up in the finished product.
 

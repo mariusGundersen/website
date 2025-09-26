@@ -5,7 +5,7 @@ date: "2016-08-03"
 type: "article"
 ---
 
-## Ekkiog: Turing Complete NAND-Simulator
+# Ekkiog: Turing Complete NAND-Simulator
 
 Today is the end of my summer holiday, and so I've decided to publish the status of my 2016 summer hobby project. This year I've been working on a webapp called Ekkiog, which is a NAND gate simulator for smartphones, using WebGL to concurrently simulate 65536 gates at 60 fps. If you are on a smartphone, click the link below to test it out. You can find the source code at [GitHub](https://github.com/mariusGundersen/ekkiog).
 

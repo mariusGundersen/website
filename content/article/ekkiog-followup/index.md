@@ -5,7 +5,7 @@ date: "2018-04-07"
 type: "article"
 ---
 
-## Ekkiog followup
+# Ekkiog followup
 
 Almost two years ago I [wrote about Ekkiog](https://mariusgundersen.net/ekkiog/), and since then I haven't really written anything here, about it or anything else. In coding I follow the philosophy of agile/scrum/xp/mvp/ci where a program should always be usable and useful, but also under continuous development and improvement. And so I have worked on Ekkiog for almost two years, adding new features, improving existing parts and refactoring code, but always trying to have a working product. But with writing, I never feel ready to post about it, as the article is never good enough, never really done. And so I've started writing about what I've done multiple times, but never completed it. It's weird how I'm comfortable publishing code that is usable but not done, but not comfortable publishing an article as it never feels finished.
 

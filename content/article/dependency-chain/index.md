@@ -5,7 +5,7 @@ date: "2014-02-23"
 type: "article"
 ---
 
-## Dependency Chain
+# Dependency Chain
 
 Dependency chaining is a simple way to extend the functionality of a library using modules. The chain consists of a root module, containing the library to be extended, and several links, each of which extends the previous link in the chain with new functionality. Application modules which depends on the library are given the last link in the chain; the library with all the extensions applied to it.
 
@@ -89,7 +89,7 @@ define(['Vector'], function(Vector){
 
   var v1 = new Vector(3,2);
   var v2 = new Vector(1,5);
- 
+
   //Vector has been extended with the add and reverse methods
   console.log(v1.add(v2.reverse());
 
@@ -125,5 +125,5 @@ Knockout is another example of a library which can be extended. Knockout support
 Dependency chaining can be used to mock out parts of a library during testing. For example, during testing ajax calls should not be run, but instead be mocked to return the expected result. The mocked ajax method can also be observed to see if it is called with the correct parameters. [Demo of mocking using dependency chaining](http://lab.mariusgundersen.net/dependency-chain/mocking/)
 
 ## Dependency chaining today
-AMD does not yet support dependency chaining, but it can be added with a [small extension](https://github.com/mariusGundersen/dependency-chain/blob/master/require.plugin.chain.js) to require.js. 
+AMD does not yet support dependency chaining, but it can be added with a [small extension](https://github.com/mariusGundersen/dependency-chain/blob/master/require.plugin.chain.js) to require.js.
 
