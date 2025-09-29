@@ -128,7 +128,7 @@ Now that we know if a file has changed we need to notify the client. I'm going t
 
 <div>
 
-```
+```text
 event: message
 data: Something here
 

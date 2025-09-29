@@ -2,6 +2,134 @@
 
 import { patienceDiff } from './diff.mjs';
 
+const documentStyle = /*css*/`
+  @keyframes cw-slide-out {
+      from {
+          translate: 0%;
+      }
+      to {
+          translate: var(--cw-offset);
+          opacity: 0;
+      }
+  }
+
+  @keyframes cw-slide-in {
+      from {
+          translate: var(--cw-offset);
+          opacity: 0;
+      }
+      to {
+          translate: 0%;
+          opacity: var(--cw-opacity);
+      }
+  }
+
+  @keyframes cw-move-new-line {
+      from {
+          translate: 0 var(--cw-offset);
+      }
+      to {
+          translate: 0 0;
+          opacity: var(--cw-opacity);
+      }
+  }
+`;
+const shadowStyle = /*css*/`
+  :host{
+      display: grid;
+      --width: calc(100vw - var(--scrollbar-width, 20px));
+      width: var(--width);
+      margin-left: calc( (100% - var(--width)) / 2);
+      grid-template:
+        '.' 50vh
+        '.' 1fr
+      / minmax(0, 1fr);
+      @media (orientation: landscape) {
+          grid-template: '. .' auto / minmax(0, 1fr) minmax(0, 1fr);
+      }
+  }
+  .code-container {
+      height: 50dvh;
+      @media (orientation: landscape) {
+          height: 100dvh;
+      }
+      position: sticky;
+      top: 0;
+      bottom: 0;
+      background: #1e1e1e;
+      overflow: hidden;
+      z-index: 2;
+      .transformer {
+          position: absolute;
+          top: 0;
+          left: 0;
+          transition: scale 1s, translate 2s;
+          transform-origin: top left;
+          ::slotted(pre){
+              overflow: visible !important;
+              position: absolute;
+              background: #0000 !important;
+              top: 0;
+              left: 0;
+          }
+      }
+  }
+  .text-container {
+      position: relative;
+
+      /* TODO: this is the same as main, somehow it should be copied here */
+      padding-inline: 1em;
+      max-width: 900px;
+      /* end TODO */
+
+      @media (orientation: landscape) {
+          padding-block: 25vh;
+      }
+
+      ::slotted(pre){
+          display: none !important;
+      }
+
+      ::slotted(div.text){
+          margin-block: max(3em, 25vh);
+          overflow-y: auto;
+          opacity: 0.75;
+          transition: opacity 1s;
+      }
+
+      ::slotted(div.current){
+          anchor-name: --text;
+          opacity: 1;
+      }
+
+      &::after {
+          content: '';
+          position: absolute;
+          position-anchor: --text;
+          top: anchor(top);
+          bottom: anchor(bottom);
+          left: .4em;
+          width: .2em;
+          border-radius: 2px;
+          opacity: 0.5;
+          background: currentColor;
+          transition: inset 1s cubic-bezier(0.65, 0, 0.35, 1);
+      }
+  }
+`;
+
+const shadowHtml = /*html*/`
+  <div class="code-container">
+    <div class="transformer">
+        <slot name="code"></slot>
+        <slot name="code-new"></slot>
+    </div>
+  </div>
+  <div class="text-container">
+    <slot>
+  </div>
+`;
+
 class CodeWave extends HTMLElement {
   /** @type {HTMLPreElement[]} */
   #pres = [];
@@ -23,121 +151,15 @@ class CodeWave extends HTMLElement {
     const shadowRoot = this.shadowRoot ?? this.attachShadow({ mode: 'open' });
 
     const documentSheet = new CSSStyleSheet();
-    documentSheet.replaceSync(/*css*/`
-      @keyframes cw-slide-out {
-          from {
-              translate: 0%;
-          }
-          to {
-              translate: var(--cw-offset);
-              opacity: 0;
-          }
-      }
-
-      @keyframes cw-slide-in {
-          from {
-              translate: var(--cw-offset);
-              opacity: 0;
-          }
-          to {
-              translate: 0%;
-              opacity: var(--cw-opacity);
-          }
-      }
-
-      @keyframes cw-move-new-line {
-          from {
-              translate: 0 var(--cw-offset);
-          }
-          to {
-              translate: 0 0;
-              opacity: var(--cw-opacity);
-          }
-      }
-    `);
+    documentSheet.replaceSync(documentStyle);
     document.adoptedStyleSheets.push(documentSheet);
 
     const shadowSheet = new CSSStyleSheet();
-    shadowSheet.replaceSync(/*css*/`
-      :host{
-          width: calc(100vw - 20px);
-          margin-left: calc(50% - 50vw);
-          display: grid;
-          grid-template: '.' 50vh '.' 1fr / auto;
-          @media (orientation: landscape) {
-              grid-template: '. .' auto / minmax(0, 1fr) minmax(0, 1fr);
-          }
-          gap: 10px;
-      }
-      .code-container {
-          height: 50dvh;
-          @media (orientation: landscape) {
-              height: 100dvh;
-          }
-          position: sticky;
-          top: 0;
-          bottom: 0;
-          background: #1e1e1e;
-          overflow: hidden;
-          z-index: 2;
-          .transformer {
-              position: absolute;
-              top: 0;
-              left: 0;
-              transition: scale 1s, translate 2s;
-              transform-origin: top left;
-              ::slotted(pre){
-                  overflow: visible !important;
-                  position: absolute;
-                  background: #0000 !important;
-                  top: 0;
-                  left: 0;
-              }
-          }
-      }
-      .text-container {
-          position: relative;
-          padding: 0 25px;
-          @media (orientation: landscape) {
-              padding-block: 25vh;
-          }
-          ::slotted(pre){
-              display: none !important;
-          }
-          ::slotted(div.text){
-              margin-block: max(3em, 25vh);
-          }
-          ::slotted(div.current){
-              anchor-name: --text;
-          }
-          &::after {
-              content: '';
-              position: absolute;
-              position-anchor: --text;
-              top: anchor(top);
-              bottom: anchor(bottom);
-              left: 0;
-              width: 4px;
-              border-radius: 2px;
-              background: currentColor;
-              transition: inset 1s cubic-bezier(0.65, 0, 0.35, 1);
-          }
-      }
-    `)
+    shadowSheet.replaceSync(shadowStyle)
 
     shadowRoot.adoptedStyleSheets.push(shadowSheet);
 
-    shadowRoot.innerHTML = /*html*/`
-      <div class="code-container">
-        <div class="transformer">
-            <slot name="code"></slot>
-            <slot name="code-new"></slot>
-        </div>
-      </div>
-      <div class="text-container">
-        <slot>
-      </div>
-    `;
+    shadowRoot.innerHTML = shadowHtml;
 
     // @ts-ignore
     this.#codeContainer = shadowRoot.querySelector('.code-container');
@@ -148,6 +170,8 @@ class CodeWave extends HTMLElement {
     const chunks = [];
     let chunk = document.createElement('div');
     chunk.className = 'text';
+
+    this.style.setProperty('--scrollbar-width', `${window.innerWidth - document.documentElement.clientWidth}px`);
 
     for (const elm of Array.from(this.children)) {
       if (elm instanceof HTMLPreElement) {
