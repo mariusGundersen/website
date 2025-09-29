@@ -1138,4 +1138,4 @@ And that's about it! There are improvements that can be done, obviously, but thi
 
 I have published this plugin to [npm](https://www.npmjs.com/package/live-reload-css-webpack-plugin) and on [github](https://github.com/mariusGundersen/live-reload-css-webpack-plugin).
 
-<script type="module" src="/js/code-wave.mjs">
+<script type="module" src="/js/code-wave.mjs"></script>
