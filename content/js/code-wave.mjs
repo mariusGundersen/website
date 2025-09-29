@@ -63,7 +63,7 @@ const shadowStyle = /*css*/`
           position: absolute;
           top: 0;
           left: 0;
-          transition: scale 1s, translate 2s;
+          transition: scale 0s, translate 0s;
           transform-origin: top left;
           ::slotted(pre){
               overflow: visible !important;
@@ -399,8 +399,9 @@ class CodeWave extends HTMLElement {
         }
       }
 
-      const duration = (insertDelay + hasInsert);
+      const duration = Math.max(1, (insertDelay + hasInsert));
 
+      this.#transformer.style.transitionDelay = `${0}s`;
       this.#transformer.style.transitionDuration = '1s';
       this.transform(
         newPre,
@@ -426,9 +427,19 @@ class CodeWave extends HTMLElement {
   /**
    * @param {HTMLPreElement} elm
    */
-  transform(elm, y = 0.5, height = 1) {
-    const scale = Math.min(1, this.#codeContainer.clientWidth / elm.clientWidth, this.#codeContainer.clientHeight / (height * elm.clientHeight));
-    this.#transformer.style.translate = `0 ${this.#codeContainer.clientHeight / 2 - y * elm.clientHeight * scale}px`
+  transform(elm, verticalCenterPoint = 0.5, verticalFraction = 1) {
+
+
+    const containerWidth = this.#codeContainer.clientWidth;
+    const codeWidth = elm.clientWidth;
+    const containerHeight = this.#codeContainer.clientHeight;
+    const codeHeight = elm.clientHeight;
+    const scale = Math.min(1, containerWidth / codeWidth, containerHeight / (verticalFraction * codeHeight));
+
+    const xPos = containerWidth / 2 - 0.5 * codeWidth * scale;
+    const yPos = containerHeight / 2 - verticalCenterPoint * codeHeight * scale;
+
+    this.#transformer.style.translate = `${xPos}px ${yPos}px`
     this.#transformer.style.scale = `${scale}`;
   }
 }
