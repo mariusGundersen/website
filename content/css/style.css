@@ -59,10 +59,11 @@ footer {
 
 a {
   color: inherit;
+  text-underline-offset: .1lh;
 
   &:hover{
     color: var(--hover-color, rgb(51, 88, 102));
-    text-decoration-style: double;
+    text-decoration-style: dotted;
   }
 }
 
@@ -90,7 +91,8 @@ p {
   line-height: 1.6;
   margin-block: 1.2em;
 
-  &>code {
+  &>code,
+  &>a>code {
     border-radius: 3pt;
     background: #eee;
     padding-inline: 3pt;
