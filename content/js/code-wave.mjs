@@ -358,6 +358,7 @@ class CodeWave extends HTMLElement {
         newLines.map(c => c.textContent));
 
       /** @type {number[]} */
+      const oldLinesOfInterest = oldPre.getAttribute('data-lines-of-interest')?.split(',').map(v => parseInt(v, 10)) ?? [];
       const linesOfInterest = newPre.getAttribute('data-lines-of-interest')?.split(',').map(v => parseInt(v, 10)) ?? [];
 
       const firstLineOfInterest = linesOfInterest.at(0) ?? 0;
@@ -370,11 +371,13 @@ class CodeWave extends HTMLElement {
       const hasRemove = diff.lineCountDeleted > 0 ? removeDuration : 0;
       const hasInsert = diff.lineCountInserted > 0 ? insertDuration : 0;
       const hasMove = diff.lines.some(({ aIndex, bIndex }) => aIndex !== bIndex && aIndex !== -1 && bIndex !== -1) ? moveDuration : 0;
+
       let removeDelay = 0;
       const moveDelay = hasRemove;
       let insertDelay = hasRemove + hasMove;
       newPre.setAttribute('slot', 'code-new');
       this.#transformer.style.isolation = 'isolate';
+
       for (const { aIndex, bIndex } of diff.lines) {
         if (bIndex === -1) {
           const oldLine = oldLines[aIndex];
@@ -390,12 +393,20 @@ class CodeWave extends HTMLElement {
         } else {
           const oldLine = oldLines[aIndex];
           const newLine = newLines[bIndex];
-          newLine.style.opacity = window.getComputedStyle(oldLine).getPropertyValue('opacity');
+          const wasOfInterest = oldLinesOfInterest.includes(aIndex);
+          const isOfInterest = linesOfInterest.includes(bIndex);
+          if (aIndex !== bIndex || wasOfInterest !== isOfInterest) {
+            newLine.style.animation = `cw-move-new-line ${moveDuration}s ease-in-out ${moveDelay}s both`;
+            newLine.style.opacity = wasOfInterest ? '1' : '0.4';
+            newLine.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`);
+            newLine.style.setProperty('--cw-opacity', isOfInterest ? '1' : '0.4');
+          } else {
+            newLine.style.animation = '';
+            newLine.style.setProperty('--cw-offset', `0lh`);
+            newLine.style.opacity = isOfInterest ? '1' : '0.4';
+          }
           oldLine.style.opacity = '0';
           oldLine.style.animation = '';
-          newLine.style.animation = `cw-move-new-line ${moveDuration}s ease-in-out ${moveDelay}s both`;
-          newLine.style.setProperty('--cw-offset', `${aIndex - bIndex}lh`);
-          newLine.style.setProperty('--cw-opacity', linesOfInterest.includes(bIndex) ? '1' : '0.4');
         }
       }
 
@@ -403,10 +414,10 @@ class CodeWave extends HTMLElement {
 
       this.#transformer.style.transitionDelay = `${0}s`;
       this.#transformer.style.transitionDuration = '1s';
-      this.transform(
+      requestAnimationFrame(() => this.transform(
         newPre,
         (firstLineOfInterest + lastLineOfInterest) / 2 / (newLines.length - 1),
-        (lastLineOfInterest - firstLineOfInterest) / (newLines.length - 1));
+        (lastLineOfInterest - firstLineOfInterest) / (newLines.length - 1)));
 
       setTimeout(() => {
         oldPre.removeAttribute('slot');
