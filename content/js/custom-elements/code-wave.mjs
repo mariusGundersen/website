@@ -1,6 +1,6 @@
 // @ts-check
 
-import { patienceDiff } from './diff.mjs';
+import { patienceDiff } from '../diff.mjs';
 
 const documentStyle = /*css*/`
   @keyframes cw-slide-out {
@@ -220,12 +220,19 @@ class CodeWave extends HTMLElement {
         chunk.append(elm);
       }
     }
+    if (chunk.hasChildNodes()) {
+      chunks.push(chunk);
+      this.append(chunk);
+    }
 
     this.#media = window.matchMedia('(orientation: landscape)');
     this.createIntersectionObserver(chunks, this.#media.matches);
 
     this.#media.onchange = (e) => {
       this.createIntersectionObserver(chunks, e.matches);
+      /** @type {HTMLPreElement | null} */
+      const current = this.querySelector('pre[slot="code"]');
+      if (current) this.transform(current);
     }
 
     const current = this.#pres[0];
