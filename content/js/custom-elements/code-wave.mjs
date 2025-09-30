@@ -143,7 +143,7 @@ class CodeWave extends HTMLElement {
   /** @type {IntersectionObserver | undefined} */
   #io;
   /** @type {MediaQueryList} */
-  #media;
+  #media = window.matchMedia('(orientation: landscape)');
 
   #codeFirst = false;
 
@@ -231,7 +231,6 @@ class CodeWave extends HTMLElement {
       this.append(chunk);
     }
 
-    this.#media = window.matchMedia('(orientation: landscape)');
     this.createIntersectionObserver(chunks, this.#media.matches);
 
     this.#media.onchange = (e) => {
@@ -453,8 +452,6 @@ class CodeWave extends HTMLElement {
    * @param {HTMLPreElement} elm
    */
   transform(elm, verticalCenterPoint = 0.5, verticalFraction = 1) {
-
-
     const containerWidth = this.#codeContainer.clientWidth;
     const codeWidth = elm.clientWidth;
     const containerHeight = this.#codeContainer.clientHeight;

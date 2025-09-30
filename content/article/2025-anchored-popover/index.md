@@ -1,9 +1,8 @@
 ---
 title: Anchored definition popovers
+short: A pure css solution to popovers anchored to the text that triggers them, with elegant animations.
 layout: post.html
-date: 2025-08-22
-redirect_from: /popover
-draft: true
+date: 2025-09-30
 ---
 
 
