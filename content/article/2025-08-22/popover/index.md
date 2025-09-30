@@ -43,14 +43,6 @@ Click on the button in the grey box above to see how it works. This is what the 
 
 <code-wave>
 
-```css
-p > button[popovertarget] {
-  all: unset;
-  cursor: help;
-  text-decoration: underline dashed;
-}
-```
-
 ## Styling the button
 
 Let's first style the button to not look like a button. It will be included in running text, so it needs to look like a link, not a button.
@@ -90,20 +82,6 @@ p > button[popovertarget] {
   all: unset;
   cursor: help;
   text-decoration: underline dashed;
-}
-
-[popover] {
-  max-width: 400px;
-  padding: 0.5em;
-  border: none;
-  box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.2);
-  border-radius: 0.5em;
-
-  h2,
-  p {
-    margin: 0;
-    font-family: sans-serif;
-  }
 }
 ```
 
@@ -152,8 +130,6 @@ p > button[popovertarget] {
 }
 
 [popover] {
-  margin: 0 1em;
-  inset: unset;
   max-width: 400px;
   padding: 0.5em;
   border: none;
@@ -204,8 +180,6 @@ p > button[popovertarget] {
 [popover] {
   margin: 0 1em;
   inset: unset;
-  bottom: anchor(top);
-  justify-self: anchor-center;
   max-width: 400px;
   padding: 0.5em;
   border: none;
@@ -263,26 +237,13 @@ p > button[popovertarget] {
 [popover] {
   margin: 0 1em;
   inset: unset;
-  bottom: calc(anchor(top) + 0.5em);
+  bottom: anchor(top);
   justify-self: anchor-center;
   max-width: 400px;
   padding: 0.5em;
   border: none;
   box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.2);
   border-radius: 0.5em;
-
-  &::before {
-    bottom: anchor(top);
-    justify-self: anchor-center;
-
-    transform: rotate(45deg);
-    position: fixed;
-    width: 1em;
-    height: 1em;
-    background-color: white;
-    box-shadow: 0.5em 0.5em 1em 0 rgba(0, 0, 0, 0.1);
-    content: '';
-  }
 
   h2,
   p {
@@ -343,7 +304,7 @@ p > button[popovertarget] {
 [popover] {
   margin: 0 1em;
   inset: unset;
-  bottom: calc(anchor(top) + 0.5em + var(--translate, 0em));
+  bottom: calc(anchor(top) + 0.5em);
   justify-self: anchor-center;
   max-width: 400px;
   padding: 0.5em;
@@ -351,20 +312,8 @@ p > button[popovertarget] {
   box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.2);
   border-radius: 0.5em;
 
-  transition-property: bottom, opacity, display, overlay;
-  transition-duration: .3s;
-  transition-timing-function: ease-out;
-  transition-behavior: allow-discrete;
-
-  &:not(:popover-open) {
-    --translate: 0 1em;
-    opacity: 0;
-  }
-
   &::before {
-    transition: inherit;
-
-    bottom: calc(anchor(top) + var(--translate, 0em));
+    bottom: anchor(top);
     justify-self: anchor-center;
 
     transform: rotate(45deg);
@@ -479,15 +428,6 @@ p > button[popovertarget] {
     margin: 0;
     font-family: sans-serif;
   }
-
-  @starting-style {
-    --translate: -1em;
-    opacity: 0;
-
-    &::before {
-      --translate: -1em
-    }
-  }
 }
 ```
 
@@ -520,6 +460,66 @@ The [`@starting-style`](https://developer.mozilla.org/en-US/docs/Web/CSS/@starti
     <p>This is the popover</p>
   </div>
 </div>
+
+```css
+p > button[popovertarget] {
+  all: unset;
+  cursor: help;
+  text-decoration: underline dashed;
+}
+
+[popover] {
+  margin: 0 1em;
+  inset: unset;
+  bottom: calc(anchor(top) + 0.5em + var(--translate, 0em));
+  justify-self: anchor-center;
+  max-width: 400px;
+  padding: 0.5em;
+  border: none;
+  box-shadow: 0 0 1em 0 rgba(0, 0, 0, 0.2);
+  border-radius: 0.5em;
+
+  transition-property: bottom, opacity, display, overlay;
+  transition-duration: .3s;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+
+  &:not(:popover-open) {
+    --translate: 0 1em;
+    opacity: 0;
+  }
+
+  &::before {
+    transition: inherit;
+
+    bottom: calc(anchor(top) + var(--translate, 0em));
+    justify-self: anchor-center;
+
+    transform: rotate(45deg);
+    position: fixed;
+    width: 1em;
+    height: 1em;
+    background-color: white;
+    box-shadow: 0.5em 0.5em 1em 0 rgba(0, 0, 0, 0.1);
+    content: '';
+  }
+
+  h2,
+  p {
+    margin: 0;
+    font-family: sans-serif;
+  }
+
+  @starting-style {
+    --translate: -1em;
+    opacity: 0;
+
+    &::before {
+      --translate: -1em
+    }
+  }
+}
+```
 
 </code-wave>
 

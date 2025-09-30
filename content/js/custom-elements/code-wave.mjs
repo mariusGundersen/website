@@ -144,10 +144,16 @@ class CodeWave extends HTMLElement {
   #io;
   /** @type {MediaQueryList} */
   #media;
+
+  #codeFirst = false;
+
   constructor() {
     super();
   }
+
   connectedCallback() {
+    this.style.setProperty('--scrollbar-width', `${window.innerWidth - document.documentElement.clientWidth}px`);
+
     const shadowRoot = this.shadowRoot ?? this.attachShadow({ mode: 'open' });
 
     const documentSheet = new CSSStyleSheet();
@@ -171,7 +177,7 @@ class CodeWave extends HTMLElement {
     let chunk = document.createElement('div');
     chunk.className = 'text';
 
-    this.style.setProperty('--scrollbar-width', `${window.innerWidth - document.documentElement.clientWidth}px`);
+    this.#codeFirst = this.children.item(0) instanceof HTMLPreElement;
 
     for (const elm of Array.from(this.children)) {
       if (elm instanceof HTMLPreElement) {
@@ -237,7 +243,8 @@ class CodeWave extends HTMLElement {
 
     const current = this.#pres[0];
     current.setAttribute('slot', 'code');
-    current.nextElementSibling?.classList.add('current');
+    const currentText = this.#codeFirst ? current.nextElementSibling : current.previousElementSibling;
+    currentText?.classList.add('current');
     this.transform(current);
   }
 
@@ -250,7 +257,7 @@ class CodeWave extends HTMLElement {
   onIntersection = (entries) => {
     const target = entries.find(e => e.isIntersecting)?.target;
     if (!target) return;
-    const to = target.previousElementSibling;
+    const to = this.#codeFirst ? target.previousElementSibling : target.nextElementSibling;
     if (to instanceof HTMLPreElement) {
       if (this.#currentlyBusy) {
         this.#nextCodeBlock = to;
