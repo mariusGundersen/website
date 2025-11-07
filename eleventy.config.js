@@ -19,6 +19,9 @@ export default async function (eleventyConfig) {
     }
   });
 
+  eleventyConfig.addPassthroughCopy("content/article/**/fonts/*", {
+    //mode: "html-relative"
+  });
   eleventyConfig.addPassthroughCopy("content/js/**/*");
   eleventyConfig.addPassthroughCopy("content/css/**/*");
   eleventyConfig.addPassthroughCopy("content/favicon.png");
