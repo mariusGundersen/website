@@ -206,7 +206,10 @@ class SandGame extends HTMLElement {
     assert(gl);
 
     const renderProgram = twgl.createProgramInfo(gl, renderShaders);
-    const sandProgram = twgl.createProgramInfo(gl, sandShaders);
+    const sandProgram = twgl.createProgramInfo(gl, [
+      sandShaders[0],
+      this.textContent || sandShaders[1]
+    ]);
 
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, {
       position: [

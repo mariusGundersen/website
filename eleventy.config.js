@@ -8,6 +8,7 @@ import pluginFilters from "./content/_config/filters.js";
 export default async function (eleventyConfig) {
   eleventyConfig.setInputDirectory("content");
   eleventyConfig.setLayoutsDirectory("_layouts");
+  eleventyConfig.addWatchTarget('content/article');
 
   eleventyConfig.addPlugin(syntaxHighlight);
   eleventyConfig.addPlugin(eleventyImageTransformPlugin, {
