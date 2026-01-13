@@ -171,15 +171,21 @@ class SandGame extends HTMLElement {
     let fps = parseInt(this.getAttribute('fps') ?? '60');
     let stepFrame = false;
     const canvas = shadowRoot.querySelector('canvas');
+    assert(canvas);
+
     /** @type {HTMLInputElement | null} */
     const range = shadowRoot.querySelector('input[type="range"]');
-    range?.addEventListener('input', e => {
+    assert(range);
+
+    range.addEventListener('input', e => {
       console.log('input changed', range.valueAsNumber)
       fps = range.valueAsNumber;
     });
     range.valueAsNumber = fps;
+
     const button = shadowRoot.querySelector('button');
-    button?.addEventListener('click', e => {
+    assert(button);
+    button.addEventListener('click', e => {
       stepFrame = true;
     })
 
@@ -189,8 +195,6 @@ class SandGame extends HTMLElement {
       shadowRoot.firstElementChild?.appendChild(stats.dom);
     }
 
-    if (!canvas) throw new Error(' oh noes');
-
     if (this.hasAttribute('width')) {
       canvas.width = parseInt(this.getAttribute('width') ?? '400');
       canvas.height = parseInt(this.getAttribute('height') ?? '0') || canvas.width / 2;
@@ -199,7 +203,7 @@ class SandGame extends HTMLElement {
     }
 
     const gl = canvas.getContext("webgl");
-    if (!gl) throw new Error('oh noes');
+    assert(gl);
 
     const renderProgram = twgl.createProgramInfo(gl, renderShaders);
     const sandProgram = twgl.createProgramInfo(gl, sandShaders);
@@ -342,4 +346,12 @@ customElements.define('sand-game', SandGame);
  */
 function clamp(v, min, max) {
   return Math.max(min, Math.min(v, max));
+}
+
+/**
+ * @param {any} v
+ * @returns {asserts v}
+ */
+function assert(v) {
+  if (!v) throw new Error('Missing value');
 }
