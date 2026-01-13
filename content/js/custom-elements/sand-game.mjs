@@ -80,7 +80,15 @@ const sandShaders = [
   }
 
   vec4 lookup(float x, float y) {
-    return texture2D(sandTexture, texCoord + inverseTileTextureSize * vec2( x, y));
+    vec2 pos = texCoord + inverseTileTextureSize * vec2( x, y);
+
+    // make sure there is only air above the viewport
+    if(pos.y > 1.0) return vec4(0.0);
+
+    // make sure there is only sand below the viewport
+    if(pos.y < 0.0) return vec4(1.0);
+
+    return texture2D(sandTexture, pos);
   }
 
   vec4 getNextState() {
@@ -183,7 +191,6 @@ class SandGame extends HTMLElement {
     const sandProgram = twgl.createProgramInfo(gl, sandShaders);
 
     const bufferInfo = twgl.createBufferInfoFromArrays(gl, {
-      // this is the attribute again
       position: [
         -1, -1, 0, //
         1, -1, 0,
@@ -200,7 +207,7 @@ class SandGame extends HTMLElement {
     twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
 
     const bottomRow = new Uint32Array(width * height);
-    bottomRow.fill(0xff, 0, width);
+    //bottomRow.fill(0xff, 0, width);
 
     const sand1 = twgl.createFramebufferInfo(gl, [{ min: gl.NEAREST, mag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE, type: gl.UNSIGNED_BYTE, src: new Uint8Array(bottomRow.buffer) }], width, height);
 
@@ -224,9 +231,12 @@ class SandGame extends HTMLElement {
       for (const { x, y, hue } of pointers) {
         gl.bindTexture(gl.TEXTURE_2D, to.attachments[0])
         const sand = (0 << 24) | (hue << 16) | (0 << 8) | (0xff << 0);
-        const data = new Uint32Array([sand]);
 
-        gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(data.buffer));
+        // hacky trick to remove and add
+        const data = new Uint32Array((y < height - 1) ? y > 1 ? [sand, 0x0] : [0x0] : [sand]);
+
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, 1, data.length, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(data.buffer));
+
       }
 
       // SIMULATE
@@ -251,7 +261,7 @@ class SandGame extends HTMLElement {
         frame++;
       }
 
-      gl.finish();
+      gl.flush();
 
       // RENDER
 
