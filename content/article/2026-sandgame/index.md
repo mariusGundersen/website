@@ -2,13 +2,12 @@
 title: Optimizing a sandgame using WebGL, the right way
 short: I had to make a sandgame with WebGL, because someone was wrong on the internet
 date: 2026-01-13
+layout: post.html
 ---
 
 During the Christmas break I watched a YouTube video on optimzing a sand game. I got very excited when I saw the video, since I played around with this back when Flash was a thing. So as I started to watch the video I thought about how he was going to optimize the game, for example using quad-trees on the CPU, or using the GPU. He went for the GPU solution, which excited me even more, since I had played around with that ages ago, for my Ekkiog project. But then things started to go wrong. He asked ChatGPT for help, and the AI assistant gave him the wrong suggestion. He went with the suggestion, implementing code that wasn't at all paralellizable, which completely negates the point of having the GPU do it. I was not the only one to notice, several people pointed out in the comments that there was a better solution. And since someone was wrong on the internet it meant I had to correct them.
 
-<div>
-  <sand-game width=50 height=50></sand-game>
-</div>
+<sand-game width=50 height=50 fps=10></sand-game>
 
 ## A sand game
 
@@ -200,5 +199,7 @@ requestAnimationFrame(function render() {
 ```
 
 The end result is the sand game below:
+
+  <sand-game></sand-game>
 
 Try to click around and play with the sand

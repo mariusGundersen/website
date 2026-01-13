@@ -1,6 +1,7 @@
 // @ts-check
 
 // @ts-ignore
+import Stats from 'https://cdn.jsdelivr.net/npm/stats.js@0.17.0/+esm';
 import * as twgl from 'https://cdn.jsdelivr.net/npm/twgl.js@7.0.0/dist/7.x/twgl-full.module.js';
 
 const renderShaders = [
@@ -133,7 +134,7 @@ const sandShaders = [
 
 const shadowStyle = /*css*/`
   .container {
-
+    position: relative;
   }
 
   canvas {
@@ -167,7 +168,7 @@ class SandGame extends HTMLElement {
 
     shadowRoot.innerHTML = shadowHtml;
 
-    let fps = 60;
+    let fps = parseInt(this.getAttribute('fps') ?? '60');
     let stepFrame = false;
     const canvas = shadowRoot.querySelector('canvas');
     /** @type {HTMLInputElement | null} */
@@ -176,16 +177,26 @@ class SandGame extends HTMLElement {
       console.log('input changed', range.valueAsNumber)
       fps = range.valueAsNumber;
     });
+    range.valueAsNumber = fps;
     const button = shadowRoot.querySelector('button');
     button?.addEventListener('click', e => {
       stepFrame = true;
     })
 
-    if (!canvas) throw new Error(' oh noes');
-    canvas.width = parseInt(this.getAttribute('width') ?? '400');
-    canvas.height = parseInt(this.getAttribute('height') ?? '0') || canvas.width / 2;
+    const stats = this.hasAttribute('stats') ? new Stats() : undefined;
+    if (stats) {
+      stats.dom.style.position = 'absolute';
+      shadowRoot.firstElementChild?.appendChild(stats.dom);
+    }
 
-    console.log(this.getAttribute('width'), canvas.width);
+    if (!canvas) throw new Error(' oh noes');
+
+    if (this.hasAttribute('width')) {
+      canvas.width = parseInt(this.getAttribute('width') ?? '400');
+      canvas.height = parseInt(this.getAttribute('height') ?? '0') || canvas.width / 2;
+    } else {
+      twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
+    }
 
     const gl = canvas.getContext("webgl");
     if (!gl) throw new Error('oh noes');
@@ -207,6 +218,7 @@ class SandGame extends HTMLElement {
 
     const width = Math.floor(canvas.width / 2 / devicePixelRatio);
     const height = Math.floor(canvas.height / 2 / devicePixelRatio);
+
     twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
 
     const bottomRow = new Uint32Array(width * height);
@@ -244,10 +256,11 @@ class SandGame extends HTMLElement {
 
       // SIMULATE
 
-      if (stepFrame || time >= lastFrameTime + 1000 / fps) {
+      if (fps === 60 || stepFrame || time - lastFrameTime >= 1000 / fps) {
+        stats?.begin();
         stepFrame = false;
 
-        lastFrameTime = time;
+        lastFrameTime += 1000 / fps;
 
         [from, to] = [to, from];
 
@@ -262,9 +275,10 @@ class SandGame extends HTMLElement {
 
         twgl.drawBufferInfo(gl, bufferInfo);
         frame++;
+        stats?.end();
       }
 
-      gl.flush();
+      //gl.flush();
 
       // RENDER
 
