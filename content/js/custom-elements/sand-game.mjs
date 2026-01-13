@@ -19,6 +19,7 @@ const renderShaders = [
   precision highp float;
 
   uniform sampler2D sandTexture;
+  uniform vec2 textureSize;
 
   varying vec2 texCoord;
 
@@ -44,8 +45,10 @@ const renderShaders = [
 
     if (isSand(self)) {
       gl_FragColor = vec4(hsv2rgb(vec3(self.b, 0.75, 0.66)), 1.0);
-    } else {
-      gl_FragColor = vec4(0.678, 0.847, 0.902, 1.0);
+    }else {
+      vec2 cell = floor(texCoord * textureSize);
+      float pattern = mod(cell.x + cell.y, 2.0);
+      gl_FragColor = mix (vec4(0.678, 0.847, 0.902, 1.0), vec4(0.624, 0.816, 0.878, 1.0), pattern);
     }
   }
 `
@@ -269,7 +272,8 @@ class SandGame extends HTMLElement {
       twgl.bindFramebufferInfo(gl, null);
       twgl.setBuffersAndAttributes(gl, renderProgram, bufferInfo);
       twgl.setUniforms(renderProgram, {
-        sandTexture: to.attachments[0]
+        sandTexture: to.attachments[0],
+        textureSize: [width, height],
       });
       twgl.drawBufferInfo(gl, bufferInfo);
 
