@@ -7,7 +7,7 @@ date: 2026-01-13
 During the Christmas break I watched a YouTube video on optimzing a sand game. I got very excited when I saw the video, since I played around with this back when Flash was a thing. So as I started to watch the video I thought about how he was going to optimize the game, for example using quad-trees on the CPU, or using the GPU. He went for the GPU solution, which excited me even more, since I had played around with that ages ago, for my Ekkiog project. But then things started to go wrong. He asked ChatGPT for help, and the AI assistant gave him the wrong suggestion. He went with the suggestion, implementing code that wasn't at all paralellizable, which completely negates the point of having the GPU do it. I was not the only one to notice, several people pointed out in the comments that there was a better solution. And since someone was wrong on the internet it meant I had to correct them.
 
 <div>
-  <sand-game>Test</sand-game>
+  <sand-game width=50 height=50></sand-game>
 </div>
 
 ## A sand game

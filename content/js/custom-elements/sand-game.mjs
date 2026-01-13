@@ -132,7 +132,10 @@ const shadowStyle = /*css*/`
 
 const shadowHtml = /*html*/`
   <div class="container">
+    <div>Click anywhere to draw sand</div>
     <canvas width=400 height=400></canvas>
+    <label>FPS: </label><span>0</span><input type="range" min=0 max=60 value=10><span>60</span>
+    <button>Next frame</button>
   </div>
 `;
 
@@ -153,9 +156,26 @@ class SandGame extends HTMLElement {
 
     shadowRoot.innerHTML = shadowHtml;
 
-
+    let fps = 60;
+    let stepFrame = false;
     const canvas = shadowRoot.querySelector('canvas');
+    /** @type {HTMLInputElement | null} */
+    const range = shadowRoot.querySelector('input[type="range"]');
+    range?.addEventListener('input', e => {
+      console.log('input changed', range.valueAsNumber)
+      fps = range.valueAsNumber;
+    });
+    const button = shadowRoot.querySelector('button');
+    button?.addEventListener('click', e => {
+      stepFrame = true;
+    })
+
     if (!canvas) throw new Error(' oh noes');
+    canvas.width = parseInt(this.getAttribute('width') ?? '400');
+    canvas.height = parseInt(this.getAttribute('height') ?? '0') || canvas.width / 2;
+
+    console.log(this.getAttribute('width'), canvas.width);
+
     const gl = canvas.getContext("webgl");
     if (!gl) throw new Error('oh noes');
 
@@ -175,9 +195,9 @@ class SandGame extends HTMLElement {
       ],
     });
 
-    twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
     const width = Math.floor(canvas.width / 2 / devicePixelRatio);
     const height = Math.floor(canvas.height / 2 / devicePixelRatio);
+    twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
 
     const bottomRow = new Uint32Array(width * height);
     bottomRow.fill(0xff, 0, width);
@@ -194,34 +214,44 @@ class SandGame extends HTMLElement {
 
 
     let frame = 0;
+    let lastFrameTime = 0;
+    let [from, to] = [sand1, sand2];
     requestAnimationFrame(function render(time) {
-      gl.viewport(0, 0, canvas.width, canvas.height);
 
-      const [from, to] = frame % 2 === 0 ? [sand1, sand2] : [sand2, sand1];
-      frame++;
+      gl.viewport(0, 0, canvas.width, canvas.height);
 
       // DRAW
       for (const { x, y, hue } of pointers) {
-        gl.bindTexture(gl.TEXTURE_2D, from.attachments[0])
+        gl.bindTexture(gl.TEXTURE_2D, to.attachments[0])
         const sand = (0 << 24) | (hue << 16) | (0 << 8) | (0xff << 0);
-        const data = new Uint32Array([sand, 0x0, sand, 0x0, sand]);
+        const data = new Uint32Array([sand]);
 
-        gl.texSubImage2D(gl.TEXTURE_2D, 0, clamp(x - 2, 0, width - 5), y, 5, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(data.buffer));
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(data.buffer));
       }
-
 
       // SIMULATE
 
-      gl.useProgram(sandProgram.program);
-      twgl.bindFramebufferInfo(gl, to);
-      twgl.setBuffersAndAttributes(gl, sandProgram, bufferInfo);
-      twgl.setUniforms(sandProgram, {
-        inverseTileTextureSize: [1 / width, 1 / height],
-        sandTexture: from.attachments[0],
-        direction: frame % 2 === 0 ? 1 : -1
-      });
+      if (stepFrame || time >= lastFrameTime + 1000 / fps) {
+        stepFrame = false;
 
-      twgl.drawBufferInfo(gl, bufferInfo);
+        lastFrameTime = time;
+
+        [from, to] = [to, from];
+
+        gl.useProgram(sandProgram.program);
+        twgl.bindFramebufferInfo(gl, to);
+        twgl.setBuffersAndAttributes(gl, sandProgram, bufferInfo);
+        twgl.setUniforms(sandProgram, {
+          inverseTileTextureSize: [1 / width, 1 / height],
+          sandTexture: from.attachments[0],
+          direction: frame % 2 === 0 ? 1 : -1
+        });
+
+        twgl.drawBufferInfo(gl, bufferInfo);
+        frame++;
+      }
+
+      gl.finish();
 
       // RENDER
 
