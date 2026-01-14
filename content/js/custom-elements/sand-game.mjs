@@ -265,9 +265,14 @@ class SandGame extends HTMLElement {
 
       if (fps === 60 || stepFrame || time - lastFrameTime >= 1000 / fps) {
         stats?.begin();
-        stepFrame = false;
 
-        lastFrameTime += 1000 / fps;
+        if (stepFrame) {
+          lastFrameTime = time;
+        } else {
+          lastFrameTime += 1000 / fps;
+        }
+
+        stepFrame = false;
 
         [from, to] = [to, from];
 
