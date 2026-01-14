@@ -1,0 +1,120 @@
+
+  
+  <!DOCTYPE html>
+  <html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marius Gundersen</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=700px, initial-scale=0.5" />
+    <link rel="stylesheet" href="/style/main.css?v=1741464247804" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1741464247804" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.10/dist/katex.min.css" integrity="sha384-0cCFrwW/0bAk1Z/6IMgIyNU3kfTcNirlObr4WjrUU7+hZeD6ravdYJ3kPWSeC31M" crossorigin="anonymous">
+  </head>
+
+  <body>
+    <div id="wrapper">
+
+      <header>
+        <h1><a href="/">Marius Gundersen</a></h1>
+      </header>
+      <nav class="clearfix article">
+        <a href="/">
+          <span>Work in progress</span>
+        </a>
+        <a href="/talks">
+          <span>Talks</span>
+
+        </a>
+      </nav>
+
+      
+      <section class="articleBlock">
+      <h1>Multitouch math</h1><ul><li><p>intro</p></li><li><p>single touch, single dimension</p><ul><li>one equation, one unknown</li></ul></li><li><p>single touch, two dimensions</p><ul><li>two equations, two unknowns</li></ul></li><li><p>two touches, one dimension</p><ul><li>two equations, two unknowns</li></ul></li><li><p>multi touch, two dimensions</p><ul><li>four equations, three unknowns</li></ul></li></ul><h2>intro</h2><p>I have a special love for multitouch pan-zoom components. You know, like Google maps. Interactive views where you can move around with one finger and zoom in and out with two fingers. These kind of components are great for more than maps, but they can also be horrible to use if implement poorly. In this article I want to look into how to implement them properly. Well, at leas the mathematics behind them. There are many subtle details to making a truly great pan-zoom component, and I can&#x27;t cover all of them here (I&#x27;ve tried, but the article became too long and I never finished it). So instead we will look at the math, where we will solve unsolvable equations and invert uninvertable matrices. Yes, there will be matrix multiplication! Exciting!</p><div style="touch-action:none;position:relative"><img src="https://placekitten.com/200/200" style="transform:matrix(1, 0, 0, 1, 0, 0);transform-origin:top left"/></div><p>Try dragging the image above with one finger. Try dragging in opposite directions with two fingers. Try with three fingers. Try dragging with one finger, then adding a second finger and then lifting the first finger. No matter what you try, it will always work and always behave as you would expect it to. This is what I mean by a good pan-zoom component. It doesn&#x27;t get confused by multiple different touch points. The code for handling the multitouch gestures is this, which I don&#x27;t expect you to understand at all.</p><pre class="language-ts"><code class="language-ts"><span class="token keyword">function</span> <span class="token function">solveMultiple</span><span class="token punctuation">(</span>pointers<span class="token operator">:</span> <span class="token maybe-class-name">PointerInfo</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">const</span> len <span class="token operator">=</span> pointers<span class="token punctuation">.</span><span class="token property-access">length</span><span class="token punctuation">;</span>
+  <span class="token keyword">let</span> m00 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    m01 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    m02 <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+  <span class="token keyword">const</span> atb <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token keyword">for</span> <span class="token punctuation">(</span><span class="token keyword">const</span> <span class="token punctuation">{</span> model<span class="token punctuation">,</span> view <span class="token punctuation">}</span> <span class="token keyword">of</span> pointers<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    m00 <span class="token operator">+=</span> model<span class="token punctuation">.</span><span class="token property-access">x</span> <span class="token operator">**</span> <span class="token number">2</span> <span class="token operator">+</span> model<span class="token punctuation">.</span><span class="token property-access">y</span> <span class="token operator">**</span> <span class="token number">2</span><span class="token punctuation">;</span>
+    m01 <span class="token operator">+=</span> model<span class="token punctuation">.</span><span class="token property-access">x</span><span class="token punctuation">;</span>
+    m02 <span class="token operator">+=</span> model<span class="token punctuation">.</span><span class="token property-access">y</span><span class="token punctuation">;</span>
+
+    atb<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+=</span> view<span class="token punctuation">.</span><span class="token property-access">x</span> <span class="token operator">*</span> model<span class="token punctuation">.</span><span class="token property-access">x</span> <span class="token operator">+</span> view<span class="token punctuation">.</span><span class="token property-access">y</span> <span class="token operator">*</span> model<span class="token punctuation">.</span><span class="token property-access">y</span><span class="token punctuation">;</span>
+    atb<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+=</span> view<span class="token punctuation">.</span><span class="token property-access">x</span><span class="token punctuation">;</span>
+    atb<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">+=</span> view<span class="token punctuation">.</span><span class="token property-access">y</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  <span class="token comment">// prettier-ignore</span>
+  <span class="token keyword">const</span> ata <span class="token operator">=</span> <span class="token punctuation">[</span>
+    m00<span class="token punctuation">,</span> m01<span class="token punctuation">,</span> m02<span class="token punctuation">,</span>
+    m01<span class="token punctuation">,</span> len<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span>
+    m02<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> len
+  <span class="token punctuation">]</span> <span class="token keyword">as</span> <span class="token keyword">const</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">const</span> atainv <span class="token operator">=</span> <span class="token function">invert</span><span class="token punctuation">(</span>ata<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token punctuation">{</span>
+    s<span class="token operator">:</span> atainv<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> atainv<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> atainv<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    x<span class="token operator">:</span> atainv<span class="token punctuation">[</span><span class="token number">3</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> atainv<span class="token punctuation">[</span><span class="token number">4</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> atainv<span class="token punctuation">[</span><span class="token number">5</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+    y<span class="token operator">:</span> atainv<span class="token punctuation">[</span><span class="token number">6</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span> <span class="token operator">+</span> atainv<span class="token punctuation">[</span><span class="token number">7</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">]</span> <span class="token operator">+</span> atainv<span class="token punctuation">[</span><span class="token number">8</span><span class="token punctuation">]</span> <span class="token operator">*</span> atb<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span><span class="token punctuation">,</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre><p>What an incredibly confusing function. It takes a list of pointers, loops through them and adds up the x and y values into some really poorly named variables. One of them is called <code>ata</code> and the result of <code>invert(ata)</code> is <code>atainv</code>, how clever. Then the function returns an object with <code>x</code>, <code>y</code> and <code>s</code>, which is some more sum of multiplications.</p><p>At the end of this article we will have created this function by solving the problem of pan-zoom using clever math.</p><h3>What is pan and zoom?</h3><p>Paning is another word for translating, and zooming is another word for scaling. I&#x27;ll mostly use the latter in this article, since they are common in computer graphics. They describe how variables like <code>x</code>, <code>y</code>, and <code>s</code> can be used to move and resize an image on screen. That is, they only describe how to take some variables and produce an image. That is half of what we need to pan and zoom an image.</p><div><div style="touch-action:none;position:relative"><img src="https://placekitten.com/200/200" style="transform:matrix(1, 0, 0, 1, 0, 0);transform-origin:top left"/></div><div><div style="z-index:1;display:inline-flex;flex-direction:column;padding:10px;position:relative;background-color:white"><div style="display:flex;flex-direction:row;align-items:center"><label>x: </label><input type="range" min="NaN" max="NaN" value="0"/><span>0<!-- -->px</span></div><div style="display:flex;flex-direction:row;align-items:center"><label>y: </label><input type="range" min="-200" max="200" value="0"/><span>0<!-- -->px</span></div><div style="display:flex;flex-direction:row;align-items:center"><label>s: </label><input type="range" min="0.01" max="10" step="0.01" value="1"/><span>1.00</span></div></div></div></div><p>In the above example you can see how changing the three variables <code>x</code>, <code>y</code>, and <code>s</code> moves and resizes the image. The translation controls the top left of the image, while the scale controls the size of the image. Notice that scaling the image does not change the top left corner of the image. In other words, scaling an image changes the position of every pixel in the image, apart from the top left corner.</p><p>But translating and scaling (combined these two are called transforming) the image is only half the problem, we don&#x27;t want to do it through sliders, we want to do it by dragging the image. So we need to listen for touch events, like a finder touching the screen, a finger moving over the screen and finally a finger being released from the screen. If you are not on a touch device you can try to interact using a mouse, and that should also work. Therefore I will use the term pointer events to describe both touch and mouse events.</p><p>Try the following: touch/click the nose of the cat, and then slowly drag it around. The pointer started at the nose of the cat, and as you move it around the nose of the cat follows it! This is what we want to achive, to have the point in the image that you initally touched follow the pointer around. But the only values we have available to manipulate the image is the three transformation variables, <code>x</code>, <code>y</code>, and <code>s</code>. So the problem we need to solve is how to change these three values so that the nose of the cat moves to where the pointer has moved. This is the definition of how the pan-zoom component will work:</p><blockquote><p>Find the transformation values such that the dragpoint in the image is where the touchpoint is on the screen.</p></blockquote><p>The above description also works for multiple touch points, in which case we need to find the x, y and s values such that the two (or three or many more) dragpoints in the image match the touchpoints on the screen. But let&#x27;s stay with only one pointer for now.</p><h2>One dimension, one pointer</h2><p>Let&#x27;s start with the simplest scenario: one dimension and one pointer. That means we only need the <code>x</code> variable for positioning, and can disregard the <code>y</code> and <code>s</code> variables. We also only care about one pointer, so be careful not to touch the screen with two fingers for this example (Now that I&#x27;ve said it, I know you will try).</p><p>To implemend this we need to remember the definition from the previous section: Find the transformation values such that the dragpoint in the image is where the touchpoint is on the screen. So we have to do three things:</p><ul><li>find the dragpoint in the image</li><li>find the touchpoint on the screen</li><li>find the transformation so the two are at the same place</li></ul><pre><code>on touch start:
+ - get the point on the screen where the touch is
+ - find out where in the image this is
+ - save this point in a variable
+
+on touch move:
+ - get the point on the screen where the touch is
+ - recall the point in the image we saved earlier
+ - solve the equation
+</code></pre><ul><li>v = m + t</li><li>numberline</li><li>m = v - t</li><li>on touch start</li><li>on touch move</li></ul>
+      </section>
+
+      <div>
+        <em>
+          Did you find a mistake or have a suggestion for an improvement?
+          <a href="https://github.com/mariusGundersen/website/issues/new" target="_blank">Let me know</a>
+          or
+          <a href="https://github.com/mariusGundersen/website/blob/master/article/multitouch-math/index.md" target="_blank">fork it</a>
+          and send me a pull-request.
+        </em>
+      </div>
+  
+
+      <footer>
+        <div>
+          <div id="contactMe">
+            <a href="mailto:me@mariusgundersen.com">Email</a>
+            <a href="//twitter.com/gundersenMarius">Twitter</a>
+            <a href="//github.com/mariusGundersen/">GitHub</a>
+            <a href="https://stackoverflow.com/users/1585/marius">Stack Overflow</a>
+          </div>
+        </div>
+
+        <script type="text/javascript">
+          var _paq = window._paq || [];
+          /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+          _paq.push(['trackPageView']);
+          _paq.push(['enableLinkTracking']);
+          (function() {
+            var u="//analytics.mariusgundersen.net/";
+            _paq.push(['setTrackerUrl', u+'matomo.php']);
+            _paq.push(['setSiteId', '1']);
+            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+            g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+          })();
+        </script>
+      </footer>
+    </div>
+  </body>
+
+  </html>
+
+  <script src="./index.js"></script>
+  <link rel="stylesheet" href="/style/waves.css?v=1741464247804" />
+  <link rel="stylesheet" href="/style/vscode-dark.css?v=1741464247804" />

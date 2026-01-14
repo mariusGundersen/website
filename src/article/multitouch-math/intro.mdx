@@ -3,22 +3,62 @@ import Transform from "./components/transform.tsx";
 
 ## intro
 
-With multitouch devices the popularity of pan-zoom components have grown. You know, like Google maps, where you can move around with one finger and zoom in and out with two fingers. These kind of components are great for more than maps, but they can also be horrible to use if implement poorly. In this article I want to look into how to implement them properly. Well, at leas the mathematics behind them. There are many subtle details to making a truly great pan-zoom component, and I can't cover all of them here (I've tried, but the article became too long and I never finished it). So instead we will look at the math, where we will solve unsolvable equations and invert uninvertable matrices. Yes, there will be matrix multiplication, don't worry, it's not as hard as it looks.
+I have a special love for multitouch pan-zoom components. You know, like Google maps. Interactive views where you can move around with one finger and zoom in and out with two fingers. These kind of components are great for more than maps, but they can also be horrible to use if implement poorly. In this article I want to look into how to implement them properly. Well, at leas the mathematics behind them. There are many subtle details to making a truly great pan-zoom component, and I can't cover all of them here (I've tried, but the article became too long and I never finished it). So instead we will look at the math, where we will solve unsolvable equations and invert uninvertable matrices. Yes, there will be matrix multiplication! Exciting!
 
 <PanZoom />
 
-Try dragging the image above with one finger. Try dragging in opposite directions with two fingers. Try with three fingers. Try dragging with one finger, then adding a second finger and then lifting the first finger. No matter what you try, it will always work and always behave as you would expect it to. Getting it to do all that is both quite difficult and also perfectly straight forward.
+Try dragging the image above with one finger. Try dragging in opposite directions with two fingers. Try with three fingers. Try dragging with one finger, then adding a second finger and then lifting the first finger. No matter what you try, it will always work and always behave as you would expect it to. This is what I mean by a good pan-zoom component. It doesn't get confused by multiple different touch points. The code for handling the multitouch gestures is this, which I don't expect you to understand at all.
 
-A draggable image can be implemented by solving two simpler problems: listening for pointer events and moving the image to the right place. By pointer events I mean both mouse and touch events, like mouse button pressed, mouse moved and mouse released, and touch start, touch move and touch end. Moving the image to the right place involves transformations.
+```ts
+function solveMultiple(pointers: PointerInfo[]) {
+  const len = pointers.length;
+  let m00 = 0,
+    m01 = 0,
+    m02 = 0;
+  const atb = [0, 0, 0];
+  for (const { model, view } of pointers) {
+    m00 += model.x ** 2 + model.y ** 2;
+    m01 += model.x;
+    m02 += model.y;
+
+    atb[0] += view.x * model.x + view.y * model.y;
+    atb[1] += view.x;
+    atb[2] += view.y;
+  }
+
+  // prettier-ignore
+  const ata = [
+    m00, m01, m02,
+    m01, len, 0,
+    m02, 0, len
+  ] as const;
+
+  const atainv = invert(ata);
+
+  return {
+    s: atainv[0] * atb[0] + atainv[1] * atb[1] + atainv[2] * atb[2],
+    x: atainv[3] * atb[0] + atainv[4] * atb[1] + atainv[5] * atb[2],
+    y: atainv[6] * atb[0] + atainv[7] * atb[1] + atainv[8] * atb[2],
+  };
+}
+```
+
+What an incredibly confusing function. It takes a list of pointers, loops through them and adds up the x and y values into some really poorly named variables. One of them is called `ata` and the result of `invert(ata)` is `atainv`, how clever. Then the function returns an object with `x`, `y` and `s`, which is some more sum of multiplications.
+
+At the end of this article we will have created this function by solving the problem of pan-zoom using clever math.
+
+### What is pan and zoom?
+
+Paning is another word for translating, and zooming is another word for scaling. I'll mostly use the latter in this article, since they are common in computer graphics. They describe how variables like `x`, `y`, and `s` can be used to move and resize an image on screen. That is, they only describe how to take some variables and produce an image. That is half of what we need to pan and zoom an image.
 
 <Transform />
 
-There are three properties use to transform the image: the x and y translation and the scaling. In the above example you can see how changing the three values moves and scales the image. The translation controls the top left of the image, while the scale controls the size of the image. You can also drag the image, and you will see how that changes the transformation values.
+In the above example you can see how changing the three variables `x`, `y`, and `s` moves and resizes the image. The translation controls the top left of the image, while the scale controls the size of the image. Notice that scaling the image does not change the top left corner of the image. In other words, scaling an image changes the position of every pixel in the image, apart from the top left corner.
 
-Try the following: touch/click the nose of the cat, and then slowly drag it around. As you drag it the transformation values change, and as they change the top left corner of the image moves, and (since the image doesn't change size) the position (on screen) of the cat's nose also changes. This is how to make a draggable image:
+But translating and scaling (combined these two are called transforming) the image is only half the problem, we don't want to do it through sliders, we want to do it by dragging the image. So we need to listen for touch events, like a finder touching the screen, a finger moving over the screen and finally a finger being released from the screen. If you are not on a touch device you can try to interact using a mouse, and that should also work. Therefore I will use the term pointer events to describe both touch and mouse events.
+
+Try the following: touch/click the nose of the cat, and then slowly drag it around. The pointer started at the nose of the cat, and as you move it around the nose of the cat follows it! This is what we want to achive, to have the point in the image that you initally touched follow the pointer around. But the only values we have available to manipulate the image is the three transformation variables, `x`, `y`, and `s`. So the problem we need to solve is how to change these three values so that the nose of the cat moves to where the pointer has moved. This is the definition of how the pan-zoom component will work:
 
 > Find the transformation values such that the dragpoint in the image is where the touchpoint is on the screen.
 
-This is the TL;DR of this entire article. The rest of it will look at how we find the transformation values. The above description also works for multiple touch points, in which case we need to find the x, y and s values such that the two (or three or many more) dragpoints in the image match the touchpoints on the screen. But let's stay with only one pointer for now.
-
-You can try in the example above to manually solve this problem by changing the x and y translation values.
+The above description also works for multiple touch points, in which case we need to find the x, y and s values such that the two (or three or many more) dragpoints in the image match the touchpoints on the screen. But let's stay with only one pointer for now.

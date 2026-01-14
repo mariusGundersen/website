@@ -8,8 +8,9 @@
     <title>Marius Gundersen</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=700px, initial-scale=0.5" />
-    <link rel="stylesheet" href="/style/main.css?v=1609936981362" />
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1609936981362" />
+    <link rel="stylesheet" href="/style/main.css?v=1741464251661" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1741464251661" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.10/dist/katex.min.css" integrity="sha384-0cCFrwW/0bAk1Z/6IMgIyNU3kfTcNirlObr4WjrUU7+hZeD6ravdYJ3kPWSeC31M" crossorigin="anonymous">
   </head>
 
   <body>
@@ -46,7 +47,8 @@
 
 <span class="hljs-keyword">for</span>(<span class="hljs-keyword">let</span> i <span class="hljs-keyword">of</span> myGen()){
   <span class="hljs-built_in">console</span>.log(i);
-}</code></pre>
+}
+</code></pre>
 <p>This new <code>for-of</code> loop understands that the generator yields three values and will iterate over those three values as if it was an array. But since the generator is a function, not an array, it can generate an endless sequence of values:</p>
 <pre><code class="language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> *<span class="hljs-title">endless</span>(<span class="hljs-params"></span>)</span>{
   <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>;
@@ -78,40 +80,45 @@
      <span class="hljs-string">&quot;\n\nDo you want a more exact value?&quot;</span>)){
     <span class="hljs-keyword">break</span>;
   }
-}</code></pre>
+}
+</code></pre>
 <h2 id="generators-and-comprehension">Generators and comprehension</h2>
 <p>ES6 will have <a href="http://ariya.ofilabs.com/2013/01/es6-and-array-comprehension.html">array and iterator comprehension</a>, which is a fancy way of saying that you can put an entire for loop in one line of code. The comprehension syntax is quite limited, and can only do the equivalent of map and filter.</p>
-<pre><code class="language-js"><span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">fibonacci</span>(<span class="hljs-params">max = <span class="hljs-literal">Infinity</span></span>)</span>{
-  <span class="hljs-keyword">let</span> a=<span class="hljs-number">1</span>, b=<span class="hljs-number">1</span>;
-  <span class="hljs-keyword">while</span>(a &lt; max){
-    <span class="hljs-keyword">yield</span> a;
-    [a, b] = [b, a+b];
+<pre><code class="language-js">function* fibonacci(<span class="hljs-keyword">max</span> <span class="hljs-operator">=</span> Infinity){
+  let a<span class="hljs-operator">=</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span> b<span class="hljs-operator">=</span><span class="hljs-number">1</span><span class="hljs-comment">;</span>
+  while(a &lt; <span class="hljs-keyword">max</span>){
+    yield a<span class="hljs-comment">;</span>
+    [a<span class="hljs-punctuation">,</span> b] <span class="hljs-operator">=</span> [b<span class="hljs-punctuation">,</span> a+b]<span class="hljs-comment">;</span>
   }
 }
 
-<span class="hljs-keyword">var</span> array = [<span class="hljs-keyword">for</span> (x <span class="hljs-keyword">of</span> fibonacci(<span class="hljs-number">30</span>)) x]; <span class="hljs-comment">//[1,1,2,3,5,8,13,21]</span>
-<span class="hljs-keyword">var</span> squared = [<span class="hljs-keyword">for</span> (x <span class="hljs-keyword">of</span> fibonacci(<span class="hljs-number">30</span>)) x*x]; <span class="hljs-comment">//[1,1,4,9,25,64,169,441]</span>
-<span class="hljs-keyword">var</span> evenOnly = [<span class="hljs-keyword">for</span> (x <span class="hljs-keyword">of</span> fibonacci(<span class="hljs-number">30</span>)) <span class="hljs-keyword">if</span>(x%<span class="hljs-number">2</span> == <span class="hljs-number">0</span>) x]; <span class="hljs-comment">//[2,8]</span></code></pre>
+var array <span class="hljs-operator">=</span> [for (<span class="hljs-keyword">x</span> of fibonacci(<span class="hljs-number">30</span>)) <span class="hljs-keyword">x</span>]<span class="hljs-comment">; //[1,1,2,3,5,8,13,21]</span>
+var squared <span class="hljs-operator">=</span> [for (<span class="hljs-keyword">x</span> of fibonacci(<span class="hljs-number">30</span>)) <span class="hljs-keyword">x</span>*<span class="hljs-keyword">x</span>]<span class="hljs-comment">; //[1,1,4,9,25,64,169,441]</span>
+var evenOnly <span class="hljs-operator">=</span> [for (<span class="hljs-keyword">x</span> of fibonacci(<span class="hljs-number">30</span>)) if(<span class="hljs-keyword">x</span><span class="hljs-variable">%2</span> <span class="hljs-operator">=</span><span class="hljs-operator">=</span> <span class="hljs-number">0</span>) <span class="hljs-keyword">x</span>]<span class="hljs-comment">; //[2,8]</span>
+</code></pre>
 <p>Comprehension is not meant to replace every for loop, it is only meant to replace the most common cases. It works great when you want to do something simple, but if you try something more advanced with it, it quickly becomes a big mess. It is therefore great that the simple case works so well with generators.</p>
 <p>The <code>[for() of]</code> loop will produce an array of values, which is a great way to reduce a generator to a list. If you use parenthesis, as in <code>(for() of)</code>, instead of the square brackets, you get an iteration instead of an array:</p>
-<pre><code class="language-js"><span class="hljs-keyword">var</span> fibonacciMultpliedWithLeibniz = (<span class="hljs-keyword">for</span> (<span class="hljs-symbol">x</span> of fibonacci()) 
-                                     <span class="hljs-keyword">for</span> (<span class="hljs-symbol">y</span> of leibniz()) 
-                                     <span class="hljs-symbol">x</span>*<span class="hljs-symbol">y</span>);
-fibonacciMultpliedWithLeibniz.next(); <span class="hljs-comment">//{value:1, done: false}</span></code></pre>
+<pre><code class="language-js">var fibonacciMultpliedWithLeibniz = (<span class="hljs-keyword">for</span> (x of fibonacci()) 
+                                     <span class="hljs-keyword">for</span> (y of leibniz()) 
+                                     x*y);
+fibonacciMultpliedWithLeibniz.<span class="hljs-keyword">next</span>(); <span class="hljs-regexp">//</span>{value:<span class="hljs-number">1</span>, done: false}
+</code></pre>
 <p>Here we have combined two generators to produce a iterator. When you call <code>next()</code> on the <code>fibonacciMultipliedWithLeibniz</code> iterator, it calls next on both the <code>fibonacci</code> and the <code>leibniz</code> generators. This way we can chain the next calls, so that a new <code>fibonacci</code> value is only produced when we ask for a new multiplied value. The two generators are idle and waiting until you ask for another value. Don&#39;t worry about not asking for another value; if the JS engine detects that you don&#39;t have a reference to the generator anymore, then it will garbage collect it for you.</p>
 <p>Notice that iterator comprehension is actually a simplified form of a generator:</p>
-<pre><code class="language-javascript">(<span class="hljs-keyword">for</span> (x <span class="hljs-keyword">of</span> <span class="hljs-keyword">array</span>) x)
+<pre><code class="language-javascript">(<span class="hljs-keyword">for</span> (x of <span class="hljs-keyword">array</span>) x)
 <span class="hljs-comment">//is the same as</span>
-(<span class="hljs-function"><span class="hljs-keyword">function</span>*<span class="hljs-params">(<span class="hljs-keyword">array</span>)</span><span class="hljs-comment">{
-  for(x of array){
-    yield x;
-  }</span>
-})<span class="hljs-params">(<span class="hljs-keyword">array</span>)</span>;</span></code></pre>
+(<span class="hljs-function"><span class="hljs-keyword">function</span>*(<span class="hljs-params"><span class="hljs-keyword">array</span></span>)</span>{
+  <span class="hljs-keyword">for</span>(x of <span class="hljs-keyword">array</span>){
+    <span class="hljs-keyword">yield</span> x;
+  }
+})(<span class="hljs-keyword">array</span>);
+</code></pre>
 <h2 id="generators-and-lazy-evaluation">Generators and lazy evaluation</h2>
 <p>We&#39;ve seen how generators are only executed when a value is requested, instead of when a value is available. In other words, you pull a value out of a generator instead of it pushing the value to you. This can be used when looping over an array in several steps without having to completely finish each step in turn. Take this example:</p>
-<pre><code class="language-js">[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>,<span class="hljs-number">9</span>,<span class="hljs-number">10</span>]
-  .map(<span class="hljs-symbol">x</span> =&gt; <span class="hljs-symbol">x</span>*<span class="hljs-symbol">x</span>)
-  .takeUntil(<span class="hljs-symbol">x</span> =&gt; <span class="hljs-symbol">x</span>==<span class="hljs-number">25</span>); <span class="hljs-comment">//[1,4,9,16,25]</span></code></pre>
+<pre><code class="language-js">[1,2,3,4,5,6,7,8,9,10]
+  <span class="hljs-string">.map</span><span class="hljs-params">(<span class="hljs-attr">x</span> =&gt; x*x)</span>
+  <span class="hljs-string">.takeUntil</span><span class="hljs-params">(<span class="hljs-attr">x</span> =&gt; <span class="hljs-attr">x</span>==25)</span>; <span class="hljs-string">//</span>[1,4,9,16,25]
+</code></pre>
 <p>In this example the <code>x =&gt; x*x</code> method is run for every element in the array, even those that don&#39;t end up in the output array. This is because the <code>map()</code> function returns an array of the same length as the input. But with generators we can create a lazy <code>map()</code> function that only computes the square of the values that are actually used:</p>
 <pre><code class="language-js">
 <span class="hljs-keyword">new</span> Lazy([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>,<span class="hljs-number">9</span>,<span class="hljs-number">10</span>])
@@ -176,7 +183,8 @@ function* depthFirst(tree){
   }
 }
 
-[for</span> (x of depthFirst(tree)) x] //[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>,<span class="hljs-number">9</span>,<span class="hljs-number">10</span>]</code></pre>
+[for</span> (x of depthFirst(tree)) x] //[<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,<span class="hljs-number">5</span>,<span class="hljs-number">6</span>,<span class="hljs-number">7</span>,<span class="hljs-number">8</span>,<span class="hljs-number">9</span>,<span class="hljs-number">10</span>]
+</code></pre>
 <p>This is a generator that calls itself, and can therefore recurse down a tree while yielding the values it comes across. This is a great way to convert a complex structure into a simple structure, like a list. The tree could be a DOM tree, or an AST, and the depth first generator can be used as a visitor that iterates over each node.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>Hopefully this article shows that generators can be used for much more than faking async/await. Obviously async/await is a very powerful pattern, which is why <a href="http://jakearchibald.com/2014/es7-async-functions/">it is being added in ES7</a>. </p>

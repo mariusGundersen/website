@@ -107,7 +107,7 @@ export default function PanZoom(props: Props | {}) {
   );
 }
 
-function solveMultiple(posPairs: PointerInfo[]) {
+function solveMultiple(pointers: PointerInfo[]) {
   /*
   v = tm
   tm = v
@@ -143,13 +143,13 @@ function solveMultiple(posPairs: PointerInfo[]) {
   [3*3][3] = [3]
   */
 
-  const len = posPairs.length;
+  const len = pointers.length;
   let m00 = 0,
     m01 = 0,
     m02 = 0;
   const atb = [0, 0, 0];
-  for (const { model, view } of posPairs) {
-    m00 += model.x * model.x + model.y * model.y;
+  for (const { model, view } of pointers) {
+    m00 += model.x ** 2 + model.y ** 2;
     m01 += model.x;
     m02 += model.y;
 

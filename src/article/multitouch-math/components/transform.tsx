@@ -4,7 +4,7 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
+  useState
 } from "react";
 import PanZoom from "./panzoom.tsx";
 
@@ -49,16 +49,51 @@ export default function Transform() {
     <div ref={ref}>
       <PanZoom transform={transform} setTransform={setTransform} />
       <div>
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={transform.x}
-          onChange={(e) => {
-            const x = e.currentTarget.valueAsNumber;
-            setTransform((t) => ({ ...t, x }));
-          }}
-        />
+        <div style={{zIndex: 1, display: 'inline-flex', flexDirection: 'column', padding: '10px', position: 'relative', backgroundColor: 'white'}}>
+          <div style={{display: 'flex', flexDirection:'row', alignItems: 'center'}}>
+            <label>x: </label>
+            <input
+              type="range"
+              min={min}
+              max={max}
+              value={transform.x}
+              onChange={(e) => {
+                const x = e.currentTarget.valueAsNumber;
+                setTransform((t) => ({ ...t, x }));
+              }}
+            />
+            <span>{transform.x.toFixed(0)}px</span>
+          </div>
+          <div style={{display: 'flex', flexDirection:'row', alignItems: 'center'}}>
+            <label>y: </label>
+            <input
+              type="range"
+              min={-200}
+              max={200}
+              value={transform.y}
+              onChange={(e) => {
+                const y = e.currentTarget.valueAsNumber;
+                setTransform((t) => ({ ...t, y }));
+              }}
+            />
+            <span>{transform.y.toFixed(0)}px</span>
+          </div>
+          <div style={{display: 'flex', flexDirection:'row', alignItems: 'center'}}>
+            <label>s: </label>
+            <input
+              type="range"
+              min={0.01}
+              max={10}
+              step={0.01}
+              value={transform.s}
+              onChange={(e) => {
+                const s = e.currentTarget.valueAsNumber;
+                setTransform((t) => ({ ...t, s }));
+              }}
+            />
+            <span>{transform.s.toFixed(2)}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

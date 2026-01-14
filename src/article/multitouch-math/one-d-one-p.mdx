@@ -1,0 +1,29 @@
+## One dimension, one pointer
+
+Let's start with the simplest scenario: one dimension and one pointer. That means we only need the `x` variable for positioning, and can disregard the `y` and `s` variables. We also only care about one pointer, so be careful not to touch the screen with two fingers for this example (Now that I've said it, I know you will try).
+
+To implemend this we need to remember the definition from the previous section: Find the transformation values such that the dragpoint in the image is where the touchpoint is on the screen. So we have to do three things:
+
+* find the dragpoint in the image
+* find the touchpoint on the screen
+* find the transformation so the two are at the same place
+
+
+
+```
+on touch start:
+ - get the point on the screen where the touch is
+ - find out where in the image this is
+ - save this point in a variable
+
+on touch move:
+ - get the point on the screen where the touch is
+ - recall the point in the image we saved earlier
+ - solve the equation
+```
+
+- v = m + t
+- numberline
+- m = v - t
+- on touch start
+- on touch move

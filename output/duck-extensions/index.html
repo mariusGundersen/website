@@ -8,8 +8,9 @@
     <title>Marius Gundersen</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=700px, initial-scale=0.5" />
-    <link rel="stylesheet" href="/style/main.css?v=1609936963424" />
-    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1609936963424" />
+    <link rel="stylesheet" href="/style/main.css?v=1741464228807" />
+    <link rel="stylesheet" href="/style/tomorrow-night.css?v=1741464228807" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.10/dist/katex.min.css" integrity="sha384-0cCFrwW/0bAk1Z/6IMgIyNU3kfTcNirlObr4WjrUU7+hZeD6ravdYJ3kPWSeC31M" crossorigin="anonymous">
   </head>
 
   <body>
@@ -38,7 +39,8 @@
 
 <span class="hljs-regexp">//</span> error CS1061: <span class="hljs-string">&#x27;string&#x27;</span> does not contain a definition <span class="hljs-keyword">for</span> <span class="hljs-string">&#x27;GetAwaiter&#x27;</span> and no
 <span class="hljs-regexp">//</span> accessible extension method <span class="hljs-string">&#x27;GetAwaiter&#x27;</span> accepting a first argument of type
-<span class="hljs-regexp">//</span> <span class="hljs-string">&#x27;string&#x27;</span> could be found (are you missing a using directive or an assembly reference?)</code></pre>
+<span class="hljs-regexp">//</span> <span class="hljs-string">&#x27;string&#x27;</span> could be found (are you missing a using directive or an assembly reference?)
+</code></pre>
 <p>So let&#39;s do what C# says, and make an &#39;accessible extension method <code>GetAwaiter</code> accepting a first argument of type <code>string</code>&#39;, and then see what happens.</p>
 <pre><code class="language-csharp">// Example <span class="hljs-symbol">1:</span> await strings
 
@@ -46,7 +48,8 @@ public static TaskAwaiter&lt;string&gt; GetAwaiter(this string <span class="hljs
 =&gt; Task.FromResult(<span class="hljs-built_in">text</span>).GetAwaiter();
 
 // <span class="hljs-built_in">Now</span> it doesn&#x27;<span class="hljs-built_in">t</span> complain when we await the string
-await <span class="hljs-string">&quot;Hello world&quot;</span>;</code></pre>
+await <span class="hljs-string">&quot;Hello world&quot;</span>;
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example1.cs&amp;fromGist=f9df8e305e8eef6ba6d34ad30be93a64&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>Cool, but let&#39;s take it one step further and make this method generic, so we can await anything.</p>
 <pre><code class="language-csharp">// Example <span class="hljs-symbol">2:</span> await anything
@@ -57,7 +60,8 @@ public static TaskAwaiter&lt;<span class="hljs-built_in">T</span>&gt; GetAwaiter
 // <span class="hljs-built_in">Now</span> we can write <span class="hljs-built_in">code</span> like this
 await <span class="hljs-string">&quot;Hello world&quot;</span>;
 await <span class="hljs-number">100</span>;
-await <span class="hljs-built_in">true</span>;</code></pre>
+await <span class="hljs-built_in">true</span>;
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example2.cs&amp;fromGist=b552f99f4f2703a00b461c1ce4d11df0&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>Ok, this was a bit useless maybe, can we find a type to extend that can be useful to await? How about <code>Lazy&lt;Task&lt;T&gt;&gt;</code>? Instead of making an <code>AsyncLazy&lt;T&gt;</code> class, as described in <a href="https://blogs.msdn.microsoft.com/pfxteam/2011/01/15/asynclazyt/">this article</a> (from all the way back in 2011), we can just make an extension method for <code>Lazy&lt;Task&lt;T&gt;&gt;</code></p>
 <pre><code class="language-csharp"><span class="hljs-comment">// Example 3: await Lazy&lt;Task&lt;T&gt;&gt;</span>
@@ -73,7 +77,8 @@ Console.WriteLine(<span class="hljs-keyword">await</span> lazySomething.Value);
 =&gt; lazyTask.Value.GetAwaiter();
 
 <span class="hljs-comment">// After</span>
-Console.WriteLine(<span class="hljs-keyword">await</span> lazySomething);</code></pre>
+Console.WriteLine(<span class="hljs-keyword">await</span> lazySomething);
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example3.cs&amp;fromGist=f7d38a571b82a9a7df41dae07dbf1128&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>Success! We got rid of the <code>.Value</code>! Ok, still not impressed? How about getting rid of <code>Task.WhenAll</code>? We can do that by extending <code>IEnumerable</code>:</p>
 <pre><code class="language-csharp"><span class="hljs-comment">// Example 4: await IEnumerable&lt;Task&lt;T&gt;&gt;</span>
@@ -86,7 +91,8 @@ Console.WriteLine(<span class="hljs-keyword">await</span> lazySomething);</code>
 =&gt; Task.WhenAll(manyTasks).GetAwaiter();
 
 <span class="hljs-comment">// After (no more Task.WhenAll)</span>
-<span class="hljs-keyword">var</span> manyThings = <span class="hljs-keyword">await</span> Enumerable.Range(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>).Select(GetSomethingAsync);</code></pre>
+<span class="hljs-keyword">var</span> manyThings = <span class="hljs-keyword">await</span> Enumerable.Range(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>).Select(GetSomethingAsync);
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example4.cs&amp;fromGist=84f12a29e606fa14d357b3b6660fa4bf&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>This magic extension method lets us await an <code>IEnumerable</code> of <code>Task</code>s directly, without having to wrap it in <code>Task.WhenAll</code>. It ends up converting an enumerable of tasks (<code>IEnumerable&lt;Task&lt;T&gt;&gt;</code>) into a task of an enumerable (<code>Task&lt;IEnumerable&lt;T&gt;&gt;</code>). This is great when we have many <code>Task&lt;T&gt;</code> for the same type <code>T</code>, but what if we have a few async functions that return different results, and we want to run them in parallel?</p>
 <pre><code class="language-csharp"><span class="hljs-comment">// Example 5: await a tuple of Task&lt;T&gt;</span>
@@ -105,7 +111,8 @@ public static TaskAwaiter&lt;(T1, T2)&gt; GetAwaiter&lt;T1, T2&gt;(this<span cla
        .<span class="hljs-constructor">GetAwaiter()</span>;
 
 <span class="hljs-comment">// After</span>
-var (something, anotherThing) = await (<span class="hljs-constructor">GetSomethingAsync(10)</span>, <span class="hljs-constructor">GetAnotherThingAsync(<span class="hljs-string">&quot;some parameter&quot;</span>)</span>);</code></pre>
+var (something, anotherThing) = await (<span class="hljs-constructor">GetSomethingAsync(10)</span>, <span class="hljs-constructor">GetAnotherThingAsync(<span class="hljs-string">&quot;some parameter&quot;</span>)</span>);
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example5.cs&amp;fromGist=aaa0af25c481531e5a0fc4a3e7db1233&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>This example uses <a href="https://blogs.msdn.microsoft.com/mazhou/2017/05/26/c-7-series-part-1-value-tuples/">ValueTuples</a>, introduced in C# 7.0. ValueTuples are just structs, so we can write extension methods for them too. Here we convert a tuple of tasks into a task of a tuple. The problem with tuples is that we have to write one extension method for each tuple length. This example only works for tuples with 2 values, we have to write a similar method for tuples with three values and so on. It&#39;s not very difficult, but it&#39;s not so fun to copy paste the same code into each project you work on. Luckly there is a nuget package called <a href="https://github.com/buvinghausen/TaskTupleAwaiter">TaskTupleAwaiter</a> which contains extension methods for tuples with up to 10 values. It works slightly differently from the solution here in that it doesn&#39;t return a <code>TaskAwaiter</code>. If you are curious how it works you can have a look at this <a href="https://github.com/dotnet/csharplang/issues/380">open GitHub issue</a> which resulted in the nuget.</p>
 <h3 id="add">Add</h3>
@@ -122,7 +129,8 @@ var list = <span class="hljs-built_in">new</span> List&lt;<span class="hljs-type
   <span class="hljs-number">1</span>,
   <span class="hljs-number">2</span>,
   <span class="hljs-number">3</span>
-};</code></pre>
+};
+</code></pre>
 <p>While these may look very different these two scenarios are exacly the same; when we use the collection initializer it is just syntax sugar for calling <code>Add</code> multiple times. That&#39;s great, as it means we can define an <code>Add</code> extension method and then we can use it with the collection initializer.</p>
 <p>For example, JavaScript, as of ES2015, got the ability to spread an array into another array, and this is something I&#39;ve wanted to do in C#. But it has not been possible, until now!</p>
 <pre><code class="language-csharp">// Example <span class="hljs-symbol">6:</span> Add a list
@@ -138,7 +146,8 @@ public static void Add&lt;<span class="hljs-built_in">T</span>&gt;(this List&lt;
   <span class="hljs-number">2</span>,
   GetAnotherListOfInts(),
   <span class="hljs-number">3</span>
-};</code></pre>
+};
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example6.cs&amp;fromGist=7092b846fdee640ecd7e1f37eee7255c&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>The result will be a list of ints, starting with 1 and 2, followed by all the ints returned by <code>GetAnotherListOfInts</code> and ending with 3. This is quite useful when we are working with <code>IEnumerable&lt;T&gt;</code>, <code>IReadOnlyCollection&lt;T&gt;</code> where we can&#39;t modify a list directly.</p>
 <p>Now you may have seen the following systax for initializing a dictionary, and wondered what the special sytax with the curly braces is</p>
@@ -148,7 +157,8 @@ public static void Add&lt;<span class="hljs-built_in">T</span>&gt;(this List&lt;
   { <span class="hljs-string">&quot;USA&quot;</span>, <span class="hljs-number">324</span>_459_463 },
   { <span class="hljs-string">&quot;Indonesia&quot;</span>, <span class="hljs-number">263</span>_991_379 },
   { <span class="hljs-string">&quot;Brazil&quot;</span>, <span class="hljs-number">209</span>_288_278 }
-};</code></pre>
+};
+</code></pre>
 <p>Is this a syntax made specifically for dictionary initialization? No, this is the syntax for passing multiple arguments to the <code>Add</code> method! <code>IDictionary</code> has an <code>Add(key, value)</code> method which takes two arguments, the key and the value. So we aren&#39;t limited to creating an <code>Add</code> extension method with only one (additional) parameter, we can make one with as many as we want! But before we look at the opportunities this enable, let&#39;s implement the <code>Add</code> method that spreads a dictionary into a dictionary, just like we did for a list:</p>
 <pre><code class="language-csharp"><span class="hljs-comment">// Example 7: add a dictionary</span>
 
@@ -171,7 +181,8 @@ public static void Add&lt;<span class="hljs-built_in">T</span>&gt;(this List&lt;
   { <span class="hljs-string">&quot;Brazil&quot;</span>, <span class="hljs-number">209</span>_288_278 },
   GetAfricanCountries(),
   GetEuropeanCountries()
-};</code></pre>
+};
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example7.cs&amp;fromGist=8b294d95d8f326952c59ed2f42d6d59e&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>Neato, this is sure to be useful! One fancy feature of this extension method is that it will not fail on duplicate keys, it will overwrite previous keys. This means that the order of the items matter, and you can pass in two dictionaries with the same keys and have the latter one override the previous one.</p>
 <p>Ok, enough about that, let&#39;s get back to the curly braces, can we make an extension method that takes multiple arguments? Sure, no problem:</p>
@@ -199,7 +210,8 @@ var cities = <span class="hljs-keyword">new</span> List&lt;City&gt;
   { <span class="hljs-string">&quot;Delhi&quot;</span>, <span class="hljs-number">11_034_555</span>, <span class="hljs-string">&quot;India&quot;</span> },
   { <span class="hljs-string">&quot;Beijing&quot;</span>, <span class="hljs-number">21_516_000</span>, <span class="hljs-string">&quot;China&quot;</span> },
   { <span class="hljs-string">&quot;Dhaka&quot;</span>, <span class="hljs-number">14_399_000</span>, <span class="hljs-string">&quot;Bangladesh&quot;</span> }
-};</code></pre>
+};
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example8.cs&amp;fromGist=ac2a196fefca9350e74b7b27ba0477ec&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>Hey, would you look at that, we don&#39;t have to write <code>new City</code> for each item to add! Instead we pass in three arguments to the <code>Add</code> method and let it create a new city for us.</p>
 <p>That was a very specific extension method, since it works only for <code>City</code> and it takes exactly three arguments. Can we make an <code>Add</code> extension method that takes arbitrary many arguments? Yes, using <code>params</code>!</p>
@@ -215,7 +227,8 @@ var cities = <span class="hljs-keyword">new</span> List&lt;City&gt;
   { <span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">0</span> },
   { <span class="hljs-number">0</span>, <span class="hljs-number">1</span>, <span class="hljs-number">0</span> },
   { <span class="hljs-number">0</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span> }
-};</code></pre>
+};
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example9.cs&amp;fromGist=d8400ad900e4fa3ac57d707e1df1207e&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>This might be useful when we are working with <a href="https://en.wikipedia.org/wiki/Stride_of_an_array">multi dimensional arrays</a>, for example matrices and images. Maybe.</p>
 <p>Now we have curly braces that don&#39;t do anything, they are just there to look pretty. Well, curly braces aren&#39;t really that pretty, not as pretty as parentheses anyways. And if we go back to the example with the cities above, isn&#39;t a bit strange that we use curly braces to hold a list of arguments? It looks like object initialization, but it&#39;s not. Can we use parentheses instead? Will it make us more like lisp programmers?</p>
@@ -233,7 +246,8 @@ var cities = <span class="hljs-keyword">new</span> List&lt;City&gt;
   (<span class="hljs-string">&quot;Delhi&quot;</span>, population: <span class="hljs-number">11_034_555</span>, <span class="hljs-string">&quot;India&quot;</span>),
   (<span class="hljs-string">&quot;Beijing&quot;</span>, population: <span class="hljs-number">21_516_000</span>, <span class="hljs-string">&quot;China&quot;</span>),
   (<span class="hljs-string">&quot;Dhaka&quot;</span>, population: <span class="hljs-number">14_399_000</span>, <span class="hljs-string">&quot;Bangladesh&quot;</span>)
-};</code></pre>
+};
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example10.cs&amp;fromGist=07c5787a66bed01121d466d747f8122b&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>Ah, much better. Here we just wrap the <code>Add(name, population, country)</code> method we created in the original example, so we can pick and choose which one we want to use. We could even do every other line with parentheses and curly braces, if we are in a bad mood. Notice that we can name the arguments, like I&#39;ve done with the population, an option we don&#39;t have with curly braces.</p>
 <p>Oh, BTW, did you notice the fancy <a href="https://airbrake.io/blog/csharp/digit-separators-reference-returns-and-binary-literals">digit separator</a> in the numbers above? The syntax for using <code>_</code> in numbers like <code>7_550_262_101</code> was added in C# 7.0 as is pretty neat, but a bit weird when we are used to seeing numbers represented like 7,550,262,101. Can we fix this using extension methods? Yes, we can hack it!</p>
@@ -251,7 +265,8 @@ var populations = <span class="hljs-built_in">new</span> <span class="hljs-keywo
   { &quot;USA&quot;, <span class="hljs-number">324</span>,<span class="hljs-number">459</span>,<span class="hljs-number">463</span> },
   { &quot;Indonesia&quot;, <span class="hljs-number">263</span>,<span class="hljs-number">991</span>,<span class="hljs-number">379</span> },
   { &quot;Brazil&quot;, <span class="hljs-number">209</span>,<span class="hljs-number">288</span>,<span class="hljs-number">278</span> }
-};</code></pre>
+};
+</code></pre>
 <p>(<a href="https://try.dot.net/?bufferId=Example11.cs&amp;fromGist=35fa20bd963dd9e80145da0266d52988&amp;canshowgithubpanel=true">Try it online</a>)</p>
 <p>OK, even I realize the examples are getting pretty silly now, so let&#39;s stop.</p>
 <h2 id="the-future">The future</h2>
@@ -262,7 +277,8 @@ var populations = <span class="hljs-built_in">new</span> <span class="hljs-keywo
   [<span class="hljs-meta"><span class="hljs-meta-string">&quot;USA&quot;</span></span>] = <span class="hljs-number">324</span>_459_463,
   [<span class="hljs-meta"><span class="hljs-meta-string">&quot;Indonesia&quot;</span></span>] = <span class="hljs-number">263</span>_991_379,
   [<span class="hljs-meta"><span class="hljs-meta-string">&quot;Brazil&quot;</span></span>] = <span class="hljs-number">209</span>_288_278
-};</code></pre>
+};
+</code></pre>
 <p>This might look very similar to the collection initialization we have used in many of the examples, but it&#39;s not, it&#39;s the closely related object initializer. This code ends up calling the <a href="https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/indexers/using-indexers">index operator</a> which is defined as an operator on the class. As of C# 7.2 it&#39;s only possible to extend instance methods, not overloaded operators, so we can&#39;t use this syntax for magic.</p>
 <p>But there is a proposal called <a href="https://github.com/dotnet/roslyn/issues/11159">Extension Everything</a> that will make it possible to extend not just instance methods, but also properties and operators, including the index operator! It is marked for C# 8.0, but that seems unlikely as it hasn&#39;t gotten any attention lately, at least not compared to some of the other features that are planned, like <a href="https://github.com/dotnet/csharplang/wiki/Nullable-Reference-Types-Preview">nullable reference types</a> and <a href="https://github.com/dotnet/csharplang/wiki/vNext-Preview">patterns and ranges</a>. We&#39;ll just have to wait and see when it will be possible to extend other fun stuff and what kind of cool and silly things might be possible in the future.</p>
 
