@@ -95,6 +95,7 @@ const sandShaders = [
     return texture2D(sandTexture, pos);
   }
 
+  //start
   vec4 getNextState() {
     vec4 self = lookup(0.0, 0.0);
 
@@ -104,7 +105,8 @@ const sandShaders = [
         return below;
       } else {
         vec4 diagonally = lookup(direction, -1.0);
-        if (isAir(diagonally)) {
+        vec4 besides = lookup(direction, 0.0);
+        if (isAir(diagonally) && isAir(besides)) {
           return diagonally;
         } else {
           return self;
@@ -125,6 +127,7 @@ const sandShaders = [
       }
     }
   }
+  //end
 
   void main() {
     gl_FragColor = vec4(getNextState());
@@ -195,12 +198,7 @@ class SandGame extends HTMLElement {
       shadowRoot.firstElementChild?.appendChild(stats.dom);
     }
 
-    if (this.hasAttribute('width')) {
-      canvas.width = parseInt(this.getAttribute('width') ?? '400');
-      canvas.height = parseInt(this.getAttribute('height') ?? '0') || canvas.width / 2;
-    } else {
-      twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
-    }
+    const { width, height } = this.getSize(canvas);
 
     const gl = canvas.getContext("webgl");
     assert(gl);
@@ -223,17 +221,14 @@ class SandGame extends HTMLElement {
       ],
     });
 
-    const width = Math.floor(canvas.width / 2 / devicePixelRatio);
-    const height = Math.floor(canvas.height / 2 / devicePixelRatio);
-
     twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
 
-    const bottomRow = new Uint32Array(width * height);
-    //bottomRow.fill(0xff, 0, width);
+    const initial = new Uint32Array(width * height);
+    initial.set(this.getAttribute('initial')?.trim().split(/\s+/).map(v => parseInt(v)) ?? []);
 
-    const sand1 = twgl.createFramebufferInfo(gl, [{ min: gl.NEAREST, mag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE, type: gl.UNSIGNED_BYTE, src: new Uint8Array(bottomRow.buffer) }], width, height);
+    const sand1 = twgl.createFramebufferInfo(gl, [{ min: gl.NEAREST, mag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE, type: gl.UNSIGNED_BYTE, src: new Uint8Array(initial.buffer) }], width, height);
 
-    const sand2 = twgl.createFramebufferInfo(gl, [{ min: gl.NEAREST, mag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE, type: gl.UNSIGNED_BYTE, src: new Uint8Array(bottomRow.buffer) }], width, height);
+    const sand2 = twgl.createFramebufferInfo(gl, [{ min: gl.NEAREST, mag: gl.NEAREST, wrap: gl.CLAMP_TO_EDGE, type: gl.UNSIGNED_BYTE, src: new Uint8Array(initial.buffer) }], width, height);
 
 
     /**
@@ -290,8 +285,6 @@ class SandGame extends HTMLElement {
         stats?.end();
       }
 
-      //gl.flush();
-
       // RENDER
 
       gl.useProgram(renderProgram.program);
@@ -341,6 +334,22 @@ class SandGame extends HTMLElement {
 
     canvas.addEventListener('pointerup', onPointerUp)
 
+  }
+
+  /**
+   * @param {{ width: number; height: number; }} canvas
+   */
+  getSize(canvas) {
+    if (this.hasAttribute('width')) {
+      const width = parseInt(this.getAttribute('width') ?? '400');
+      const height = parseInt(this.getAttribute('height') ?? '0') || width;
+      return { width, height };
+    } else {
+      twgl.resizeCanvasToDisplaySize(canvas, devicePixelRatio);
+      const width = Math.floor(canvas.width / 2 / devicePixelRatio);
+      const height = Math.floor(canvas.height / 2 / devicePixelRatio);
+      return { width, height };
+    }
   }
 }
 

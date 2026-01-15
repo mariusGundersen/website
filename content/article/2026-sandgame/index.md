@@ -7,7 +7,7 @@ layout: post.html
 
 During the Christmas break I watched a YouTube video on optimzing a sand game. I got very excited when I saw the video, since I played around with this back when Flash was a thing. So as I started to watch the video I thought about how he was going to optimize the game, for example using quad-trees on the CPU, or using the GPU. He went for the GPU solution, which excited me even more, since I had played around with that ages ago, for my Ekkiog project. But then things started to go wrong. He asked ChatGPT for help, and the AI assistant gave him the wrong suggestion. He went with the suggestion, implementing code that wasn't at all paralellizable, which completely negates the point of having the GPU do it. I was not the only one to notice, several people pointed out in the comments that there was a better solution. And since someone was wrong on the internet it meant I had to correct them.
 
-<sand-game width=50 height=50 fps=10>
+<sand-game width=10 height=10 fps=10>
 
 ```glsl
   precision highp float;
@@ -120,49 +120,7 @@ These two rules complement each other, and as long as all our rules do that, we 
 
 I'm going to skip some details of the shader and only focus on the simplified logic. If you are curious you can look at the shader code in the source code of this page.
 
-<sand-game width=50 height=50 fps=10>
-
-```glsl
-  precision highp float;
-
-  uniform float direction;
-  uniform vec2 inverseTileTextureSize;
-  uniform sampler2D sandTexture;
-
-  varying vec2 texCoord;
-
-  bool isSand(vec4 value) {
-    return value.r == 1.0;
-  }
-  bool isAir(vec4 value) {
-    return value == vec4(0.0, 0.0, 0.0, 0.0);
-  }
-
-  vec4 lookup(float x, float y) {
-    vec2 pos = texCoord + inverseTileTextureSize * vec2( x, y);
-
-    // make sure there is only air above the viewport
-    if(pos.y > 1.0) return vec4(0.0);
-
-    // make sure there is only sand below the viewport
-    if(pos.y < 0.0) return vec4(1.0);
-
-    return texture2D(sandTexture, pos);
-  }
-
-vec4 getNextState() {
-  vec4 self = lookup(0.0, 0.0);
-
-  return self;
-}
-
-
-  void main() {
-    gl_FragColor = vec4(getNextState());
-  }
-```
-
-</sand-game>
+<code-wave>
 
 ```glsl
 vec4 getNextState() {
@@ -175,6 +133,50 @@ vec4 getNextState() {
 
 This is the trivial example; the next state is whatever it was before. So, if this was sand it stays sand, and if it was air it stays air.
 
+<sand-game width=10 height=10 fps=10>
+
+```glsl
+  precision highp float;
+
+  uniform float direction;
+  uniform vec2 inverseTileTextureSize;
+  uniform sampler2D sandTexture;
+
+  varying vec2 texCoord;
+
+  bool isSand(vec4 value) {
+    return value.r == 1.0;
+  }
+  bool isAir(vec4 value) {
+    return value == vec4(0.0, 0.0, 0.0, 0.0);
+  }
+
+  vec4 lookup(float x, float y) {
+    vec2 pos = texCoord + inverseTileTextureSize * vec2( x, y);
+
+    // make sure there is only air above the viewport
+    if(pos.y > 1.0) return vec4(0.0);
+
+    // make sure there is only sand below the viewport
+    if(pos.y < 0.0) return vec4(1.0);
+
+    return texture2D(sandTexture, pos);
+  }
+
+vec4 getNextState() {
+  vec4 self = lookup(0.0, 0.0);
+
+  return self;
+}
+
+
+  void main() {
+    gl_FragColor = vec4(getNextState());
+  }
+```
+
+</sand-game>
+
 ```glsl
 vec4 getNextState() {
   vec4 self = lookup(0.0, 0.0);
@@ -199,7 +201,11 @@ vec4 getNextState() {
 }
 ```
 
-<sand-game width=50 height=50 fps=10>
+To make the sand fall we need to check if there is air below the sand, and if there is, the sand becomes air.
+
+Note that the sand doesn't accelerate; we assume that the sand is light enough to reach terminal velocity very quickly and fall with a steady rate.
+
+<sand-game width=10 height=10 fps=10>
 
 ```glsl
   precision highp float;
@@ -258,8 +264,6 @@ vec4 getNextState() {
 ```
 
 </sand-game>
-
-This code is the rule from above, where sand falls downwards on the screen. Note that the sand doesn't accelerate; we assume that the sand is light enough to reach terminal velocity very quickly and fall with a steady rate.
 
 If you play with this you will notice that the sand falls but then piles up and forms tall pillars of sand. That's not very realistic. We need it to fall piles, so it needs to roll down to the left or right.
 
@@ -300,7 +304,73 @@ vec4 getNextState() {
 }
 ```
 
-<sand-game width=50 height=50 fps=10></sand-game>
+<sand-game width=10 height=10 fps=10>
+
+```glsl
+precision highp float;
+
+  uniform float direction;
+  uniform vec2 inverseTileTextureSize;
+  uniform sampler2D sandTexture;
+
+  varying vec2 texCoord;
+
+  bool isSand(vec4 value) {
+    return value.r == 1.0;
+  }
+  bool isAir(vec4 value) {
+    return value == vec4(0.0, 0.0, 0.0, 0.0);
+  }
+
+  vec4 lookup(float x, float y) {
+    vec2 pos = texCoord + inverseTileTextureSize * vec2( x, y);
+
+    // make sure there is only air above the viewport
+    if(pos.y > 1.0) return vec4(0.0);
+
+    // make sure there is only sand below the viewport
+    if(pos.y < 0.0) return vec4(1.0);
+
+    return texture2D(sandTexture, pos);
+  }
+
+  vec4 getNextState() {
+    vec4 self = lookup(0.0, 0.0);
+
+    if (isSand(self)) {
+      vec4 below = lookup(0.0, -1.0);
+      if (isAir(below)) {
+        return below;
+      } else {
+        vec4 diagonally = lookup(1.0, -1.0);
+        if (isAir(diagonally)) {
+          return diagonally;
+        } else {
+          return self;
+        }
+      }
+    } else {
+      vec4 above = lookup(0.0, 1.0);
+      if (isSand(above)) {
+        return above;
+      } else {
+        vec4 diagonally = lookup(-1.0, 1.0);
+        vec4 besides = lookup(-1.0, 0.0);
+        if (isSand(besides) && isSand(diagonally)) {
+          return diagonally;
+        } else {
+          return self;
+        }
+      }
+    }
+  }
+
+  void main() {
+    gl_FragColor = vec4(getNextState());
+  }
+```
+
+</sand-game>
 
 In this case it will form triangular piles of sand. That's not very realistic. But there is a simple trick to fix this: make it fall to the left and right every other frame.
 
@@ -337,9 +407,117 @@ vec4 getNextState() {
 }
 ```
 
-This solves the problem and makes the piles of sand symetrical. It also makes the sand roll down the pile more slowly than it falls down the air, sinec it will only roll every other frame. I see this as a feature, not a bug, as it makes sense that the sand rolls more slowly than it falls. Since it is moving diagonally it moves 1.4 pixels when it rolls, so only moving every other frame makes it move at 0.7 pixels per frame, compared to falling at 1 pixel per frame.
+This solves the problem and makes the piles of sand symetrical. It also makes the sand roll down the pile more slowly than it falls down the air, since it will only roll every other frame. I see this as a feature, not a bug, as it makes sense that the sand rolls more slowly than it falls. Since it is moving diagonally it moves 1.4 pixels when it rolls, so only moving every other frame makes it move at 0.7 pixels per frame, compared to falling at 1 pixel per frame.
 
-And that's about it for teh fragment shader. It can obviously be improved and expanded upon with other features, like platforms, water, fire, snow, etc, but that's beyond the scope of this article.
+There is one small problem with this shader, which you can see if you try to drop two sand particles next to each other onto an incline. Try stepping slowly and see what happens
+
+<sand-game width=10 height=10 fps=0 initial="0xff 0xff 0 0 0 0 0 0 0 0   0xff 0 0 0 0 0 0 0 0 0   0 0 0 0 0 0 0 0 0 0   0 0 0 0 0 0 0 0 0 0   0x8800ff 0x3300ff">
+
+```glsl
+precision highp float;
+
+  uniform float direction;
+  uniform vec2 inverseTileTextureSize;
+  uniform sampler2D sandTexture;
+
+  varying vec2 texCoord;
+
+  bool isSand(vec4 value) {
+    return value.r == 1.0;
+  }
+  bool isAir(vec4 value) {
+    return value == vec4(0.0, 0.0, 0.0, 0.0);
+  }
+
+  vec4 lookup(float x, float y) {
+    vec2 pos = texCoord + inverseTileTextureSize * vec2( x, y);
+
+    // make sure there is only air above the viewport
+    if(pos.y > 1.0) return vec4(0.0);
+
+    // make sure there is only sand below the viewport
+    if(pos.y < 0.0) return vec4(1.0);
+
+    return texture2D(sandTexture, pos);
+  }
+
+  vec4 getNextState() {
+    vec4 self = lookup(0.0, 0.0);
+
+    if (isSand(self)) {
+      vec4 below = lookup(0.0, -1.0);
+      if (isAir(below)) {
+        return below;
+      } else {
+        vec4 diagonally = lookup(direction, -1.0);
+        if (isAir(diagonally)) {
+          return diagonally;
+        } else {
+          return self;
+        }
+      }
+    } else {
+      vec4 above = lookup(0.0, 1.0);
+      if (isSand(above)) {
+        return above;
+      } else {
+        vec4 diagonally = lookup(-direction, 1.0);
+        vec4 besides = lookup(-direction, 0.0);
+        if (isSand(besides) && isSand(diagonally)) {
+          return diagonally;
+        } else {
+          return self;
+        }
+      }
+    }
+  }
+
+  void main() {
+    gl_FragColor = vec4(getNextState());
+  }
+```
+
+</sand-game>
+
+The problem is one small missing line of code:
+
+```glsl
+vec4 getNextState() {
+  vec4 self = lookup(0.0, 0.0);
+
+  if (isSand(self)) {
+    vec4 below = lookup(0.0, -1.0);
+    if (isAir(below)) {
+      return below;
+    } else {
+      vec4 diagonally = lookup(direction, -1.0);
+      vec4 besides = lookup(direction, 0.0);
+      if (isAir(diagonally) && isAir(besides)) {
+        return diagonally;
+      } else {
+        return self;
+      }
+    }
+  } else {
+    vec4 above = lookup(0.0, 1.0);
+    if (isSand(above)) {
+      return above;
+    } else {
+      vec4 diagonally = lookup(-direction, 1.0);
+      vec4 besides = lookup(-direction, 0.0);
+      if (isSand(besides) && isSand(diagonally)) {
+        return diagonally;
+      } else {
+        return self;
+      }
+    }
+  }
+}
+```
+
+</code-wave>
+
+And that's about it for the fragment shader. It can obviously be improved and expanded upon with other features, like platforms, water, fire, snow, etc, but that's beyond the scope of this article.
 
 ## Textures in WebGL
 
