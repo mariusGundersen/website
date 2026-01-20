@@ -138,19 +138,55 @@ const sandShaders = [
 const shadowStyle = /*css*/`
   .container {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    margin-inline: auto;
+    width: min(50%, 50vw);
+  }
+
+  .overlay {
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(10px);
+    display: grid;
+    place-content: center;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+    cursor: pointer;
+  }
+
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+
+    input[type="range"]{
+      flex: 1 1 auto;
+    }
   }
 
   canvas {
+    grid-area: c;
+    touch-action: none;
     width: 100%;
+    height: min(50%, 50vh);
   }
 `;
 
 const shadowHtml = /*html*/`
   <div class="container">
-    <div>Click anywhere to draw sand</div>
+    <div class="overlay">
+      <h2>Click to start</h2>
+      <p>Click anywhere to draw sand</p>
+      <small>Click on sand to clear it away</small>
+    </div>
     <canvas width=400 height=400></canvas>
-    <label>FPS: </label><span>0</span><input type="range" min=0 max=60 value=10><span>60</span>
-    <button>Next frame</button>
+    <div class="toolbar">
+
+      <label>FPS: </label>
+        <span>0</span><input type="range" min=0 max=60 value=10><span>60</span>
+      <button>Next frame</button>
+    </div>
   </div>
 `;
 
@@ -171,8 +207,16 @@ class SandGame extends HTMLElement {
 
     shadowRoot.innerHTML = shadowHtml;
 
+    const overlay = shadowRoot.querySelector('.overlay');
+    assert(overlay);
+    overlay.addEventListener('click', () => {
+      overlay.remove();
+      stepFrame = true;
+      requestAnimationFrame(animate);
+    })
+
     let fps = parseInt(this.getAttribute('fps') ?? '60');
-    let stepFrame = false;
+    let stepFrame = true;
     const canvas = shadowRoot.querySelector('canvas');
     assert(canvas);
 
@@ -240,7 +284,7 @@ class SandGame extends HTMLElement {
     let frame = 0;
     let lastFrameTime = 0;
     let [from, to] = [sand1, sand2];
-    requestAnimationFrame(function render(time) {
+    const render = (/** @type {number} */ time) => {
 
       gl.viewport(0, 0, canvas.width, canvas.height);
 
@@ -295,9 +339,15 @@ class SandGame extends HTMLElement {
         textureSize: [width, height],
       });
       twgl.drawBufferInfo(gl, bufferInfo);
+    }
 
-      requestAnimationFrame(render);
-    });
+    const animate = (/** @type {number} */ time) => {
+      render(time);
+
+      requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(render);
 
     const toSimSize = (/** @type {number} */ value) => value * width / canvas.offsetWidth;
 
@@ -330,7 +380,7 @@ class SandGame extends HTMLElement {
     };
 
 
-    canvas.addEventListener('pointercancel', onPointerUp)
+    canvas.addEventListener('lostpointercapture', onPointerUp)
 
     canvas.addEventListener('pointerup', onPointerUp)
 
