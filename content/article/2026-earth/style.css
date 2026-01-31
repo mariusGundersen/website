@@ -39,22 +39,22 @@
     }
 
     [alt="top"]{
-      transform: translateY(100px) rotateX(-90deg);
+      transform: rotateX(-90deg) translateZ(100px);
     }
     [alt="bottom"]{
-      transform: translateY(-100px) rotateX(90deg);
+      transform: rotateX(90deg) translateZ(100px);
     }
     [alt="left"]{
-      transform: translateX(-100px) rotateY(-90deg);
+      transform: rotateY(-90deg) translateZ(100px);
     }
     [alt="right"]{
-      transform: translateX(100px) rotateY(90deg);
+      transform: rotateY(90deg) translateZ(100px);
     }
     [alt="front"]{
-      transform: translateZ(100px) rotateX(0deg);
+      transform: rotateX(0deg) translateZ(100px);
     }
     [alt="back"]{
-      transform: translateZ(-100px) rotateY(180deg);
+      transform: rotateY(180deg) translateZ(100px);
     }
   }
 }
@@ -121,3 +121,121 @@
   }
 }
 
+.space.vectorized-cube {
+  .earth {
+    --d: 0.5;
+
+    img {
+      transform: rotateX(calc(var(--y) * 90deg)) rotateY(calc(atan2(var(--x), var(--z)))) translateZ(100px);
+      --diffuse-light: max(0, var(--d) * calc(var(--x) + var(--y) + var(--z)));
+    }
+    
+    [alt="top"]{
+      --x: 0;
+      --y: -1;
+      --z: 0;
+    }
+    [alt="bottom"]{
+      --x: 0;
+      --y: 1;
+      --z: 0;
+    }
+    [alt="left"]{
+      --x: -1;
+      --y: 0;
+      --z: 0;
+    }
+    [alt="right"]{
+      --x: 1;
+      --y: 0;
+      --z: 0;
+    }
+    [alt="front"]{
+      --x: 0;
+      --y: 0;
+      --z: 1;
+    }
+    [alt="back"]{
+      --x: 0;
+      --y: 0;
+      --z: -1;
+    }
+  }
+}
+
+
+.space {
+  .earth.rotate-y {
+    animation: rotate-y 5s linear forwards infinite;
+    transform: rotateY(var(--rot-y));
+    --earth-x: cos(var(--rot-y));
+    --earth-y: 0;
+    --earth-z: sin(var(--rot-y));
+    
+    img {
+      --diffuse-light: max(0, var(--d) * calc(calc(var(--earth-x) * var(--x)) + calc(var(--earth-z) * var(--z))));
+    }
+  }
+}
+
+@property --difuse-light {
+  syntax: "<number>";
+  inherits: true;
+}
+
+@property --rot-x {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+
+@property --rot-y {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+
+@keyframes rotate-y {
+  from {
+    --rot-y: 0turn;
+  }
+  to {
+    --rot-y: 1turn;
+  }
+}
+
+
+
+.space {
+  .earth.rotate-xy {
+    animation: rotate-y 5s linear forwards infinite;
+    transform: rotateY(var(--rot-y)) rotateX(var(--rot-x));
+    --earth-x: cos(var(--rot-y));
+    --earth-y: 0;
+    --earth-z: sin(var(--rot-y));
+    
+    img {
+      --diffuse-light: max(
+        0, 
+        var(--d) * calc(
+          calc(var(--earth-x) * var(--x)) + 
+          calc(var(--earth-y) * var(--y)) + 
+          calc(var(--earth-z) * var(--z))
+        )
+      );
+    }
+  }
+}
+
+@keyframes rotate-xy {
+  from {
+    --rot-y: 0turn;
+    --rot-x: 0turn;
+  }
+  to {
+    --rot-y: 1turn;
+    --rot-x: 4turn;
+  }
+}

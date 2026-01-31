@@ -76,22 +76,22 @@ This was done with roughly this css:
     }
 
     [alt="top"]{
-      transform: translateY(100px) rotateX(-90deg);
+      transform: rotateX(-90deg) translateZ(100px);
     }
     [alt="bottom"]{
-      transform: translateY(-100px) rotateX(90deg);
+      transform: rotateX(90deg) translateZ(100px);
     }
     [alt="left"]{
-      transform: translateX(-100px) rotateY(-90deg);
+      transform: rotateY(-90deg) translateZ(100px);
     }
     [alt="right"]{
-      transform: translateX(100px) rotateY(90deg);
+      transform: rotateY(90deg) translateZ(100px);
     }
     [alt="front"]{
-      transform: translateZ(100px) rotateX(0deg);
+      transform: rotateX(0deg) translateZ(100px);
     }
     [alt="back"]{
-      transform: translateZ(-100px) rotateY(180deg);
+      transform: rotateY(180deg) translateZ(100px);
     }
   }
 }
@@ -152,6 +152,132 @@ In the code above I set it so that if they aren't defined they don't contribute.
   </div>
 </div>
 
-That's very dark, but then we don't have a sun yet. Let's add a sun that is positioned to the right in space (like that makes sense). That way we can assume that the vector from the center of the earth-cube to the sun is `1, 0, 0`. 
+In order to find the light we need to use vector calculations. That means making some changes to the code we have so far so that we can use vectors for both the rotations and for doing the calculations for the light. So, let's replace the rotation of the earths 6 faces with some other code:
+
+```css
+.earth {
+  img {
+    transform: rotateX(calc(var(--y) * 90deg)) rotateY(calc(atan2(var(--x), var(--z)))) translateZ(100px);
+  }
+  
+  [alt="top"]{
+    --x: 0;
+    --y: -1;
+    --z: 0;
+  }
+  [alt="bottom"]{
+    --x: 0;
+    --y: 1;
+    --z: 0;
+  }
+  [alt="left"]{
+    --x: -1;
+    --y: 0;
+    --z: 0;
+  }
+  [alt="right"]{
+    --x: 1;
+    --y: 0;
+    --z: 0;
+  }
+  [alt="front"]{
+    --x: 0;
+    --y: 0;
+    --z: 1;
+  }
+  [alt="back"]{
+    --x: 0;
+    --y: 0;
+    --z: -1;
+  }
+}
+```
+
+This way we have a normal vector for each face that is also used to transform the face. This is a simplified calculation since we know that each face is orthogonal and points in one of the 6 directions. But we can use this to calculate the diffuse light of each face, for example by assuming it comes in from the top right corner:
+
+```css
+.earth {
+  --d: 0.5;
+
+  img {
+    --diffuse-light: max(0, var(--d) * calc(var(--x) + var(--y) + var(--z)));
+  }
+}
+```
+
+<div class="space phong-light vectorized-cube">
+  <div class="earth">
+    <img alt="top" src="./images/top.png">
+    <img alt="left" src="./images/left.png">
+    <img alt="right" src="./images/right.png">
+    <img alt="front" src="./images/front.png">
+    <img alt="back" src="./images/back.png">
+    <img alt="bottom" src="./images/bottom.png">
+  </div>
+</div>
+
+This is a hacky trick that we now need to improve. The next step is to find the dot product between the normal vector of the face and the vector indicating how the earth has rotated. We can start with a simplified version where the earth rotates around a single axis only, the y-axis. Then we can find the vector of the earth using the trigonometric functions `sin()` and `cos()`. The dot-product of the face vector (`--x`, `--y`, `--z`) and the earth vector (`--earth-x`, `--earth-y`, `--earth-z`) says how much the face points towards the initial earth direction. We can assume the sun is over there.
+
+```css
+.earth.rotate-y {
+  animation: rotate-y 5s linear forwards infinite;
+  transform: rotateY(var(--rot-y));
+  --earth-x: cos(var(--rot-y));
+  --earth-y: 0;
+  --earth-z: sin(var(--rot-y));
+  
+  img {
+    --diffuse-light: max(
+      0, 
+      var(--d) * calc(
+        calc(var(--earth-x) * var(--x)) 
+        + 
+        calc(var(--earth-z) * var(--z))
+      )
+    );
+  }
+}
+
+@property --rot-y {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes rotate-y {
+  from {
+    --rot-y: 0turn;
+  }
+  to {
+    --rot-y: 1turn;
+  }
+}
+
+```
+
+<div class="space phong-light vectorized-cube">
+  <div class="earth rotate-y">
+    <img alt="top" src="./images/top.png">
+    <img alt="left" src="./images/left.png">
+    <img alt="right" src="./images/right.png">
+    <img alt="front" src="./images/front.png">
+    <img alt="back" src="./images/back.png">
+    <img alt="bottom" src="./images/bottom.png">
+  </div>
+</div>
+
+We need some more complex math to rotate arund two axis
+
+
+<div class="space phong-light vectorized-cube">
+  <div class="earth rotate-xy">
+    <img alt="top" src="./images/top.png">
+    <img alt="left" src="./images/left.png">
+    <img alt="right" src="./images/right.png">
+    <img alt="front" src="./images/front.png">
+    <img alt="back" src="./images/back.png">
+    <img alt="bottom" src="./images/bottom.png">
+  </div>
+</div>
 
 <link rel="stylesheet" href="./style.css">
