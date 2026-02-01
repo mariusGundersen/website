@@ -313,7 +313,43 @@ We need some more complex math to rotate arund two axis. For one, we need anothe
   </div>
 </div>
 
-This is cool, but the earth looks rather flat, it doesn't have any shinyness to it. For that we need specular light, which looks at how the light from the light source is reflected off the surface towards the viewer. For this demo I'm assuming the light source is infinitly far away, so we don't need to worry about the position of the surface, only the rotation.
+This is cool, but the earth looks rather flat, it doesn't have any shinyness to it. For that we need specular light, which looks at how the light from the light source is reflected off the surface towards the viewer. For this demo I'm assuming the light source and the viewer is infinitly far away, so we don't need to worry about the position of the surface, only the rotation. This isn't entirely correct, but it doesn't matter much for this demo.
+
+The code is getting rather complex, now that we need to do some more complex vector calculations to find how the light reflects off the surface and if this reflected light hits the camera or not.
+
+```css
+
+.space.specular-light {
+  --s: 1;
+  --alpha: 20;
+  .earth {
+    --view-x: calc(0 - sin(var(--rot-y)));
+    --view-y: calc(0 - sin(var(--rot-x)))* cos(var(--rot-y));
+    --view-z: calc(0 + cos(var(--rot-x)) * cos(var(--rot-y)));
+
+    img {
+      --light-normal-dp: calc(
+        calc(var(--earth-x) * var(--x)) + 
+        calc(var(--earth-y) * var(--y)) + 
+        calc(var(--earth-z) * var(--z))
+      );
+      --r-x: calc(2 * var(--light-normal-dp) * var(--x) - var(--earth-x));
+      --r-y: calc(2 * var(--light-normal-dp) * var(--y) - var(--earth-y));
+      --r-z: calc(2 * var(--light-normal-dp) * var(--z) - var(--earth-z));
+
+      --specular-light: calc(var(--s) * pow(
+        max(
+          0,
+          calc(var(--view-x) * var(--r-x)) + 
+          calc(var(--view-y) * var(--r-y)) + 
+          calc(var(--view-z) * var(--r-z))
+        ),
+        var(--alpha)
+      ));
+    }
+  }
+}
+```
 
 <div class="space phong-light vectorized-cube specular-light">
   <div class="earth rotate-xy">
