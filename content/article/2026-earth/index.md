@@ -410,5 +410,12 @@ The only thing missing now is a way to control the rotation. We can achieve that
   </div>
 </div>
 
+OK, that's enough for today. I'll admit that getting this to work wasn't easy, and it was really difficult to debug. 
+
+I learned a few tricks though. For example, if you try to get the computed value of a complex css custom property calculation, it will just output the string of the definition. However, if you define it using the `@property --variable` declaration you can get the calculated value, as long as it's not using percentage. You can use `window.getComputedStyle($0).getPropertyValue('--variable')` to get the value of the variable. 
+
+Another thing I want to mention is that it's really nice to have typed variables, specifically the `<angle>` type. In other languages you need to make sure you use radians and have to convert to and from when using the `sin()` and other trigonometric functions. But in css I can declare `--rot: 1turn`, `--rot: 360deg`, `--rot: 400grad` or `--rot: 6.2832rad` and it would all mean the same thing. This way you can use the unit that best suits the situation, for example using `4turn` to specify four complete rotations, but you could use `30deg` for smaller angles. I have not used any other language that works like this.
+
+I also wish there was a way to use the transformation methods for other things than just transforming an element. I had to do all the vector calculation myself, but it would be nice to say `--vector: transform(rotateY(45deg), vector(1, 0, 0))`, for example. Not sure there is any real use for it, except for this demo.
 
 <link rel="stylesheet" href="./style.css">
