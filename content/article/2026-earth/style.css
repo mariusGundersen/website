@@ -239,3 +239,40 @@
     --rot-x: 1turn;
   }
 }
+
+.space.specular-light {
+  --s: 1;
+  --alpha: 20;
+  .earth {
+    --view-x: calc(0 - sin(var(--rot-y)));
+    --view-y: calc(0 - sin(var(--rot-x)))* cos(var(--rot-y));
+    --view-z: calc(0 + cos(var(--rot-x)) * cos(var(--rot-y)));
+
+    img {
+      --light-normal-dp: calc(
+        calc(var(--earth-x) * var(--x)) + 
+        calc(var(--earth-y) * var(--y)) + 
+        calc(var(--earth-z) * var(--z))
+      );
+      --r-x: calc(2 * var(--light-normal-dp) * var(--x) - var(--earth-x));
+      --r-y: calc(2 * var(--light-normal-dp) * var(--y) - var(--earth-y));
+      --r-z: calc(2 * var(--light-normal-dp) * var(--z) - var(--earth-z));
+
+      --specular-light: calc(var(--s) * pow(
+        max(
+          0,
+          calc(var(--view-x) * var(--r-x)) + 
+          calc(var(--view-y) * var(--r-y)) + 
+          calc(var(--view-z) * var(--r-z))
+        ),
+        var(--alpha)
+      ));
+    }
+  }
+}
+
+@property --specular-light {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0
+}

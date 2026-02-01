@@ -313,6 +313,17 @@ We need some more complex math to rotate arund two axis. For one, we need anothe
   </div>
 </div>
 
+This is cool, but the earth looks rather flat, it doesn't have any shinyness to it. For that we need specular light, which looks at how the light from the light source is reflected off the surface towards the viewer. For this demo I'm assuming the light source is infinitly far away, so we don't need to worry about the position of the surface, only the rotation.
 
+<div class="space phong-light vectorized-cube specular-light">
+  <div class="earth rotate-xy">
+    <img alt="top" src="./images/top.png">
+    <img alt="left" src="./images/left.png">
+    <img alt="right" src="./images/right.png">
+    <img alt="front" src="./images/front.png">
+    <img alt="back" src="./images/back.png">
+    <img alt="bottom" src="./images/bottom.png">
+  </div>
+</div>
 
 <link rel="stylesheet" href="./style.css">
