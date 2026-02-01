@@ -414,6 +414,8 @@ OK, that's enough for today. I'll admit that getting this to work wasn't easy, a
 
 I had to cheat a bit and assume some simple positions and rotations. I put the light source to the right, and it's not moving. The earth only rotates around two angles. If it was allowed to rotate around three axis or if the light was allowed to move the calculation would be a lot more complex.
 
+Another neat thing I wanted to try was to have only the water have specular highlights. This could probably be achieved with more filters stacked on top of each other and using the blue hue of the water to multiply with the specular highlight. Another cool thing would be to create a normal map of the surface and have some shadow effects.
+
 I learned a few tricks though. For example, if you try to get the computed value of a complex css custom property calculation, it will just output the string of the definition. However, if you define it using the `@property --variable` declaration you can get the calculated value, as long as it's not using percentage. You can use `window.getComputedStyle($0).getPropertyValue('--variable')` to get the value of the variable. 
 
 Another thing I want to mention is that it's really nice to have typed variables, specifically the `<angle>` type. In other languages you need to make sure you use radians and have to convert to and from when using the `sin()` and other trigonometric functions. But in css I can declare `--rot: 1turn`, `--rot: 360deg`, `--rot: 400grad` or `--rot: 6.2832rad` and it would all mean the same thing. This way you can use the unit that best suits the situation, for example using `4turn` to specify four complete rotations, but you could use `30deg` for smaller angles. I have not used any other language that works like this.
