@@ -8,6 +8,7 @@ import pluginFilters from "./content/_config/filters.js";
 export default async function (eleventyConfig) {
   eleventyConfig.setInputDirectory("content");
   eleventyConfig.setLayoutsDirectory("_layouts");
+  eleventyConfig.addWatchTarget('content/article');
 
   eleventyConfig.addPlugin(syntaxHighlight);
   eleventyConfig.addPlugin(eleventyImageTransformPlugin, {
@@ -23,7 +24,7 @@ export default async function (eleventyConfig) {
     //mode: "html-relative"
   });
   eleventyConfig.addPassthroughCopy("content/js/**/*");
-  eleventyConfig.addPassthroughCopy("content/css/**/*");
+  eleventyConfig.addPassthroughCopy("content/**/*.css");
   eleventyConfig.addPassthroughCopy("content/favicon.png");
 
   eleventyConfig.addPlugin(pluginFilters);
