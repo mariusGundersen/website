@@ -157,7 +157,10 @@ In order to find the light we need to use vector calculations. That means making
 ```css
 .earth {
   img {
-    transform: rotateX(asin(var(--y))) rotateY(calc(atan2(var(--x), var(--z)))) translateZ(100px);
+    transform: 
+      rotateX(asin(var(--y))) 
+      rotateY(calc(atan2(var(--x), var(--z)))) 
+      translateZ(100px);
   }
   
   [alt="top"]{
@@ -361,5 +364,51 @@ The code is getting rather complex, now that we need to do some more complex vec
     <img alt="bottom" src="./images/bottom.png">
   </div>
 </div>
+
+## Control
+
+The only thing missing now is a way to control the rotation. We can achieve that using scroll driven animation tied to the x and y scroll axis. Using a very large pseudo element we force the scroller to overflow. The space is positioned using sticky positioning so it doesn't move when we scroll. The animation is now tied to the scroller for both the x and y axis. Weirdly the y axis controls the x rotation and the x axis controls the y rotation.
+
+```css
+
+.scroller {
+  overflow: scroll;
+  height: 400px;
+  position: relative;
+  scroll-timeline: --scroller-x y, --scroller-y x;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 300%;
+    height: 300%;
+  }
+
+  .space {
+    position: sticky;
+    top: 0;
+    left: 0;
+
+    .earth {
+      animation: rotate-x 1ms linear, rotate-y 1ms linear;
+      animation-timeline: --scroller-x, --scroller-y;
+    }
+  }
+}
+```
+
+<div class="scroller">
+  <div class="space phong-light vectorized-cube specular-light">
+    <div class="earth rotate-xy">
+      <img alt="top" src="./images/top.png">
+      <img alt="left" src="./images/left.png">
+      <img alt="right" src="./images/right.png">
+      <img alt="front" src="./images/front.png">
+      <img alt="back" src="./images/back.png">
+      <img alt="bottom" src="./images/bottom.png">
+    </div>
+  </div>
+</div>
+
 
 <link rel="stylesheet" href="./style.css">

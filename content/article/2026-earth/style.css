@@ -191,6 +191,16 @@
   }
 }
 
+@keyframes rotate-x {
+  from {
+    --rot-x: 0turn;
+  }
+  to {
+    --rot-x: 1turn;
+  }
+}
+
+
 
 .space {
   .earth.rotate-y {
@@ -275,4 +285,46 @@
   syntax: "<number>";
   inherits: false;
   initial-value: 0
+}
+
+.scroller {
+  overflow: scroll;
+  height: 400px;
+  position: relative;
+  scroll-timeline: --scroller-x y, --scroller-y x;
+
+  &::after {
+    content: '';
+    display: block;
+    width: 300%;
+    height: 300%;
+  }
+
+  @supports not (scroll-timeline: --square-timeline) {
+
+    &::after {
+      content: "Your browser doesn't support the `scroll-timeline` property.";
+      background-color: wheat;
+      display: block;
+      text-align: center;
+      padding: 1em;
+      width: unset;
+      height: unset;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+    }
+  }
+
+  .space {
+    position: sticky;
+    top: 0;
+    left: 0;
+
+    .earth {
+      animation: rotate-x 1ms linear, rotate-y 1ms linear;
+      animation-timeline: --scroller-x, --scroller-y;
+    }
+  }
 }
