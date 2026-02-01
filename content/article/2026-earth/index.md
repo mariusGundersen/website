@@ -157,7 +157,7 @@ In order to find the light we need to use vector calculations. That means making
 ```css
 .earth {
   img {
-    transform: rotateX(calc(var(--y) * 90deg)) rotateY(calc(atan2(var(--x), var(--z)))) translateZ(100px);
+    transform: rotateX(asin(var(--y))) rotateY(calc(atan2(var(--x), var(--z)))) translateZ(100px);
   }
   
   [alt="top"]{
@@ -230,8 +230,8 @@ This is a hacky trick that we now need to improve. The next step is to find the 
     --diffuse-light: max(
       0, 
       var(--d) * calc(
-        calc(var(--earth-x) * var(--x)) 
-        + 
+        calc(var(--earth-x) * var(--x)) + 
+        calc(var(--earth-y) * var(--y)) +
         calc(var(--earth-z) * var(--z))
       )
     );
@@ -266,8 +266,41 @@ This is a hacky trick that we now need to improve. The next step is to find the 
   </div>
 </div>
 
-We need some more complex math to rotate arund two axis
+We need some more complex math to rotate arund two axis. For one, we need another rotation varible, and we need to set up the animation to rotate around both the x and y axis:
 
+```css
+.space {
+  .earth.rotate-xy {
+    animation: rotate-xy 20s linear forwards infinite;
+    transform: rotateY(var(--rot-y)) rotateX(var(--rot-x));
+    --earth-x: cos(var(--rot-y));
+    --earth-y: calc(0 - sin(var(--rot-x)))* sin(var(--rot-y));
+    --earth-z: calc(cos(var(--rot-x)) * sin(var(--rot-y)));
+    
+    img {
+      --diffuse-light: max(
+        0, 
+        var(--d) * calc(
+          calc(var(--earth-x) * var(--x)) + 
+          calc(var(--earth-y) * var(--y)) + 
+          calc(var(--earth-z) * var(--z))
+        )
+      );
+    }
+  }
+}
+
+@keyframes rotate-xy {
+  from {
+    --rot-y: 0turn;
+    --rot-x: 0turn;
+  }
+  to {
+    --rot-y: 4turn;
+    --rot-x: 1turn;
+  }
+}
+```
 
 <div class="space phong-light vectorized-cube">
   <div class="earth rotate-xy">
@@ -279,5 +312,7 @@ We need some more complex math to rotate arund two axis
     <img alt="bottom" src="./images/bottom.png">
   </div>
 </div>
+
+
 
 <link rel="stylesheet" href="./style.css">

@@ -126,7 +126,7 @@
     --d: 0.5;
 
     img {
-      transform: rotateX(calc(var(--y) * 90deg)) rotateY(calc(atan2(var(--x), var(--z)))) translateZ(100px);
+      transform: rotateX(asin(var(--y))) rotateY(calc(atan2(var(--x), var(--z)))) translateZ(100px);
       --diffuse-light: max(0, var(--d) * calc(var(--x) + var(--y) + var(--z)));
     }
     
@@ -163,21 +163,6 @@
   }
 }
 
-
-.space {
-  .earth.rotate-y {
-    animation: rotate-y 5s linear forwards infinite;
-    transform: rotateY(var(--rot-y));
-    --earth-x: cos(var(--rot-y));
-    --earth-y: 0;
-    --earth-z: sin(var(--rot-y));
-    
-    img {
-      --diffuse-light: max(0, var(--d) * calc(calc(var(--earth-x) * var(--x)) + calc(var(--earth-z) * var(--z))));
-    }
-  }
-}
-
 @property --difuse-light {
   syntax: "<number>";
   inherits: true;
@@ -207,14 +192,29 @@
 }
 
 
-
 .space {
-  .earth.rotate-xy {
+  .earth.rotate-y {
     animation: rotate-y 5s linear forwards infinite;
-    transform: rotateY(var(--rot-y)) rotateX(var(--rot-x));
+    transform: rotateY(var(--rot-y));
     --earth-x: cos(var(--rot-y));
     --earth-y: 0;
     --earth-z: sin(var(--rot-y));
+    
+    img {
+      --diffuse-light: max(0, var(--d) * calc(calc(var(--earth-x) * var(--x)) + calc(var(--earth-z) * var(--z))));
+    }
+  }
+}
+
+
+
+.space {
+  .earth.rotate-xy {
+    animation: rotate-xy 20s linear forwards infinite;
+    transform: rotateY(var(--rot-y)) rotateX(var(--rot-x));
+    --earth-x: cos(var(--rot-y));
+    --earth-y: calc(0 - sin(var(--rot-x)))* sin(var(--rot-y));
+    --earth-z: calc(cos(var(--rot-x)) * sin(var(--rot-y)));
     
     img {
       --diffuse-light: max(
@@ -235,7 +235,7 @@
     --rot-x: 0turn;
   }
   to {
-    --rot-y: 1turn;
-    --rot-x: 4turn;
+    --rot-y: 4turn;
+    --rot-x: 1turn;
   }
 }
