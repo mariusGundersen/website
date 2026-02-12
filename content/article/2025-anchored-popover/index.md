@@ -5,6 +5,7 @@ layout: post.html
 date: 2025-09-30
 ---
 
+> **Note: As of January 2026** the code on this page no longer work correctly. A [change](https://github.com/w3c/csswg-drafts/issues/11792) was made in the css spec that reverted an earlier change that [enabled pseudo elements to be positioned relative to the anchor](https://github.com/w3c/csswg-drafts/pull/9037). There is a [discussion](https://github.com/w3c/csswg-drafts/issues/8913#issuecomment-3883275011) to fix this again.
 
 For a project at work I've had to implement <button popovertarget="definition">definition popovers</button>. These should pop up above the word and be easily dismissed, for example by clicking anywhere else on the page. For a while I've used JavaScript for this, but now it's (almost) possible to do it with only html and css. This page will explain how.
 
